@@ -1,0 +1,129 @@
+name: Server CI
+
+on:
+  push:
+    branches:
+      - 'main'
+  pull_request:
+
+jobs:
+  mod:
+    name: Server Mod
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v2.1.4
+        with:
+          go-version: 1.17
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2.1.7
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-gomod-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-gomod-
+      - run: go mod download
+        working-directory: ./server
+  generate:
+    name: Server Generate
+    runs-on: ubuntu-latest
+    needs: [mod]
+    steps:
+      - uses: actions/setup-go@v2.1.4
+        with:
+          go-version: 1.17
+      - uses: actions/checkout@v2
+      - name: Add PATH
+        run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+      - run: go install github.com/golang/mock/mockgen
+        working-directory: ./server
+      - run: go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.9.0
+        working-directory: ./server
+      - run: go install github.com/google/wire/cmd/wire@v0.5.0
+        working-directory: ./server
+      - run: go generate ./...
+        working-directory: ./server
+      - uses: actions/upload-artifact@v2.3.0
+        with:
+          name: mockGenerated
+          path: ./server
+  build:
+    name: Server Build
+    runs-on: ubuntu-latest
+    needs: [generate]
+    env:
+      GOCACHE: "/tmp/go/cache"
+    steps:
+      - uses: actions/setup-go@v2.1.4
+        with:
+          go-version: 1.17
+      - uses: actions/download-artifact@v2.1.0
+        with:
+          name: mockGenerated
+      - uses: actions/cache@v2.1.7
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-gomod-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-gomod-
+      - uses: actions/cache@v2.1.7
+        with:
+          path: /tmp/go/cache
+          key: ${{ runner.os }}-go-build-${{ github.ref }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-go-build-${{ github.ref }}-
+            ${{ runner.os }}-go-build-
+      - run: go build -o collection
+  test:
+    name: Server Test
+    runs-on: ubuntu-latest
+    needs: [generate]
+    services:
+      mysql:
+        image: mariadb:10.6.4
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: quantainer
+    steps:
+      - uses: actions/setup-go@v2.1.4
+        with:
+          go-version: 1.17
+      - uses: actions/download-artifact@v2.1.0
+        with:
+          name: mockGenerated
+      - uses: actions/cache@v2.1.7
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-gomod-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-gomod-
+      - run: go test ./... -v -coverprofile=../coverage.txt -race -vet=off
+        env:
+          COLLECTION_ENV: production
+          DB_USERNAME: root
+          DB_PASSWORD: password
+          DB_HOSTNAME: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: quantainer
+      - uses: actions/upload-artifact@v2.3.0
+        with:
+          name: coverage.txt
+          path: coverage.txt
+  lint:
+    name: Server Lint
+    runs-on: ubuntu-latest
+    needs: [generate]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2.1.0
+        with:
+          name: mockGenerated
+          path: ./server
+      - name: golangci-lint
+        uses: reviewdog/action-golangci-lint@v2.0.3
+        with:
+          reporter: github-pr-check
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workdir: ./server
+          fail_on_error: true
