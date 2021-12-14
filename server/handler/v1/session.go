@@ -38,6 +38,7 @@ func (s *Session) Use(e *echo.Echo) {
 	e.Use(session.Middleware(s.store))
 }
 
+//nolint:unused
 func (s *Session) getSession(c echo.Context) (*sessions.Session, error) {
 	session, err := s.store.Get(c.Request(), s.key)
 	if err != nil {
@@ -49,6 +50,7 @@ func (s *Session) getSession(c echo.Context) (*sessions.Session, error) {
 	return session, nil
 }
 
+//nolint:unused
 func (s *Session) save(c echo.Context, session *sessions.Session) error {
 	err := s.store.Save(c.Request(), c.Response(), session)
 	if err != nil {
@@ -58,6 +60,7 @@ func (s *Session) save(c echo.Context, session *sessions.Session) error {
 	return nil
 }
 
+//nolint:unused
 func (s *Session) revoke(session *sessions.Session) {
 	session.Options.MaxAge = -1
 }

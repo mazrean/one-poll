@@ -22,6 +22,7 @@ func NewContext(session *Session) *Context {
 	}
 }
 
+//nolint:unused
 func (ctx *Context) getSession(c echo.Context) (*sessions.Session, error) {
 	iSession := c.Get(sessionContextKey)
 	if iSession == nil {
