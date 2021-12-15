@@ -15,6 +15,7 @@ import (
 
 type API struct {
 	*Checker
+	openapi.ServerInterface
 }
 
 func NewAPI(checker *Checker) *API {

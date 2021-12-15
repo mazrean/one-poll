@@ -18,11 +18,23 @@ import (
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// List API versions
+	// (GET /)
+	ListVersionsv2(ctx echo.Context) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler ServerInterface
+}
+
+// ListVersionsv2 converts echo context to params.
+func (w *ServerInterfaceWrapper) ListVersionsv2(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.ListVersionsv2(ctx)
+	return err
 }
 
 // This is a simple interface which specifies echo.Route addition functions which
@@ -49,14 +61,22 @@ func RegisterHandlers(router EchoRouter, si ServerInterface) {
 // can be served under a prefix.
 func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL string) {
 
+	wrapper := ServerInterfaceWrapper{
+		Handler: si,
+	}
+
+	router.GET(baseURL+"/", wrapper.ListVersionsv2)
+
 }
 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/zzLsaoDIRBG4Xf5a1H3bjfdLdOlDylkY1jBOIMzu4347iEEUh4O38DGL+GWmyloTIfS",
-	"ngwaeGTdehEr3ED4v17gYMVq/tWZu37v4qOPmA4suSUpIKw++j84SLJdQe2o1UFz/yDQbeDoFYTdTCiE",
-	"yluqO6vRGmMMSUo4F8z7fAcAAP//AqsFLqAAAAA=",
+	"H4sIAAAAAAAC/1SQT2sDIRTEv0qYs6hJbt56DPRQKPRSepDNayOs+tCX3ZbF717c3RZy8c84M/x8C4Yc",
+	"OSdKUuGWphDSZ4brehI/SD8mHwkOTy+Xw+udOReBwr2McLiJsDNmnmdN3z7ySHrI0dTd1hSuVIcSWEJO",
+	"WwcUJMhI/7eJSt1ej9pq20OZKXkOcDhrq09QYC+3TgjTly9awTJT8b35coXDc6jytnXVqWcKVc6p0po7",
+	"Wdu3R5yTtYc/F1pTqPcYffnZ2w79yzteRVsNVLoA9748jmDMgx9vuYo7W2uN52CmI9pH+w0AAP//wSZu",
+	"LGMBAAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
