@@ -2,6 +2,7 @@
 
 ## 開発環境起動
 VSCodeのデバッグ機能が使える環境になっているので、
+.air.tomlの指定の箇所をコメントアウトして、
 以下の方法で立ち上げればブレークポイントなどを
 VSCodeから設定できる環境が立ち上がる。
 また、airを使ってhot reloadもできるようになっている。
@@ -9,7 +10,7 @@ VSCodeから設定できる環境が立ち上がる。
 1. serverディレクトリで`go generate ./...`
   - wire,mockgen,oapi-codegenのinstallをしていないとここでエラーが出る可能性がある
 1. プロジェクトルートで`docker compose -f dev/compose.yaml up`
-1. VSCodeでRemote Docker Debugを実行
+1. debuggerを使用する場合はVSCodeでRemote Docker Debugを実行
 
 ## ディレクトリ構成
 ```
