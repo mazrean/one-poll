@@ -5,3 +5,16 @@ info:
   description: 'API'
   version: '1.0.0'
   title: 'API'
+  contact:
+    name: API Support
+    url: http://www.example.com/support
+tags: []
+paths:
+  /:
+    get:
+      operationId: listVersionsv2
+      summary: List API versions
+      responses:
+        '200':
+          description: |-
+            200 response
