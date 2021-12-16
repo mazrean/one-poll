@@ -416,11 +416,6 @@ paths:
           name: max
           description: 最大質問数
         - schema:
-            type: array
-          in: query
-          name: tags
-          description: タグのid配列
-        - schema:
             type: string
           in: query
           name: match
