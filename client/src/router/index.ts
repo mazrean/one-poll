@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Index from '/@/pages/Index.vue'
-import Hello from '/@/pages/Hello.vue'
+import Home from '../pages/Home.vue'
+import Signup from '../pages/Signup.vue'
+import Signin from '../pages/Signin.vue'
+import Profile from '../pages/Profile.vue'
 
 export const routerHistory = createWebHistory()
 
@@ -9,13 +11,23 @@ export default createRouter({
   routes: [
     {
       path: '/',
-      name: 'index',
-      component: Index
+      name: 'home',
+      component: Home
     },
     {
-      path: '/hello',
-      name: 'hello',
-      component: Hello
+      path: '/signup',
+      name: 'signup',
+      component: Signup
+    },
+    {
+      path: '/signin',
+      name: 'signin',
+      component: Signin
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: Profile
     }
   ]
 })
