@@ -1,8 +1,9 @@
 <template>
   <div>
-    <router-link :to="{ name: 'index' }">Index</router-link>
-    <span>|</span>
-    <router-link :to="{ name: 'hello' }">Hello</router-link>
+    <router-link :to="{ name: 'home' }">ホーム</router-link> |
+    <router-link :to="{ name: 'signup' }">サインアップ</router-link> |
+    <router-link :to="{ name: 'signin' }">サインイン</router-link> |
+    <router-link :to="{ name: 'profile' }">プロフィール</router-link>
   </div>
 </template>
 
@@ -10,7 +11,7 @@
 import { defineComponent } from 'vue'
 
 export default defineComponent({
-  name: 'Routes',
+  name: 'RoutesPage',
   setup() {
     return {}
   }
