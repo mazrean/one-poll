@@ -33,7 +33,7 @@ import Routes from '../components/Routes.vue'
 import { defineComponent } from 'vue'
 
 export default defineComponent({
-  name: 'Profile',
+  name: 'ProfilePage',
   components: { Routes },
   data() {
     return {

@@ -33,7 +33,7 @@ import Routes from '../components/Routes.vue'
 import { defineComponent } from 'vue'
 
 export default defineComponent({
-  name: 'Signin',
+  name: 'SigninPage',
   components: { Routes }
 })
 </script>

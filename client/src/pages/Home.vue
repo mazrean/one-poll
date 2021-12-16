@@ -12,7 +12,7 @@ import Routes from '../components/Routes.vue'
 import { defineComponent } from 'vue'
 
 export default defineComponent({
-  name: 'Home',
+  name: 'HomePage',
   components: { Routes }
 })
 </script>

@@ -41,7 +41,7 @@ import Routes from '../components/Routes.vue'
 import { defineComponent } from 'vue'
 
 export default defineComponent({
-  name: 'Signup',
+  name: 'SignupPage',
   components: { Routes }
 })
 </script>
