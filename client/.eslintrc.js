@@ -18,6 +18,9 @@ module.exports = {
   ],
   rules: {
     'no-console': 'warn',
-    'no-debugger': 'warn'
+    'no-debugger': 'warn',
+    'vue/multi-word-component-names': ['error', {
+      'ignores': ['Hello', 'Index', 'Routes']
+    }]
   }
 }

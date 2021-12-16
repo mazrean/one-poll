@@ -9,8 +9,7 @@
       class="btn btn-secondary dropdown-toggle"
       type="button"
       data-bs-toggle="dropdown"
-      aria-expanded="false"
-    >
+      aria-expanded="false">
       Check Bootstrap
     </button>
     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
