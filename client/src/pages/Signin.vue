@@ -12,16 +12,14 @@
           type="text"
           class="form-control"
           name="user_name"
-          placeholder="ユーザー名を入力"
-        />
+          placeholder="ユーザー名を入力" />
         <label for="password" class="form-label">パスワード</label>
         <input
           id="password"
           type="password"
           class="form-control"
           name="password"
-          placeholder="パスワードを入力"
-        />
+          placeholder="パスワードを入力" />
       </div>
       <button type="submit" class="btn btn-primary">サインイン</button>
     </form>

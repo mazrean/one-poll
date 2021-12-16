@@ -41,7 +41,7 @@ export default defineComponent({
     }
   },
   methods: {
-    onClickTab(num) {
+    onClickTab(num: number) {
       this.activeTab = num
     }
   }
