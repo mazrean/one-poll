@@ -5,7 +5,7 @@ export const useMainStore = defineStore('main', {
     count: 0
   }),
   getters: {
-    countString: (state) => {
+    countString: state => {
       if (state.count === 0) return 'zero'
       if (state.count === 1) return 'once'
       return `${state.count} times`
