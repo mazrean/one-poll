@@ -9,7 +9,8 @@
 
 <script lang="ts">
 import { defineComponent, computed } from 'vue'
-import { useStore } from '/@/store'
+import { useMainStore } from '/@/store'
+import { storeToRefs } from 'pinia'
 
 export default defineComponent({
   name: 'HelloWorld',
@@ -20,10 +21,13 @@ export default defineComponent({
     }
   },
   setup() {
-    const store = useStore()
-    const count = computed(() => store.getters.countString)
-    const { increment } = store.commit
-    return { count, increment }
+    const main = useMainStore()
+    const { countString } = storeToRefs(main)
+
+    return {
+      count: computed(() => countString.value),
+      increment: main.increment
+    }
   }
 })
 </script>

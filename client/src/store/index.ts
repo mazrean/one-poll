@@ -1,24 +1,19 @@
-import { createDirectStore } from 'direct-vuex'
+import { defineStore } from 'pinia'
 
-const { store } = createDirectStore({
-  state: {
+export const useMainStore = defineStore('main', {
+  state: () => ({
     count: 0
-  },
+  }),
   getters: {
-    countString(state) {
+    countString: (state) => {
       if (state.count === 0) return 'zero'
       if (state.count === 1) return 'once'
       return `${state.count} times`
     }
   },
-  mutations: {
-    increment(state) {
-      state.count++
+  actions: {
+    increment() {
+      this.count++
     }
   }
 })
-
-export default store.original
-
-export type Store = typeof store
-export const useStore = (): Store => store
