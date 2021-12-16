@@ -1,7 +1,699 @@
 openapi: 3.0.2
 servers:
-  - url: http://localhost:3000/api/v1
+  - url: 'http://localhost:3000/api/v1'
 info:
-  description: 'API'
-  version: '1.0.0'
-  title: 'API'
+  description: API
+  version: 1.0.0
+  title: API
+  contact:
+    name: API Support
+    url: 'http://www.example.com/support'
+tags:
+  - name: user
+  - name: poll
+  - name: tag
+  - name: result
+  - name: comment
+components:
+  securitySchemes: {}
+  schemas:
+    PollBase:
+      title: PollBase
+      type: object
+      x-examples: {}
+      description: 質問idは存在しない。POST /polls/のボディ。
+      properties:
+        title:
+          type: string
+          maxLength: 300
+          minLength: 1
+        type:
+          $ref: '#/components/schemas/PollType'
+        deadline:
+          type: string
+          format: date-time
+          description: deadlineをpostする、またはq_statusがlimitedの時、存在する。回答締め切り時刻。
+        tags:
+          type: array
+          minItems: 1
+          description: 初期実装では含まない。
+          deprecated: true
+          items:
+            $ref: '#/components/schemas/PollTag'
+        question:
+          oneOf:
+            - $ref: '#/components/schemas/RadioQuestions'
+          description: 'POST /poolsの時必要。GET /poolsまたはGET /pools/:idの時、ユーザモードがonly_browsableまたはcan_answerなら必要。それ以外の時は存在しない。'
+      required:
+        - title
+        - type
+        - question
+    PollSummary:
+      title: PollSummary
+      x-examples: {}
+      description: 'POST /poolのレスポンス。GET /polls/:idのレスポンス。'
+      allOf:
+        - type: object
+          properties:
+            poll_id:
+              $ref: '#/components/schemas/PollID'
+          required:
+            - poll_id
+        - $ref: '#/components/schemas/PollBase'
+        - type: object
+          properties:
+            created_at:
+              type: string
+              format: date-time
+            q_status:
+              $ref: '#/components/schemas/PollStatus'
+            owner:
+              $ref: '#/components/schemas/User'
+            user_status:
+              $ref: '#/components/schemas/UserStatus'
+          required:
+            - created_at
+            - q_status
+            - owner
+            - user_status
+    PollStatus:
+      type: string
+      title: ''
+      enum:
+        - opened
+        - limited
+        - outdated
+      description: 質問の状態
+      x-internal: false
+    PollType:
+      type: string
+      title: PollType
+      enum:
+        - radio_button
+      x-internal: false
+    PollTag:
+      title: PollTag
+      type: object
+      properties:
+        tag_id:
+          type: string
+          format: uuid
+        tag_name:
+          type: string
+          minLength: 1
+          maxLength: 50
+      required:
+        - tag_id
+        - tag_name
+      x-internal: false
+      x-examples:
+        example-1:
+          tag_id: 39c8a0b3-fbe8-4801-95bf-e8a0792edf1d
+          tag_name: 環境
+    PollID:
+      type: string
+      title: PollID
+      format: uuid
+      x-internal: false
+      x-examples: {}
+    PollComment:
+      title: PollComment
+      type: object
+      description: ''
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        created_at:
+          type: string
+          format: date-time
+        content:
+          type: string
+          description: コメント本文
+          minLength: 0
+      required:
+        - user
+        - created_at
+        - content
+      x-examples:
+        example-1:
+          user:
+            uuid: 095be615-a8ad-4c33-8e9c-c7612fbf6c9f
+            name: string
+          created_at: '2019-08-24T14:15:22Z'
+          content: やっぱvimっしょ
+    User:
+      title: ''
+      type: object
+      description: ''
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: アカウント名。uuidで管理されるが、ユーザー視点の観点で重複を許さない
+          minLength: 1
+          maxLength: 50
+      required:
+        - uuid
+        - name
+      x-internal: false
+      x-examples:
+        example-1:
+          uuid: 095be615-a8ad-4c33-8e9c-c7612fbf6c9f
+          name: username
+    UserStatus:
+      title: ''
+      type: object
+      description: 質問idに対するユーザーの権限
+      x-internal: false
+      properties:
+        is_owner:
+          type: boolean
+          description: オーナーか
+        accsess_mode:
+          type: string
+          enum:
+            - only_browsable
+            - can_answer
+            - can_asccess_details
+          description: only_browable 質問の閲覧　can_answer 解答できる　can_access_details 結果の表示
+      required:
+        - is_owner
+        - accsess_mode
+    RadioContent:
+      title: RadioContent
+      description: ラジオボタン
+      x-examples:
+        example-1:
+          id: 0
+          choice: string
+      type: object
+      x-internal: false
+      properties:
+        id:
+          type: integer
+        choice:
+          type: string
+          minLength: 1
+          maxLength: 300
+          description: 質問文
+      required:
+        - id
+        - choice
+    RadioQuestions:
+      type: array
+      title: RadioQuestions
+      description: ラジオボタンに対する質問
+      minItems: 1
+      x-examples: {}
+      items:
+        $ref: '#/components/schemas/RadioContent'
+    RadioResults:
+      title: RadioResults
+      description: ラジオボタンに対する結果
+      x-examples:
+        example-1:
+          - id: 0
+            choice: string
+            count: 0
+      type: array
+      items:
+        allOf:
+          - $ref: '#/components/schemas/RadioContent'
+          - type: object
+            properties:
+              count:
+                type: integer
+                description: その選択肢に回答をした人数
+            required:
+              - count
+    RadioAnswer:
+      title: RadioAnswer
+      type: integer
+      description: 選択したラジオボタンid
+    PollResults:
+      title: PollResults
+      type: object
+      properties:
+        poll_id:
+          $ref: '#/components/schemas/PollID'
+        type:
+          $ref: '#/components/schemas/PollType'
+        count:
+          type: integer
+          description: 回答総数
+        result:
+          oneOf:
+            - $ref: '#/components/schemas/RadioResults'
+  parameters:
+    token:
+      name: token
+      in: cookie
+      required: false
+      schema:
+        type: string
+  requestBodies: {}
+  responses: {}
+  examples: {}
+paths:
+  /users:
+    post:
+      summary: ''
+      operationId: post-users
+      responses:
+        '200':
+          description: OK
+      description: アカウント作成
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                password:
+                  type: string
+        description: ''
+      tags:
+        - user
+  /users/signin:
+    post:
+      summary: ''
+      operationId: post-users-signin
+      responses:
+        '200':
+          description: OK
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                password:
+                  type: string
+          application/xml:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                pw:
+                  type: string
+        description: ''
+      description: ログインする
+      tags:
+        - user
+  /users/signout:
+    post:
+      summary: ''
+      operationId: post-users-signout
+      responses:
+        '200':
+          description: OK
+      description: サインアウトする
+      tags:
+        - user
+  /users/me:
+    get:
+      summary: ''
+      tags:
+        - user
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+      operationId: get-users-me
+      description: 自分のユーザー情報を取得する
+      parameters: []
+    delete:
+      summary: ''
+      operationId: delete-users-me
+      responses:
+        '200':
+          description: OK
+      description: アカウント削除。質問などの情報は残る。
+      tags:
+        - user
+  /users/me/owners:
+    get:
+      summary: ''
+      tags:
+        - user
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PollSummary'
+      operationId: get-users-me-owners
+      description: 作成質問一覧
+  /users/me/answers:
+    get:
+      summary: ''
+      tags:
+        - user
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PollSummary'
+      operationId: get-users-me-answers
+  /polls:
+    get:
+      summary: ''
+      tags:
+        - poll
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PollSummary'
+              examples:
+                example-1:
+                  value:
+                    - poll_id: 712230da-d683-493a-8a4d-ca41e4ceb233
+                      title: string
+                      type: radio_button
+                      deadline: '2019-08-24T14:15:22Z'
+                      tags:
+                        - tag_id: 39c8a0b3-fbe8-4801-95bf-e8a0792edf1d
+                          tag_name: string
+                      question:
+                        - id: 0
+                          choice: string
+                      created_at: '2019-08-24T14:15:22Z'
+                      q_status: opened
+                      owner:
+                        uuid: 095be615-a8ad-4c33-8e9c-c7612fbf6c9f
+                        name: string
+                      user_status:
+                        is_owner: true
+                        accsess_mode: only_browsable
+      operationId: get-polls
+      description: 投票リストを取得する
+      parameters:
+        - schema:
+            type: integer
+          in: query
+          name: max
+          description: 最大質問数
+        - schema:
+            type: array
+          in: query
+          name: tags
+          description: タグのid配列
+        - schema:
+            type: string
+          in: query
+          name: match
+          description: タイトルの部分一致
+    post:
+      summary: ''
+      tags:
+        - poll
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - type: object
+                    properties:
+                      poll_id:
+                        $ref: '#/components/schemas/PollID'
+                  - $ref: '#/components/schemas/PollBase'
+              examples:
+                example-1:
+                  value:
+                    poll_id: 712230da-d683-493a-8a4d-ca41e4ceb233
+                    title: string
+                    type: radio_button
+                    deadline: '2019-08-24T14:15:22Z'
+                    tags:
+                      - tag_id: 39c8a0b3-fbe8-4801-95bf-e8a0792edf1d
+                        tag_name: string
+                    question:
+                      - id: 0
+                        choice: string
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+      operationId: post-polls
+      description: 投票を作成する
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PollBase'
+  '/polls/{pollID}':
+    parameters:
+      - schema:
+          type: string
+        name: pollID
+        in: path
+        required: true
+    get:
+      summary: ''
+      tags:
+        - poll
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PollSummary'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+      operationId: get-polls-pollID
+      description: IDに対応する投票とその回答の詳細
+    post:
+      summary: ''
+      tags:
+        - poll
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                description: このレスポンスは検討中
+                properties:
+                  answer:
+                    oneOf:
+                      - $ref: '#/components/schemas/RadioAnswer'
+                  comment:
+                    $ref: '#/components/schemas/PollComment'
+              examples:
+                example-1:
+                  value:
+                    answer: 0
+                    comment:
+                      user:
+                        uuid: 095be615-a8ad-4c33-8e9c-c7612fbf6c9f
+                        name: username
+                      created_at: '2019-08-24T14:15:22Z'
+                      content: vimしか勝たん
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+      operationId: post-polls-pollID
+      description: IDに対応する投票への回答
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                answer:
+                  oneOf:
+                    - $ref: '#/components/schemas/RadioAnswer'
+                comment:
+                  $ref: '#/components/schemas/PollComment'
+              required:
+                - answer
+          application/xml:
+            schema:
+              type: object
+              properties: {}
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                answer:
+                  $ref: '#/components/schemas/PollComment'
+              required:
+                - answer
+          text/html:
+            schema:
+              type: object
+              properties:
+                answer:
+                  oneOf:
+                    - $ref: '#/components/schemas/RadioAnswer'
+                comment:
+                  $ref: '#/components/schemas/PollComment'
+              required:
+                - answer
+          text/plain:
+            schema:
+              type: object
+              properties: {}
+          application/EDI-X12:
+            schema:
+              type: object
+              properties: {}
+          application/EDIFACT:
+            schema:
+              type: object
+              properties: {}
+        description: ''
+    delete:
+      summary: ''
+      operationId: delete-polls-pollID
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+      tags:
+        - poll
+      description: 質問を削除する
+  /tags:
+    get:
+      summary: ''
+      tags:
+        - tag
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PollTag'
+      operationId: get-tags
+      description: すべてのタグを取得する
+    post:
+      summary: ''
+      operationId: post-tags
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad Request
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+              minLength: 1
+              maxLength: 50
+      tags:
+        - tag
+      description: タグを新規作成する。
+  '/polls/{pollID}/results':
+    parameters:
+      - schema:
+          type: string
+        name: pollID
+        in: path
+        required: true
+    get:
+      summary: ''
+      tags:
+        - result
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PollResults'
+              examples:
+                example-1:
+                  value:
+                    poll_id: 712230da-d683-493a-8a4d-ca41e4ceb233
+                    type: radio_button
+                    count: 0
+                    result:
+                      - id: 0
+                        choice: string
+                        count: 0
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+      operationId: get-polls-pollID-results
+      description: 質問の結果を返す
+  '/polls/{pollID}/comments':
+    parameters:
+      - schema:
+          type: string
+        name: pollID
+        in: path
+        required: true
+    get:
+      summary: ''
+      tags:
+        - comment
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PollComment'
+              examples:
+                example-1:
+                  value:
+                    - user:
+                        uuid: 095be615-a8ad-4c33-8e9c-c7612fbf6c9f
+                        name: username
+                      created_at: '2019-08-24T14:15:22Z'
+                      content: vimしか勝たん
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+      operationId: get-polls-pollID-comments
+      description: IDに対応するコメント配列を取得する。
+      parameters:
+        - schema:
+            type: integer
+          in: query
+          name: max
+          description: 最大コメント数
