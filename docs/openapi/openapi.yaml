@@ -41,9 +41,7 @@ components:
           items:
             $ref: '#/components/schemas/PollTag'
         question:
-          oneOf:
-            - $ref: '#/components/schemas/RadioQuestions'
-          description: 'POST /pollsの時必要。GET /pollsまたはGET /polls/:idの時、ユーザモードがonly_browsableまたはcan_answerなら必要。それ以外の時は存在しない。'
+          $ref: '#/components/schemas/RadioQuestions'
       required:
         - title
         - type
@@ -158,8 +156,7 @@ components:
       type: object
       properties:
         answer:
-          oneOf:
-            - $ref: '#/components/schemas/RadioAnswer'
+          $ref: '#/components/schemas/RadioAnswer'
         comment:
           type: string
     PollID:
@@ -282,8 +279,7 @@ components:
           type: integer
           description: 回答総数
         result:
-          oneOf:
-            - $ref: '#/components/schemas/RadioResults'
+          $ref: '#/components/schemas/RadioResults'
     PostTag:
       title: PostTag
       type: string
