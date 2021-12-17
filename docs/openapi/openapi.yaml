@@ -43,7 +43,7 @@ components:
         question:
           oneOf:
             - $ref: '#/components/schemas/RadioQuestions'
-          description: 'POST /poolsの時必要。GET /poolsまたはGET /pools/:idの時、ユーザモードがonly_browsableまたはcan_answerなら必要。それ以外の時は存在しない。'
+          description: 'POST /pollsの時必要。GET /pollsまたはGET /polls/:idの時、ユーザモードがonly_browsableまたはcan_answerなら必要。それ以外の時は存在しない。'
       required:
         - title
         - type
@@ -51,7 +51,7 @@ components:
     PollSummary:
       title: PollSummary
       x-examples: {}
-      description: 'POST /poolのレスポンス。GET /polls/:idのレスポンス。'
+      description: 'POST /pollのレスポンス。GET /polls/:idのレスポンス。'
       allOf:
         - type: object
           properties:
@@ -76,6 +76,11 @@ components:
             - q_status
             - owner
             - user_status
+    PollSummaries:
+      title: PollSummaries
+      type: array
+      items:
+        $ref: '#/components/schemas/PollSummary'
     PollStatus:
       type: string
       title: ''
@@ -88,34 +93,43 @@ components:
     PollType:
       type: string
       title: PollType
-      enum:
-        - radio_button
       x-internal: false
+      enum:
+        - radio
     PollTag:
       title: PollTag
       type: object
+      x-internal: false
+      x-examples: {}
       properties:
-        tag_id:
+        id:
           type: string
           format: uuid
-        tag_name:
+        name:
           type: string
           minLength: 1
           maxLength: 50
       required:
-        - tag_id
-        - tag_name
-      x-internal: false
-      x-examples:
-        example-1:
-          tag_id: 39c8a0b3-fbe8-4801-95bf-e8a0792edf1d
-          tag_name: 環境
-    PollID:
-      type: string
-      title: PollID
-      format: uuid
-      x-internal: false
-      x-examples: {}
+        - id
+        - name
+    PollTags:
+      title: PollTags
+      type: array
+      items:
+        $ref: '#/components/schemas/PollTag'
+    PostUser:
+      title: PostUser
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+      required:
+        - name
+        - password
     PollComment:
       title: PollComment
       type: object
@@ -141,6 +155,21 @@ components:
             name: string
           created_at: '2019-08-24T14:15:22Z'
           content: やっぱvimっしょ
+    PostPollId:
+      title: PostPollId
+      type: object
+      properties:
+        answer:
+          oneOf:
+            - $ref: '#/components/schemas/RadioAnswer'
+        comment:
+          type: string
+    PollID:
+      type: string
+      title: PollID
+      format: uuid
+      x-internal: false
+      x-examples: {}
     User:
       title: ''
       type: object
@@ -246,6 +275,9 @@ components:
         result:
           oneOf:
             - $ref: '#/components/schemas/RadioResults'
+    PostTag:
+      title: PostTag
+      type: string
   parameters:
     token:
       name: token
@@ -269,12 +301,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                password:
-                  type: string
+              $ref: '#/components/schemas/PostUser'
         description: ''
       tags:
         - user
@@ -289,20 +316,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                password:
-                  type: string
-          application/xml:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                pw:
-                  type: string
+              $ref: '#/components/schemas/PostUser'
         description: ''
       description: ログインする
       tags:
@@ -352,9 +366,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PollSummary'
+                $ref: '#/components/schemas/PollSummaries'
       operationId: get-users-me-owners
       description: 作成質問一覧
   /users/me/answers:
@@ -368,9 +380,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PollSummary'
+                $ref: '#/components/schemas/PollSummaries'
       operationId: get-users-me-answers
   /polls:
     get:
@@ -383,38 +393,21 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PollSummary'
-              examples:
-                example-1:
-                  value:
-                    - poll_id: 712230da-d683-493a-8a4d-ca41e4ceb233
-                      title: string
-                      type: radio_button
-                      deadline: '2019-08-24T14:15:22Z'
-                      tags:
-                        - tag_id: 39c8a0b3-fbe8-4801-95bf-e8a0792edf1d
-                          tag_name: string
-                      question:
-                        - id: 0
-                          choice: string
-                      created_at: '2019-08-24T14:15:22Z'
-                      q_status: opened
-                      owner:
-                        uuid: 095be615-a8ad-4c33-8e9c-c7612fbf6c9f
-                        name: string
-                      user_status:
-                        is_owner: true
-                        accsess_mode: only_browsable
+                $ref: '#/components/schemas/PollSummaries'
+              examples: {}
       operationId: get-polls
-      description: 投票リストを取得する
+      description: 投票リストを取得する。デフォルトでは最新の10件を取得する。
       parameters:
         - schema:
             type: integer
           in: query
-          name: max
+          name: limit
           description: 最大質問数
+        - schema:
+            type: integer
+          in: query
+          name: offset
+          description: 質問オフセット
         - schema:
             type: string
           in: query
@@ -441,11 +434,11 @@ paths:
                   value:
                     poll_id: 712230da-d683-493a-8a4d-ca41e4ceb233
                     title: string
-                    type: radio_button
+                    type: radio
                     deadline: '2019-08-24T14:15:22Z'
                     tags:
-                      - tag_id: 39c8a0b3-fbe8-4801-95bf-e8a0792edf1d
-                        tag_name: string
+                      - id: 497f6eca-6276-4993-bfeb-53cbbbba6f08
+                        name: string
                     question:
                       - id: 0
                         choice: string
@@ -477,9 +470,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PollSummary'
+                $ref: '#/components/schemas/PollSummaries'
         '401':
           description: Unauthorized
         '404':
@@ -524,15 +515,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                answer:
-                  oneOf:
-                    - $ref: '#/components/schemas/RadioAnswer'
-                comment:
-                  $ref: '#/components/schemas/PollComment'
-              required:
-                - answer
+              $ref: '#/components/schemas/PostPollId'
           application/xml:
             schema:
               type: object
@@ -595,9 +578,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PollTag'
+                $ref: '#/components/schemas/PollTags'
       operationId: get-tags
       description: すべてのタグを取得する
     post:
@@ -612,9 +593,7 @@ paths:
         content:
           application/json:
             schema:
-              type: string
-              minLength: 1
-              maxLength: 50
+              $ref: '#/components/schemas/PostTag'
       tags:
         - tag
       description: タグを新規作成する。
@@ -640,7 +619,7 @@ paths:
                 example-1:
                   value:
                     poll_id: 712230da-d683-493a-8a4d-ca41e4ceb233
-                    type: radio_button
+                    type: radio
                     count: 0
                     result:
                       - id: 0
