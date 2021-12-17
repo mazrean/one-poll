@@ -122,11 +122,9 @@ components:
       type: object
       properties:
         name:
-          type: string
-          minLength: 1
+          $ref: '#/components/schemas/UserName'
         password:
-          type: string
-          minLength: 1
+          $ref: '#/components/schemas/UserPassword'
       required:
         - name
         - password
@@ -170,27 +168,38 @@ components:
       format: uuid
       x-internal: false
       x-examples: {}
+    UserName:
+      type: string
+      title: UserName
+      pattern: '[0-9a-zA-Z_]'
+      minLength: 4
+      maxLength: 16
+      description: アカウント名。uuidで管理されるが、ユーザー視点の観点で重複を許さない
+    UserPassword:
+      type: string
+      title: UserPassword
+      description: ''
+      pattern: '[0-9a-zA-Z_]'
+      minLength: 8
+      maxLength: 50
     User:
       title: ''
       type: object
       description: ''
-      properties:
-        uuid:
-          type: string
-          format: uuid
-        name:
-          type: string
-          description: アカウント名。uuidで管理されるが、ユーザー視点の観点で重複を許さない
-          minLength: 1
-          maxLength: 50
-      required:
-        - uuid
-        - name
       x-internal: false
       x-examples:
         example-1:
           uuid: 095be615-a8ad-4c33-8e9c-c7612fbf6c9f
           name: username
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        name:
+          $ref: '#/components/schemas/UserName'
+      required:
+        - uuid
+        - name
     UserStatus:
       title: ''
       type: object
@@ -278,13 +287,7 @@ components:
     PostTag:
       title: PostTag
       type: string
-  parameters:
-    token:
-      name: token
-      in: cookie
-      required: false
-      schema:
-        type: string
+  parameters: {}
   requestBodies: {}
   responses: {}
   examples: {}
@@ -382,6 +385,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PollSummaries'
       operationId: get-users-me-answers
+      description: 回答質問一覧
   /polls:
     get:
       summary: ''
