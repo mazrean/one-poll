@@ -11,15 +11,9 @@
 import { defineComponent } from 'vue'
 
 export default defineComponent({
-  name: 'RoutesPage',
+  name: 'RoutesComponent',
   setup() {
     return {}
   }
 })
 </script>
-
-<style module>
-.re {
-  font-weight: bold;
-}
-</style>
