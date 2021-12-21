@@ -1,8 +1,38 @@
+html {
+  min-height: 100vh;
+}
+body {
+  min-height: 100vh;
+}
+@media screen and (max-width: 1000px) {
+  main {
+    width: calc(100% - 90px);
+  }
+}
+@media screen and (min-width: 1000px) {
+  main {
+    width: calc(100% - 280px);
+  }
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  min-height: 100vh;
+}
+.link {
+  text-decoration: none;
+  color: #2c3e50;
+}
+.link:hover {
+  color: dodgerblue !important;
+}
+.link:visited {
+  color: #2c3e50;
+}
+.router-link-active {
+  font-weight: bold;
 }

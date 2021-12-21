@@ -18,6 +18,7 @@
     "pinia": "^2.0.6",
     "vue": "^3.1.5",
     "vue-router": "^4.0.10",
+    "vue-simple-suggest": "^1.11.2",
     "vuex": "^4.0.2"
   },
   "devDependencies": {

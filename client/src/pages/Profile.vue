@@ -1,49 +1,79 @@
 <template>
   <div class="container">
-    <Routes />
     <h1>プロフィール</h1>
     <p>ここはプロフィール画面</p>
-    <!-- タブによるページ切り替えのサンプル -->
-    <ul class="nav nav-tabs">
-      <li class="nav-item" @click="onClickTab(1)">
-        <a class="nav-link" :class="{ active: activeTab === 1 }"
-          >アカウント情報</a
-        >
+    <ul id="myTab" class="nav nav-tabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button
+          id="home-tab"
+          class="nav-link active"
+          data-bs-toggle="tab"
+          data-bs-target="#home"
+          type="button"
+          role="tab"
+          aria-controls="home"
+          aria-selected="true">
+          アカウント情報
+        </button>
       </li>
-      <li class="nav-item" @click="onClickTab(2)">
-        <a class="nav-link" :class="{ active: activeTab === 2 }"
-          >作成した質問一覧</a
-        >
+      <li class="nav-item" role="presentation">
+        <button
+          id="profile-tab"
+          class="nav-link"
+          data-bs-toggle="tab"
+          data-bs-target="#profile"
+          type="button"
+          role="tab"
+          aria-controls="profile"
+          aria-selected="false">
+          作成した質問一覧
+        </button>
       </li>
-      <li class="nav-item" @click="onClickTab(3)">
-        <a class="nav-link" :class="{ active: activeTab === 3 }"
-          >回答した質問一覧</a
-        >
+      <li class="nav-item" role="presentation">
+        <button
+          id="contact-tab"
+          class="nav-link"
+          data-bs-toggle="tab"
+          data-bs-target="#contact"
+          type="button"
+          role="tab"
+          aria-controls="contact"
+          aria-selected="false">
+          回答した質問一覧
+        </button>
       </li>
     </ul>
-    <!-- 実際のコンテンツ -->
-    <p v-if="activeTab === 1">ここはアカウント情報画面</p>
-    <p v-if="activeTab === 2">ここは作成した質問一覧画面</p>
-    <p v-if="activeTab === 3">ここは回答した質問一覧画面</p>
+    <div id="myTabContent" class="tab-content">
+      <div
+        id="home"
+        class="tab-pane fade show active"
+        role="tabpanel"
+        aria-labelledby="home-tab">
+        ここはアカウント情報画面
+      </div>
+      <div
+        id="profile"
+        class="tab-pane fade"
+        role="tabpanel"
+        aria-labelledby="profile-tab">
+        ここは作成した質問一覧画面
+      </div>
+      <div
+        id="contact"
+        class="tab-pane fade"
+        role="tabpanel"
+        aria-labelledby="contact-tab">
+        ここは回答した質問一覧画面
+      </div>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import Routes from '../components/Routes.vue'
 import { defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'ProfilePage',
-  components: { Routes },
-  data() {
-    return {
-      activeTab: 1
-    }
-  },
-  methods: {
-    onClickTab(num: number) {
-      this.activeTab = num
-    }
-  }
+  components: {}
 })
 </script>
