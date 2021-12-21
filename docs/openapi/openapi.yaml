@@ -520,41 +520,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/PostPollId'
-          application/xml:
-            schema:
-              type: object
-              properties: {}
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                answer:
-                  $ref: '#/components/schemas/PollComment'
-              required:
-                - answer
-          text/html:
-            schema:
-              type: object
-              properties:
-                answer:
-                  oneOf:
-                    - $ref: '#/components/schemas/Answer'
-                comment:
-                  $ref: '#/components/schemas/PollComment'
-              required:
-                - answer
-          text/plain:
-            schema:
-              type: object
-              properties: {}
-          application/EDI-X12:
-            schema:
-              type: object
-              properties: {}
-          application/EDIFACT:
-            schema:
-              type: object
-              properties: {}
         description: ''
     delete:
       summary: ''
