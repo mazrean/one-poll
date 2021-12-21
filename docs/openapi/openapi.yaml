@@ -41,7 +41,7 @@ components:
           items:
             $ref: '#/components/schemas/PollTag'
         question:
-          $ref: '#/components/schemas/RadioQuestions'
+          $ref: '#/components/schemas/Questions'
       required:
         - title
         - type
@@ -156,7 +156,7 @@ components:
       type: object
       properties:
         answer:
-          $ref: '#/components/schemas/RadioAnswer'
+          $ref: '#/components/schemas/Answer'
         comment:
           type: string
     PollID:
@@ -216,9 +216,9 @@ components:
       required:
         - is_owner
         - accsess_mode
-    RadioContent:
-      title: RadioContent
-      description: ラジオボタン
+    Choice:
+      title: Choice
+      description: 選択肢ボタン
       x-examples:
         example-1:
           id: 0
@@ -236,17 +236,17 @@ components:
       required:
         - id
         - choice
-    RadioQuestions:
+    Questions:
       type: array
-      title: RadioQuestions
-      description: ラジオボタンに対する質問
+      title: Questions
+      description: 質問
       minItems: 1
       x-examples: {}
       items:
-        $ref: '#/components/schemas/RadioContent'
-    RadioResults:
-      title: RadioResults
-      description: ラジオボタンに対する結果
+        $ref: '#/components/schemas/Choice'
+    Results:
+      title: Results
+      description: 結果
       x-examples:
         example-1:
           - id: 0
@@ -255,7 +255,7 @@ components:
       type: array
       items:
         allOf:
-          - $ref: '#/components/schemas/RadioContent'
+          - $ref: '#/components/schemas/Choice'
           - type: object
             properties:
               count:
@@ -263,10 +263,13 @@ components:
                 description: その選択肢に回答をした人数
             required:
               - count
-    RadioAnswer:
-      title: RadioAnswer
-      type: integer
-      description: 選択したラジオボタンid
+    Answer:
+      type: array
+      title: Answer
+      description: 選択したボタンid配列
+      minItems: 1
+      items:
+        type: integer
     PollResults:
       title: PollResults
       type: object
@@ -279,7 +282,7 @@ components:
           type: integer
           description: 回答総数
         result:
-          $ref: '#/components/schemas/RadioResults'
+          $ref: '#/components/schemas/Results'
     PostTag:
       title: PostTag
       type: string
@@ -492,19 +495,20 @@ paths:
                 properties:
                   answer:
                     oneOf:
-                      - $ref: '#/components/schemas/RadioAnswer'
+                      - $ref: '#/components/schemas/Answer'
                   comment:
                     $ref: '#/components/schemas/PollComment'
               examples:
                 example-1:
                   value:
-                    answer: 0
+                    answer:
+                      - 0
                     comment:
                       user:
                         uuid: 095be615-a8ad-4c33-8e9c-c7612fbf6c9f
-                        name: username
+                        name: string
                       created_at: '2019-08-24T14:15:22Z'
-                      content: vimしか勝たん
+                      content: string
         '401':
           description: Unauthorized
         '404':
@@ -534,7 +538,7 @@ paths:
               properties:
                 answer:
                   oneOf:
-                    - $ref: '#/components/schemas/RadioAnswer'
+                    - $ref: '#/components/schemas/Answer'
                 comment:
                   $ref: '#/components/schemas/PollComment'
               required:
