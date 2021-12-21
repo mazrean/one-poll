@@ -494,8 +494,7 @@ paths:
                 description: このレスポンスは検討中
                 properties:
                   answer:
-                    oneOf:
-                      - $ref: '#/components/schemas/Answer'
+                    $ref: '#/components/schemas/Answer'
                   comment:
                     $ref: '#/components/schemas/PollComment'
               examples:
