@@ -11,6 +11,7 @@ var (
 	tables = []interface{}{
 		&UserTable{},
 		&PollTable{},
+		&PollTypeTable{},
 	}
 )
 
@@ -39,4 +40,14 @@ type PollTable struct {
 
 func (*PollTable) TableName() string {
 	return "polls"
+}
+
+type PollTypeTable struct {
+	ID     int    `gorm:"type:int(11);not null;primaryKey;autoIncrement"`
+	Name   string `gorm:"type:varchar(50);not null;size:50;unique"`
+	Active bool   `gorm:"type:bool;not null;default:true"`
+}
+
+func (*PollTypeTable) TableName() string {
+	return "poll_types"
 }
