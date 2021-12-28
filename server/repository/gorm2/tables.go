@@ -13,6 +13,7 @@ var (
 		&PollTable{},
 		&PollTypeTable{},
 		&TagTable{},
+		&ChoiceTable{},
 	}
 )
 
@@ -60,4 +61,14 @@ type TagTable struct {
 
 func (*TagTable) TableName() string {
 	return "tags"
+}
+
+type ChoiceTable struct {
+	ID     uuid.UUID `gorm:"type:char(36);not null;primaryKey;size:36"`
+	PollID uuid.UUID `gorm:"type:char(36);not null;size:36"`
+	Name   string    `gorm:"type:varchar(50);not null;size:50"`
+}
+
+func (*ChoiceTable) TableName() string {
+	return "choices"
 }
