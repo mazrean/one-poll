@@ -15,6 +15,7 @@ var (
 		&TagTable{},
 		&ChoiceTable{},
 		&Response{},
+		&Comment{},
 	}
 )
 
@@ -87,4 +88,14 @@ type Response struct {
 
 func (*Response) TableName() string {
 	return "responses"
+}
+
+type Comment struct {
+	ID         uuid.UUID `gorm:"type:char(36);not null;primaryKey;size:36"`
+	ResponseID uuid.UUID `gorm:"type:char(36);not null;size:36"`
+	Comment    string    `gorm:"type:text;not null;size:5000"`
+}
+
+func (*Comment) TableName() string {
+	return "comments"
 }
