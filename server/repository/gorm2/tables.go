@@ -14,6 +14,7 @@ var (
 		&PollTypeTable{},
 		&TagTable{},
 		&ChoiceTable{},
+		&Response{},
 	}
 )
 
@@ -71,4 +72,19 @@ type ChoiceTable struct {
 
 func (*ChoiceTable) TableName() string {
 	return "choices"
+}
+
+type Response struct {
+	ID           uuid.UUID     `gorm:"type:char(36);not null;primaryKey;size:36"`
+	PollID       uuid.UUID     `gorm:"type:char(36);not null;size:36"`
+	RespondentID uuid.UUID     `gorm:"type:char(36);not null;size:36"`
+	CreatedAt    time.Time     `gorm:"type:datetime;not null"`
+	Poll         PollTable     `gorm:"foreignKey:PollID"`
+	Respondent   UserTable     `gorm:"foreignKey:RespondentID"`
+	Choices      []ChoiceTable `gorm:"many2many:response_choice_relations"`
+	Comment      Comment       `gorm:"foreignKey:ResponseID"`
+}
+
+func (*Response) TableName() string {
+	return "responses"
 }
