@@ -3,6 +3,7 @@ import Home from '../pages/Home.vue'
 import Signup from '../pages/Signup.vue'
 import Signin from '../pages/Signin.vue'
 import Profile from '../pages/Profile.vue'
+import Details from '../pages/Details.vue'
 
 export const routerHistory = createWebHistory()
 
@@ -28,6 +29,11 @@ export default createRouter({
       path: '/profile',
       name: 'profile',
       component: Profile
+    },
+    {
+      path: '/details',
+      name: 'details',
+      component: Details
     }
   ]
 })
