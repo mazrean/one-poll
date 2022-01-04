@@ -10,7 +10,6 @@
       "request": "attach",
       "mode": "remote",
       "remotePath": "/go/src/github.com/cs-sysimpl/suzukake",
-      "cwd": "${workspaceRoot}/server",
       "port": 2345,
       "host": "localhost"
     }
