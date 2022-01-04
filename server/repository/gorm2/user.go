@@ -2,7 +2,6 @@ package gorm2
 
 import (
 	"context"
-	"encoding/hex"
 	"errors"
 	"fmt"
 
@@ -32,7 +31,7 @@ func (u *User) CreateUser(ctx context.Context, user *domain.User) error {
 	userTable := UserTable{
 		ID:       uuid.UUID(user.GetID()),
 		Name:     string(user.GetName()),
-		Password: hex.EncodeToString(user.GetHashedPassword()),
+		Password: string(user.GetHashedPassword()),
 	}
 	err = db.Create(&userTable).Error
 	if err != nil {
@@ -85,15 +84,10 @@ func (u *User) GetUser(ctx context.Context, userID values.UserID, lockType repos
 		return nil, fmt.Errorf("failed to get user: %w", err)
 	}
 
-	bytesPassword, err := hex.DecodeString(userTable.Password)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode password: %w", err)
-	}
-
 	user := domain.NewUser(
 		values.NewUserIDFromUUID(userTable.ID),
 		values.NewUserName(userTable.Name),
-		values.NewUserHashedPassword(bytesPassword),
+		values.NewUserHashedPassword([]byte(userTable.Password)),
 	)
 
 	return user, nil
@@ -116,15 +110,10 @@ func (u *User) GetUserByName(ctx context.Context, name values.UserName) (*domain
 		return nil, fmt.Errorf("failed to get user: %w", err)
 	}
 
-	bytesPassword, err := hex.DecodeString(userTable.Password)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode password: %w", err)
-	}
-
 	user := domain.NewUser(
 		values.NewUserIDFromUUID(userTable.ID),
 		values.NewUserName(userTable.Name),
-		values.NewUserHashedPassword(bytesPassword),
+		values.NewUserHashedPassword([]byte(userTable.Password)),
 	)
 
 	return user, nil
