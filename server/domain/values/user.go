@@ -3,6 +3,7 @@ package values
 import (
 	"errors"
 	"fmt"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -27,8 +28,57 @@ func NewUserName(name string) UserName {
 	return UserName(name)
 }
 
+var (
+	ErrUserNameTooShort    = errors.New("user name is too short")
+	ErrUserNameTooLong     = errors.New("user name is too long")
+	ErrUserNameInvalidRune = errors.New("user name contains invalid rune")
+)
+
+func (un UserName) Validate() error {
+	length := utf8.RuneCountInString(string(un))
+	if length < 4 {
+		return ErrUserNameTooShort
+	}
+
+	if length > 16 {
+		return ErrUserNameTooLong
+	}
+
+	for _, r := range un {
+		if !('0' <= r && r <= '9') && !('a' <= r && r <= 'z') && !('A' <= r && r <= 'Z') && r != '_' {
+			return ErrUserNameInvalidRune
+		}
+	}
+
+	return nil
+}
+
 func NewUserPassword(password []byte) UserPassword {
 	return UserPassword(password)
+}
+
+var (
+	ErrUserPasswordTooShort    = errors.New("user password is too short")
+	ErrUserPasswordTooLong     = errors.New("user password is too long")
+	ErrUserPasswordInvalidRune = errors.New("user password contains invalid rune")
+)
+
+func (up UserPassword) Validate() error {
+	length := utf8.RuneCountInString(string(up))
+	if length < 8 {
+		return ErrUserPasswordTooShort
+	}
+	if length > 50 {
+		return ErrUserPasswordTooLong
+	}
+
+	for _, r := range up {
+		if !('0' <= r && r <= '9') && !('a' <= r && r <= 'z') && !('A' <= r && r <= 'Z') {
+			return ErrUserPasswordInvalidRune
+		}
+	}
+
+	return nil
 }
 
 func (up UserPassword) Hash() (UserHashedPassword, error) {
