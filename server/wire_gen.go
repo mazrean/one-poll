@@ -11,6 +11,8 @@ import (
 	"github.com/cs-sysimpl/suzukake/pkg/common"
 	"github.com/cs-sysimpl/suzukake/repository"
 	"github.com/cs-sysimpl/suzukake/repository/gorm2"
+	"github.com/cs-sysimpl/suzukake/service"
+	v1_2 "github.com/cs-sysimpl/suzukake/service/v1"
 	"github.com/google/wire"
 )
 
@@ -18,7 +20,18 @@ import (
 
 func InjectService(config *Config) (*Service, error) {
 	checker := v1.NewChecker()
-	api := v1.NewAPI(checker)
+	sessionKey := config.SessionKey
+	sessionSecret := config.SessionSecret
+	session := v1.NewSession(sessionKey, sessionSecret)
+	isProduction := config.IsProduction
+	db, err := gorm2.NewDB(isProduction)
+	if err != nil {
+		return nil, err
+	}
+	user := gorm2.NewUser(db)
+	authorization := v1_2.NewAuthorization(db, user)
+	v1User := v1.NewUser(session, authorization)
+	api := v1.NewAPI(checker, v1User)
 	service := NewService(api)
 	return service, nil
 }
@@ -38,7 +51,10 @@ var (
 )
 
 var (
-	dbBind = wire.Bind(new(repository.DB), new(*gorm2.DB))
+	dbBind             = wire.Bind(new(repository.DB), new(*gorm2.DB))
+	userRepositoryBind = wire.Bind(new(repository.User), new(*gorm2.User))
+
+	authorizationServiceBind = wire.Bind(new(service.Authorization), new(*v1_2.Authorization))
 )
 
 type Service struct {
