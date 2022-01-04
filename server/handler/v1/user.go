@@ -8,6 +8,7 @@ import (
 	"github.com/cs-sysimpl/suzukake/domain/values"
 	openapi "github.com/cs-sysimpl/suzukake/handler/v1/openapi"
 	"github.com/cs-sysimpl/suzukake/service"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -135,4 +136,26 @@ func (u *User) PostUsersSignout(c echo.Context) error {
 	}
 
 	return c.NoContent(http.StatusOK)
+}
+
+func (u *User) GetUsersMe(c echo.Context) error {
+	session, err := u.Session.getSession(c)
+	if err != nil {
+		log.Printf("failed to get session: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get session")
+	}
+
+	user, err := u.Session.getUser(session)
+	if errors.Is(err, ErrNoValue) {
+		return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	}
+	if err != nil {
+		log.Printf("failed to get user: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get user")
+	}
+
+	return c.JSON(http.StatusOK, openapi.User{
+		Name: openapi.UserName(user.GetName()),
+		Uuid: uuid.UUID(user.GetID()).String(),
+	})
 }
