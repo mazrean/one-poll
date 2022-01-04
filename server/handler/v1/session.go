@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/cs-sysimpl/suzukake/domain"
+	"github.com/cs-sysimpl/suzukake/domain/values"
 	"github.com/cs-sysimpl/suzukake/pkg/common"
+	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
@@ -26,6 +29,7 @@ func NewSession(key common.SessionKey, secret common.SessionSecret) *Session {
 		time.Timeのエンコード・デコードをできるようにRegisterする
 	*/
 	gob.Register(time.Time{})
+	gob.Register(uuid.UUID{})
 
 	return &Session{
 		key:    string(key),
@@ -69,3 +73,53 @@ var (
 	ErrNoValue     = errors.New("no value")
 	ErrValueBroken = errors.New("value broken")
 )
+
+const (
+	userIDSessionKey             = "userID"
+	userNameSessionKey           = "userName"
+	userHashedPasswordSessionKey = "userHashedPassword"
+)
+
+func (s *Session) setUser(session *sessions.Session, user *domain.User) {
+	session.Values[userIDSessionKey] = uuid.UUID(user.GetID())
+	session.Values[userNameSessionKey] = string(user.GetName())
+	session.Values[userHashedPasswordSessionKey] = []byte(user.GetHashedPassword())
+}
+
+func (s *Session) getUser(session *sessions.Session) (*domain.User, error) {
+	iUserID, ok := session.Values[userIDSessionKey]
+	if !ok {
+		return nil, ErrNoValue
+	}
+
+	userID, ok := iUserID.(uuid.UUID)
+	if !ok {
+		return nil, ErrValueBroken
+	}
+
+	iUserName, ok := session.Values[userNameSessionKey]
+	if !ok {
+		return nil, ErrNoValue
+	}
+
+	userName, ok := iUserName.(string)
+	if !ok {
+		return nil, ErrValueBroken
+	}
+
+	iUserHashedPassword, ok := session.Values[userHashedPasswordSessionKey]
+	if !ok {
+		return nil, ErrNoValue
+	}
+
+	userHashedPassword, ok := iUserHashedPassword.([]byte)
+	if !ok {
+		return nil, ErrValueBroken
+	}
+
+	return domain.NewUser(
+		values.NewUserIDFromUUID(userID),
+		values.NewUserName(userName),
+		values.NewUserHashedPassword(userHashedPassword),
+	), nil
+}
