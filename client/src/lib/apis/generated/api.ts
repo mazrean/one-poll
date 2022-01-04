@@ -21,21 +21,882 @@ import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObj
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, RequestArgs, BaseAPI, RequiredError } from './base';
 
+/**
+ * 選択肢ボタン
+ * @export
+ * @interface Choice
+ */
+export interface Choice {
+    /**
+     * 
+     * @type {number}
+     * @memberof Choice
+     */
+    'id': number;
+    /**
+     * 質問文
+     * @type {string}
+     * @memberof Choice
+     */
+    'choice': string;
+}
+/**
+ * このレスポンスは検討中
+ * @export
+ * @interface InlineResponse200
+ */
+export interface InlineResponse200 {
+    /**
+     * 選択したボタンid配列
+     * @type {Array<number>}
+     * @memberof InlineResponse200
+     */
+    'answer'?: Array<number>;
+    /**
+     * 
+     * @type {PollComment}
+     * @memberof InlineResponse200
+     */
+    'comment'?: PollComment;
+}
+/**
+ * 質問idは存在しない。POST /polls/のボディ。
+ * @export
+ * @interface PollBase
+ */
+export interface PollBase {
+    /**
+     * 
+     * @type {string}
+     * @memberof PollBase
+     */
+    'title': string;
+    /**
+     * 
+     * @type {PollType}
+     * @memberof PollBase
+     */
+    'type': PollType;
+    /**
+     * deadlineをpostする、またはq_statusがlimitedの時、存在する。回答締め切り時刻。
+     * @type {string}
+     * @memberof PollBase
+     */
+    'deadline'?: string;
+    /**
+     * 初期実装では含まない。
+     * @type {Array<PollTag>}
+     * @memberof PollBase
+     * @deprecated
+     */
+    'tags'?: Array<PollTag>;
+    /**
+     * 質問
+     * @type {Array<Choice>}
+     * @memberof PollBase
+     */
+    'question': Array<Choice>;
+}
+/**
+ * 
+ * @export
+ * @interface PollComment
+ */
+export interface PollComment {
+    /**
+     * 
+     * @type {User}
+     * @memberof PollComment
+     */
+    'user': User;
+    /**
+     * 
+     * @type {string}
+     * @memberof PollComment
+     */
+    'created_at': string;
+    /**
+     * コメント本文
+     * @type {string}
+     * @memberof PollComment
+     */
+    'content': string;
+}
+/**
+ * 
+ * @export
+ * @interface PollResults
+ */
+export interface PollResults {
+    /**
+     * 
+     * @type {string}
+     * @memberof PollResults
+     */
+    'poll_id'?: string;
+    /**
+     * 
+     * @type {PollType}
+     * @memberof PollResults
+     */
+    'type'?: PollType;
+    /**
+     * 回答総数
+     * @type {number}
+     * @memberof PollResults
+     */
+    'count'?: number;
+    /**
+     * 結果
+     * @type {Array<Choice & object>}
+     * @memberof PollResults
+     */
+    'result'?: Array<Choice & object>;
+}
+/**
+ * 質問の状態
+ * @export
+ * @enum {string}
+ */
+
+export enum PollStatus {
+    Opened = 'opened',
+    Limited = 'limited',
+    Outdated = 'outdated'
+}
 
 /**
- * DefaultApi - axios parameter creator
+ * POST /pollのレスポンス。GET /polls/:idのレスポンス。
+ * @export
+ * @interface PollSummary
+ */
+export interface PollSummary {
+    /**
+     * 
+     * @type {string}
+     * @memberof PollSummary
+     */
+    'poll_id': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof PollSummary
+     */
+    'title': string;
+    /**
+     * 
+     * @type {PollType}
+     * @memberof PollSummary
+     */
+    'type': PollType;
+    /**
+     * deadlineをpostする、またはq_statusがlimitedの時、存在する。回答締め切り時刻。
+     * @type {string}
+     * @memberof PollSummary
+     */
+    'deadline'?: string;
+    /**
+     * 初期実装では含まない。
+     * @type {Array<PollTag>}
+     * @memberof PollSummary
+     * @deprecated
+     */
+    'tags'?: Array<PollTag>;
+    /**
+     * 質問
+     * @type {Array<Choice>}
+     * @memberof PollSummary
+     */
+    'question': Array<Choice>;
+    /**
+     * 
+     * @type {string}
+     * @memberof PollSummary
+     */
+    'created_at': string;
+    /**
+     * 
+     * @type {PollStatus}
+     * @memberof PollSummary
+     */
+    'q_status': PollStatus;
+    /**
+     * 
+     * @type {User}
+     * @memberof PollSummary
+     */
+    'owner': User;
+    /**
+     * 
+     * @type {UserStatus}
+     * @memberof PollSummary
+     */
+    'user_status': UserStatus;
+}
+/**
+ * 
+ * @export
+ * @interface PollSummaryAllOf
+ */
+export interface PollSummaryAllOf {
+    /**
+     * 
+     * @type {string}
+     * @memberof PollSummaryAllOf
+     */
+    'poll_id': string;
+}
+/**
+ * 
+ * @export
+ * @interface PollSummaryAllOf1
+ */
+export interface PollSummaryAllOf1 {
+    /**
+     * 
+     * @type {string}
+     * @memberof PollSummaryAllOf1
+     */
+    'created_at': string;
+    /**
+     * 
+     * @type {PollStatus}
+     * @memberof PollSummaryAllOf1
+     */
+    'q_status': PollStatus;
+    /**
+     * 
+     * @type {User}
+     * @memberof PollSummaryAllOf1
+     */
+    'owner': User;
+    /**
+     * 
+     * @type {UserStatus}
+     * @memberof PollSummaryAllOf1
+     */
+    'user_status': UserStatus;
+}
+/**
+ * 
+ * @export
+ * @interface PollTag
+ */
+export interface PollTag {
+    /**
+     * 
+     * @type {string}
+     * @memberof PollTag
+     */
+    'id': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof PollTag
+     */
+    'name': string;
+}
+/**
+ * 
+ * @export
+ * @enum {string}
+ */
+
+export enum PollType {
+    Radio = 'radio'
+}
+
+/**
+ * 
+ * @export
+ * @interface PostPollId
+ */
+export interface PostPollId {
+    /**
+     * 選択したボタンid配列
+     * @type {Array<number>}
+     * @memberof PostPollId
+     */
+    'answer'?: Array<number>;
+    /**
+     * 
+     * @type {string}
+     * @memberof PostPollId
+     */
+    'comment'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface PostUser
+ */
+export interface PostUser {
+    /**
+     * アカウント名。uuidで管理されるが、ユーザー視点の観点で重複を許さない
+     * @type {string}
+     * @memberof PostUser
+     */
+    'name': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof PostUser
+     */
+    'password': string;
+}
+/**
+ * 
+ * @export
+ * @interface User
+ */
+export interface User {
+    /**
+     * 
+     * @type {string}
+     * @memberof User
+     */
+    'uuid': string;
+    /**
+     * アカウント名。uuidで管理されるが、ユーザー視点の観点で重複を許さない
+     * @type {string}
+     * @memberof User
+     */
+    'name': string;
+}
+/**
+ * 質問idに対するユーザーの権限
+ * @export
+ * @interface UserStatus
+ */
+export interface UserStatus {
+    /**
+     * オーナーか
+     * @type {boolean}
+     * @memberof UserStatus
+     */
+    'is_owner': boolean;
+    /**
+     * only_browable 質問の閲覧　can_answer 解答できる　can_access_details 結果の表示
+     * @type {string}
+     * @memberof UserStatus
+     */
+    'accsess_mode': UserStatusAccsessModeEnum;
+}
+
+/**
+    * @export
+    * @enum {string}
+    */
+export enum UserStatusAccsessModeEnum {
+    OnlyBrowsable = 'only_browsable',
+    CanAnswer = 'can_answer',
+    CanAsccessDetails = 'can_asccess_details'
+}
+
+
+/**
+ * CommentApi - axios parameter creator
  * @export
  */
-export const DefaultApiAxiosParamCreator = function (configuration?: Configuration) {
+export const CommentApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * 
-         * @summary List API versions
+         * IDに対応するコメント配列を取得する。
+         * @param {string} pollID 
+         * @param {number} [max] 最大コメント数
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listVersionsv2: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/`;
+        getPollsPollIDComments: async (pollID: string, max?: number, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'pollID' is not null or undefined
+            assertParamExists('getPollsPollIDComments', 'pollID', pollID)
+            const localVarPath = `/polls/{pollID}/comments`
+                .replace(`{${"pollID"}}`, encodeURIComponent(String(pollID)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (max !== undefined) {
+                localVarQueryParameter['max'] = max;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * CommentApi - functional programming interface
+ * @export
+ */
+export const CommentApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = CommentApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * IDに対応するコメント配列を取得する。
+         * @param {string} pollID 
+         * @param {number} [max] 最大コメント数
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getPollsPollIDComments(pollID: string, max?: number, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<PollComment>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getPollsPollIDComments(pollID, max, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+    }
+};
+
+/**
+ * CommentApi - factory interface
+ * @export
+ */
+export const CommentApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = CommentApiFp(configuration)
+    return {
+        /**
+         * IDに対応するコメント配列を取得する。
+         * @param {string} pollID 
+         * @param {number} [max] 最大コメント数
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getPollsPollIDComments(pollID: string, max?: number, options?: any): AxiosPromise<Array<PollComment>> {
+            return localVarFp.getPollsPollIDComments(pollID, max, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * CommentApi - object-oriented interface
+ * @export
+ * @class CommentApi
+ * @extends {BaseAPI}
+ */
+export class CommentApi extends BaseAPI {
+    /**
+     * IDに対応するコメント配列を取得する。
+     * @param {string} pollID 
+     * @param {number} [max] 最大コメント数
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof CommentApi
+     */
+    public getPollsPollIDComments(pollID: string, max?: number, options?: AxiosRequestConfig) {
+        return CommentApiFp(this.configuration).getPollsPollIDComments(pollID, max, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+/**
+ * PollApi - axios parameter creator
+ * @export
+ */
+export const PollApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 質問を削除する
+         * @param {string} pollID 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deletePollsPollID: async (pollID: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'pollID' is not null or undefined
+            assertParamExists('deletePollsPollID', 'pollID', pollID)
+            const localVarPath = `/polls/{pollID}`
+                .replace(`{${"pollID"}}`, encodeURIComponent(String(pollID)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 投票リストを取得する。デフォルトでは最新の10件を取得する。
+         * @param {number} [limit] 最大質問数
+         * @param {number} [offset] 質問オフセット
+         * @param {string} [match] タイトルの部分一致
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getPolls: async (limit?: number, offset?: number, match?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/polls`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (limit !== undefined) {
+                localVarQueryParameter['limit'] = limit;
+            }
+
+            if (offset !== undefined) {
+                localVarQueryParameter['offset'] = offset;
+            }
+
+            if (match !== undefined) {
+                localVarQueryParameter['match'] = match;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * IDに対応する投票とその回答の詳細
+         * @param {string} pollID 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getPollsPollID: async (pollID: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'pollID' is not null or undefined
+            assertParamExists('getPollsPollID', 'pollID', pollID)
+            const localVarPath = `/polls/{pollID}`
+                .replace(`{${"pollID"}}`, encodeURIComponent(String(pollID)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 投票を作成する
+         * @param {PollBase} [pollBase] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postPolls: async (pollBase?: PollBase, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/polls`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(pollBase, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * IDに対応する投票への回答
+         * @param {string} pollID 
+         * @param {PostPollId} [postPollId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postPollsPollID: async (pollID: string, postPollId?: PostPollId, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'pollID' is not null or undefined
+            assertParamExists('postPollsPollID', 'pollID', pollID)
+            const localVarPath = `/polls/{pollID}`
+                .replace(`{${"pollID"}}`, encodeURIComponent(String(pollID)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(postPollId, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * PollApi - functional programming interface
+ * @export
+ */
+export const PollApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = PollApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 質問を削除する
+         * @param {string} pollID 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async deletePollsPollID(pollID: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.deletePollsPollID(pollID, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 投票リストを取得する。デフォルトでは最新の10件を取得する。
+         * @param {number} [limit] 最大質問数
+         * @param {number} [offset] 質問オフセット
+         * @param {string} [match] タイトルの部分一致
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getPolls(limit?: number, offset?: number, match?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<PollSummary>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getPolls(limit, offset, match, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * IDに対応する投票とその回答の詳細
+         * @param {string} pollID 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getPollsPollID(pollID: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<PollSummary>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getPollsPollID(pollID, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 投票を作成する
+         * @param {PollBase} [pollBase] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async postPolls(pollBase?: PollBase, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object & PollBase>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postPolls(pollBase, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * IDに対応する投票への回答
+         * @param {string} pollID 
+         * @param {PostPollId} [postPollId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async postPollsPollID(pollID: string, postPollId?: PostPollId, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InlineResponse200>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postPollsPollID(pollID, postPollId, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+    }
+};
+
+/**
+ * PollApi - factory interface
+ * @export
+ */
+export const PollApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = PollApiFp(configuration)
+    return {
+        /**
+         * 質問を削除する
+         * @param {string} pollID 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deletePollsPollID(pollID: string, options?: any): AxiosPromise<void> {
+            return localVarFp.deletePollsPollID(pollID, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 投票リストを取得する。デフォルトでは最新の10件を取得する。
+         * @param {number} [limit] 最大質問数
+         * @param {number} [offset] 質問オフセット
+         * @param {string} [match] タイトルの部分一致
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getPolls(limit?: number, offset?: number, match?: string, options?: any): AxiosPromise<Array<PollSummary>> {
+            return localVarFp.getPolls(limit, offset, match, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * IDに対応する投票とその回答の詳細
+         * @param {string} pollID 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getPollsPollID(pollID: string, options?: any): AxiosPromise<Array<PollSummary>> {
+            return localVarFp.getPollsPollID(pollID, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 投票を作成する
+         * @param {PollBase} [pollBase] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postPolls(pollBase?: PollBase, options?: any): AxiosPromise<object & PollBase> {
+            return localVarFp.postPolls(pollBase, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * IDに対応する投票への回答
+         * @param {string} pollID 
+         * @param {PostPollId} [postPollId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postPollsPollID(pollID: string, postPollId?: PostPollId, options?: any): AxiosPromise<InlineResponse200> {
+            return localVarFp.postPollsPollID(pollID, postPollId, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * PollApi - object-oriented interface
+ * @export
+ * @class PollApi
+ * @extends {BaseAPI}
+ */
+export class PollApi extends BaseAPI {
+    /**
+     * 質問を削除する
+     * @param {string} pollID 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof PollApi
+     */
+    public deletePollsPollID(pollID: string, options?: AxiosRequestConfig) {
+        return PollApiFp(this.configuration).deletePollsPollID(pollID, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 投票リストを取得する。デフォルトでは最新の10件を取得する。
+     * @param {number} [limit] 最大質問数
+     * @param {number} [offset] 質問オフセット
+     * @param {string} [match] タイトルの部分一致
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof PollApi
+     */
+    public getPolls(limit?: number, offset?: number, match?: string, options?: AxiosRequestConfig) {
+        return PollApiFp(this.configuration).getPolls(limit, offset, match, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * IDに対応する投票とその回答の詳細
+     * @param {string} pollID 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof PollApi
+     */
+    public getPollsPollID(pollID: string, options?: AxiosRequestConfig) {
+        return PollApiFp(this.configuration).getPollsPollID(pollID, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 投票を作成する
+     * @param {PollBase} [pollBase] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof PollApi
+     */
+    public postPolls(pollBase?: PollBase, options?: AxiosRequestConfig) {
+        return PollApiFp(this.configuration).postPolls(pollBase, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * IDに対応する投票への回答
+     * @param {string} pollID 
+     * @param {PostPollId} [postPollId] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof PollApi
+     */
+    public postPollsPollID(pollID: string, postPollId?: PostPollId, options?: AxiosRequestConfig) {
+        return PollApiFp(this.configuration).postPollsPollID(pollID, postPollId, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+/**
+ * ResultApi - axios parameter creator
+ * @export
+ */
+export const ResultApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 質問の結果を返す
+         * @param {string} pollID 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getPollsPollIDResults: async (pollID: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'pollID' is not null or undefined
+            assertParamExists('getPollsPollIDResults', 'pollID', pollID)
+            const localVarPath = `/polls/{pollID}/results`
+                .replace(`{${"pollID"}}`, encodeURIComponent(String(pollID)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -62,72 +923,836 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
 };
 
 /**
- * DefaultApi - functional programming interface
+ * ResultApi - functional programming interface
  * @export
  */
-export const DefaultApiFp = function(configuration?: Configuration) {
-    const localVarAxiosParamCreator = DefaultApiAxiosParamCreator(configuration)
+export const ResultApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = ResultApiAxiosParamCreator(configuration)
     return {
         /**
-         * 
-         * @summary List API versions
+         * 質問の結果を返す
+         * @param {string} pollID 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async listVersionsv2(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.listVersionsv2(options);
+        async getPollsPollIDResults(pollID: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PollResults>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getPollsPollIDResults(pollID, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
 };
 
 /**
- * DefaultApi - factory interface
+ * ResultApi - factory interface
  * @export
  */
-export const DefaultApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
-    const localVarFp = DefaultApiFp(configuration)
+export const ResultApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = ResultApiFp(configuration)
     return {
         /**
-         * 
-         * @summary List API versions
+         * 質問の結果を返す
+         * @param {string} pollID 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listVersionsv2(options?: any): AxiosPromise<void> {
-            return localVarFp.listVersionsv2(options).then((request) => request(axios, basePath));
+        getPollsPollIDResults(pollID: string, options?: any): AxiosPromise<PollResults> {
+            return localVarFp.getPollsPollIDResults(pollID, options).then((request) => request(axios, basePath));
         },
     };
 };
 
 /**
- * DefaultApi - object-oriented interface
+ * ResultApi - object-oriented interface
  * @export
- * @class DefaultApi
+ * @class ResultApi
  * @extends {BaseAPI}
  */
-export class DefaultApi extends BaseAPI {
+export class ResultApi extends BaseAPI {
     /**
-     * 
-     * @summary List API versions
+     * 質問の結果を返す
+     * @param {string} pollID 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof DefaultApi
+     * @memberof ResultApi
      */
-    public listVersionsv2(options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).listVersionsv2(options).then((request) => request(this.axios, this.basePath));
+    public getPollsPollIDResults(pollID: string, options?: AxiosRequestConfig) {
+        return ResultApiFp(this.configuration).getPollsPollIDResults(pollID, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+/**
+ * TagApi - axios parameter creator
+ * @export
+ */
+export const TagApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * すべてのタグを取得する
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getTags: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/tags`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * タグを新規作成する。
+         * @param {string} [body] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postTags: async (body?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/tags`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(body, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * TagApi - functional programming interface
+ * @export
+ */
+export const TagApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = TagApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * すべてのタグを取得する
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getTags(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<PollTag>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getTags(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * タグを新規作成する。
+         * @param {string} [body] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async postTags(body?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postTags(body, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+    }
+};
+
+/**
+ * TagApi - factory interface
+ * @export
+ */
+export const TagApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = TagApiFp(configuration)
+    return {
+        /**
+         * すべてのタグを取得する
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getTags(options?: any): AxiosPromise<Array<PollTag>> {
+            return localVarFp.getTags(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * タグを新規作成する。
+         * @param {string} [body] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postTags(body?: string, options?: any): AxiosPromise<void> {
+            return localVarFp.postTags(body, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * TagApi - object-oriented interface
+ * @export
+ * @class TagApi
+ * @extends {BaseAPI}
+ */
+export class TagApi extends BaseAPI {
+    /**
+     * すべてのタグを取得する
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof TagApi
+     */
+    public getTags(options?: AxiosRequestConfig) {
+        return TagApiFp(this.configuration).getTags(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * タグを新規作成する。
+     * @param {string} [body] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof TagApi
+     */
+    public postTags(body?: string, options?: AxiosRequestConfig) {
+        return TagApiFp(this.configuration).postTags(body, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+/**
+ * UserApi - axios parameter creator
+ * @export
+ */
+export const UserApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * アカウント削除。質問などの情報は残る。
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deleteUsersMe: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/users/me`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 自分のユーザー情報を取得する
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getUsersMe: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/users/me`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 回答質問一覧
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getUsersMeAnswers: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/users/me/answers`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 作成質問一覧
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getUsersMeOwners: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/users/me/owners`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * アカウント作成
+         * @param {PostUser} [postUser] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postUsers: async (postUser?: PostUser, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/users`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(postUser, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * ログインする
+         * @param {PostUser} [postUser] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postUsersSignin: async (postUser?: PostUser, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/users/signin`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(postUser, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * サインアウトする
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postUsersSignout: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/users/signout`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * UserApi - functional programming interface
+ * @export
+ */
+export const UserApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = UserApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * アカウント削除。質問などの情報は残る。
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async deleteUsersMe(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteUsersMe(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 自分のユーザー情報を取得する
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getUsersMe(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<User>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getUsersMe(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 回答質問一覧
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getUsersMeAnswers(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<PollSummary>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getUsersMeAnswers(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 作成質問一覧
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getUsersMeOwners(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<PollSummary>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getUsersMeOwners(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * アカウント作成
+         * @param {PostUser} [postUser] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async postUsers(postUser?: PostUser, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postUsers(postUser, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * ログインする
+         * @param {PostUser} [postUser] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async postUsersSignin(postUser?: PostUser, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postUsersSignin(postUser, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * サインアウトする
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async postUsersSignout(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postUsersSignout(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+    }
+};
+
+/**
+ * UserApi - factory interface
+ * @export
+ */
+export const UserApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = UserApiFp(configuration)
+    return {
+        /**
+         * アカウント削除。質問などの情報は残る。
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deleteUsersMe(options?: any): AxiosPromise<void> {
+            return localVarFp.deleteUsersMe(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 自分のユーザー情報を取得する
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getUsersMe(options?: any): AxiosPromise<User> {
+            return localVarFp.getUsersMe(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 回答質問一覧
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getUsersMeAnswers(options?: any): AxiosPromise<Array<PollSummary>> {
+            return localVarFp.getUsersMeAnswers(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 作成質問一覧
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getUsersMeOwners(options?: any): AxiosPromise<Array<PollSummary>> {
+            return localVarFp.getUsersMeOwners(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * アカウント作成
+         * @param {PostUser} [postUser] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postUsers(postUser?: PostUser, options?: any): AxiosPromise<void> {
+            return localVarFp.postUsers(postUser, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * ログインする
+         * @param {PostUser} [postUser] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postUsersSignin(postUser?: PostUser, options?: any): AxiosPromise<void> {
+            return localVarFp.postUsersSignin(postUser, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * サインアウトする
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postUsersSignout(options?: any): AxiosPromise<void> {
+            return localVarFp.postUsersSignout(options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * UserApi - object-oriented interface
+ * @export
+ * @class UserApi
+ * @extends {BaseAPI}
+ */
+export class UserApi extends BaseAPI {
+    /**
+     * アカウント削除。質問などの情報は残る。
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof UserApi
+     */
+    public deleteUsersMe(options?: AxiosRequestConfig) {
+        return UserApiFp(this.configuration).deleteUsersMe(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 自分のユーザー情報を取得する
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof UserApi
+     */
+    public getUsersMe(options?: AxiosRequestConfig) {
+        return UserApiFp(this.configuration).getUsersMe(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 回答質問一覧
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof UserApi
+     */
+    public getUsersMeAnswers(options?: AxiosRequestConfig) {
+        return UserApiFp(this.configuration).getUsersMeAnswers(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 作成質問一覧
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof UserApi
+     */
+    public getUsersMeOwners(options?: AxiosRequestConfig) {
+        return UserApiFp(this.configuration).getUsersMeOwners(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * アカウント作成
+     * @param {PostUser} [postUser] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof UserApi
+     */
+    public postUsers(postUser?: PostUser, options?: AxiosRequestConfig) {
+        return UserApiFp(this.configuration).postUsers(postUser, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * ログインする
+     * @param {PostUser} [postUser] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof UserApi
+     */
+    public postUsersSignin(postUser?: PostUser, options?: AxiosRequestConfig) {
+        return UserApiFp(this.configuration).postUsersSignin(postUser, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * サインアウトする
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof UserApi
+     */
+    public postUsersSignout(options?: AxiosRequestConfig) {
+        return UserApiFp(this.configuration).postUsersSignout(options).then((request) => request(this.axios, this.basePath));
     }
 }
 
 export class Apis extends BaseAPI {
     /**
-     *
-     * @summary List API versions
+     * IDに対応するコメント配列を取得する。
+     * @param {string} pollID
+     * @param {number} [max] 最大コメント数
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof DefaultApi
+     * @memberof CommentApi
      */
-    public listVersionsv2(options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).listVersionsv2(options).then((request) => request(this.axios, this.basePath));
+    public getPollsPollIDComments(pollID: string, max?: number, options?: AxiosRequestConfig) {
+        return CommentApiFp(this.configuration).getPollsPollIDComments(pollID, max, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 質問を削除する
+     * @param {string} pollID
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof PollApi
+     */
+    public deletePollsPollID(pollID: string, options?: AxiosRequestConfig) {
+        return PollApiFp(this.configuration).deletePollsPollID(pollID, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 投票リストを取得する。デフォルトでは最新の10件を取得する。
+     * @param {number} [limit] 最大質問数
+     * @param {number} [offset] 質問オフセット
+     * @param {string} [match] タイトルの部分一致
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof PollApi
+     */
+    public getPolls(limit?: number, offset?: number, match?: string, options?: AxiosRequestConfig) {
+        return PollApiFp(this.configuration).getPolls(limit, offset, match, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * IDに対応する投票とその回答の詳細
+     * @param {string} pollID
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof PollApi
+     */
+    public getPollsPollID(pollID: string, options?: AxiosRequestConfig) {
+        return PollApiFp(this.configuration).getPollsPollID(pollID, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 投票を作成する
+     * @param {PollBase} [pollBase]
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof PollApi
+     */
+    public postPolls(pollBase?: PollBase, options?: AxiosRequestConfig) {
+        return PollApiFp(this.configuration).postPolls(pollBase, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * IDに対応する投票への回答
+     * @param {string} pollID
+     * @param {PostPollId} [postPollId]
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof PollApi
+     */
+    public postPollsPollID(pollID: string, postPollId?: PostPollId, options?: AxiosRequestConfig) {
+        return PollApiFp(this.configuration).postPollsPollID(pollID, postPollId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 質問の結果を返す
+     * @param {string} pollID
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ResultApi
+     */
+    public getPollsPollIDResults(pollID: string, options?: AxiosRequestConfig) {
+        return ResultApiFp(this.configuration).getPollsPollIDResults(pollID, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * すべてのタグを取得する
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof TagApi
+     */
+    public getTags(options?: AxiosRequestConfig) {
+        return TagApiFp(this.configuration).getTags(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * タグを新規作成する。
+     * @param {string} [body]
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof TagApi
+     */
+    public postTags(body?: string, options?: AxiosRequestConfig) {
+        return TagApiFp(this.configuration).postTags(body, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * アカウント削除。質問などの情報は残る。
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof UserApi
+     */
+    public deleteUsersMe(options?: AxiosRequestConfig) {
+        return UserApiFp(this.configuration).deleteUsersMe(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 自分のユーザー情報を取得する
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof UserApi
+     */
+    public getUsersMe(options?: AxiosRequestConfig) {
+        return UserApiFp(this.configuration).getUsersMe(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 回答質問一覧
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof UserApi
+     */
+    public getUsersMeAnswers(options?: AxiosRequestConfig) {
+        return UserApiFp(this.configuration).getUsersMeAnswers(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 作成質問一覧
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof UserApi
+     */
+    public getUsersMeOwners(options?: AxiosRequestConfig) {
+        return UserApiFp(this.configuration).getUsersMeOwners(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * アカウント作成
+     * @param {PostUser} [postUser]
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof UserApi
+     */
+    public postUsers(postUser?: PostUser, options?: AxiosRequestConfig) {
+        return UserApiFp(this.configuration).postUsers(postUser, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * ログインする
+     * @param {PostUser} [postUser]
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof UserApi
+     */
+    public postUsersSignin(postUser?: PostUser, options?: AxiosRequestConfig) {
+        return UserApiFp(this.configuration).postUsersSignin(postUser, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * サインアウトする
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof UserApi
+     */
+    public postUsersSignout(options?: AxiosRequestConfig) {
+        return UserApiFp(this.configuration).postUsersSignout(options).then((request) => request(this.axios, this.basePath));
     }
 }
