@@ -3,8 +3,8 @@
 </template>
 
 <script>
-import { Chart, registerables } from 'chart.js';
-Chart.register(...registerables);
+import { Chart, registerables } from 'chart.js'
+Chart.register(...registerables)
 
 export default {
   mounted() {
