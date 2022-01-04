@@ -109,3 +109,30 @@ func (u *User) PostUsersSignin(c echo.Context) error {
 
 	return c.NoContent(http.StatusOK)
 }
+
+func (u *User) PostUsersSignout(c echo.Context) error {
+	session, err := u.Session.getSession(c)
+	if err != nil {
+		log.Printf("failed to get session: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get session")
+	}
+
+	_, err = u.Session.getUser(session)
+	if errors.Is(err, ErrNoValue) {
+		return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	}
+	if err != nil {
+		log.Printf("failed to get user: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get user")
+	}
+
+	u.revoke(session)
+
+	err = u.Session.save(c, session)
+	if err != nil {
+		log.Printf("failed to save session: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to save session")
+	}
+
+	return c.NoContent(http.StatusOK)
+}
