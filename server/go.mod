@@ -7,7 +7,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.3.0
 	github.com/google/wire v0.5.0
-	gorm.io/driver/mysql v1.2.2
+	gorm.io/driver/mysql v1.2.3
 	gorm.io/gorm v1.22.4
 )
 
