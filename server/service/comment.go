@@ -8,16 +8,11 @@ import (
 )
 
 type Comment interface {
-	GetComments(ctx context.Context, pollID values.PollID) (CommentsService, error)
+	GetComments(ctx context.Context, pollID values.PollID) ([]CommentInfo, error)
 }
 
-type CommentService struct {
+type CommentInfo struct {
 	domain.Response
 	domain.Comment
-	commentUser domain.User
-}
-
-type CommentsService struct {
-	values.PollID
-	comments []CommentService
+	CommentUser domain.User
 }

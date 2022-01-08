@@ -8,7 +8,7 @@ import (
 )
 
 type Response interface {
-	GetIdsByPollId(ctx context.Context, pollID values.PollID) ([]*values.ResponseID, error)
-	GetCreatedAtById(ctx context.Context, id values.ResponseID) (time.Time, error)
-	GetUserIdById(ctx context.Context, id values.ResponseID) (values.UserID, error)
+	GetIDsByPollID(ctx context.Context, pollID values.PollID) ([]*values.ResponseID, error)
+	GetCreatedAtByID(ctx context.Context, id values.ResponseID) (time.Time, error)
+	GetUserIDByID(ctx context.Context, id values.ResponseID) (values.UserID, error)
 }
