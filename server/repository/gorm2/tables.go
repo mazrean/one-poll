@@ -14,8 +14,8 @@ var (
 		&PollTypeTable{},
 		&TagTable{},
 		&ChoiceTable{},
-		&Response{},
-		&Comment{},
+		&ResponseTable{},
+		&CommentTable{},
 	}
 )
 
@@ -75,7 +75,7 @@ func (*ChoiceTable) TableName() string {
 	return "choices"
 }
 
-type Response struct {
+type ResponseTable struct {
 	ID           uuid.UUID     `gorm:"type:char(36);not null;primaryKey;size:36"`
 	PollID       uuid.UUID     `gorm:"type:char(36);not null;size:36"`
 	RespondentID uuid.UUID     `gorm:"type:char(36);not null;size:36"`
@@ -83,19 +83,19 @@ type Response struct {
 	Poll         PollTable     `gorm:"foreignKey:PollID"`
 	Respondent   UserTable     `gorm:"foreignKey:RespondentID"`
 	Choices      []ChoiceTable `gorm:"many2many:response_choice_relations"`
-	Comment      Comment       `gorm:"foreignKey:ResponseID"`
+	Comment      CommentTable  `gorm:"foreignKey:ResponseID"`
 }
 
-func (*Response) TableName() string {
+func (*ResponseTable) TableName() string {
 	return "responses"
 }
 
-type Comment struct {
+type CommentTable struct {
 	ID         uuid.UUID `gorm:"type:char(36);not null;primaryKey;size:36"`
 	ResponseID uuid.UUID `gorm:"type:char(36);not null;size:36"`
 	Comment    string    `gorm:"type:text;not null;size:5000"`
 }
 
-func (*Comment) TableName() string {
+func (*CommentTable) TableName() string {
 	return "comments"
 }
