@@ -8,19 +8,273 @@ import (
 	"compress/gzip"
 	"encoding/base64"
 	"fmt"
+	"net/http"
 	"net/url"
 	"path"
 	"strings"
+	"time"
 
+	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
 )
 
+// Defines values for PollStatus.
+const (
+	PollStatusLimited PollStatus = "limited"
+
+	PollStatusOpened PollStatus = "opened"
+
+	PollStatusOutdated PollStatus = "outdated"
+)
+
+// Defines values for PollType.
+const (
+	PollTypeRadio PollType = "radio"
+)
+
+// Defines values for UserStatusAccsessMode.
+const (
+	UserStatusAccsessModeCanAnswer UserStatusAccsessMode = "can_answer"
+
+	UserStatusAccsessModeCanAsccessDetails UserStatusAccsessMode = "can_asccess_details"
+
+	UserStatusAccsessModeOnlyBrowsable UserStatusAccsessMode = "only_browsable"
+)
+
+// 選択したボタンid配列
+type Answer []int
+
+// 選択肢ボタン
+type Choice struct {
+	// 質問文
+	Choice string `json:"choice"`
+	Id     int    `json:"id"`
+}
+
+// 質問idは存在しない。POST /polls/のボディ。
+type PollBase struct {
+	// deadlineをpostする、またはq_statusがlimitedの時、存在する。回答締め切り時刻。
+	Deadline *time.Time `json:"deadline,omitempty"`
+
+	// 質問
+	Question Questions `json:"question"`
+
+	// 初期実装では含まない。
+	Tags  *[]PollTag `json:"tags,omitempty"`
+	Title string     `json:"title"`
+	Type  PollType   `json:"type"`
+}
+
+// PollComment defines model for PollComment.
+type PollComment struct {
+	// コメント本文
+	Content   string    `json:"content"`
+	CreatedAt time.Time `json:"created_at"`
+	User      User      `json:"user"`
+}
+
+// PollID defines model for PollID.
+type PollID string
+
+// PollResults defines model for PollResults.
+type PollResults struct {
+	// 回答総数
+	Count  *int    `json:"count,omitempty"`
+	PollId *PollID `json:"poll_id,omitempty"`
+
+	// 結果
+	Result *Results  `json:"result,omitempty"`
+	Type   *PollType `json:"type,omitempty"`
+}
+
+// 質問の状態
+type PollStatus string
+
+// PollSummaries defines model for PollSummaries.
+type PollSummaries []PollSummary
+
+// PollSummary defines model for PollSummary.
+type PollSummary struct {
+	// Embedded fields due to inline allOf schema
+	PollId PollID `json:"poll_id"`
+	// Embedded struct due to allOf(#/components/schemas/PollBase)
+	PollBase `yaml:",inline"`
+	// Embedded fields due to inline allOf schema
+	CreatedAt time.Time `json:"created_at"`
+	Owner     User      `json:"owner"`
+
+	// 質問の状態
+	QStatus PollStatus `json:"q_status"`
+
+	// 質問idに対するユーザーの権限
+	UserStatus UserStatus `json:"user_status"`
+}
+
+// PollTag defines model for PollTag.
+type PollTag struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
+}
+
+// PollTags defines model for PollTags.
+type PollTags []PollTag
+
+// PollType defines model for PollType.
+type PollType string
+
+// PostPollId defines model for PostPollId.
+type PostPollId struct {
+	// 選択したボタンid配列
+	Answer  *Answer `json:"answer,omitempty"`
+	Comment *string `json:"comment,omitempty"`
+}
+
+// PostTag defines model for PostTag.
+type PostTag string
+
+// PostUser defines model for PostUser.
+type PostUser struct {
+	// アカウント名。uuidで管理されるが、ユーザー視点の観点で重複を許さない
+	Name     UserName     `json:"name"`
+	Password UserPassword `json:"password"`
+}
+
+// 質問
+type Questions []Choice
+
+// 結果
+type Results []struct {
+	// Embedded struct due to allOf(#/components/schemas/Choice)
+	Choice `yaml:",inline"`
+	// Embedded fields due to inline allOf schema
+	// その選択肢に回答をした人数
+	Count int `json:"count"`
+}
+
+// User defines model for User.
+type User struct {
+	// アカウント名。uuidで管理されるが、ユーザー視点の観点で重複を許さない
+	Name UserName `json:"name"`
+	Uuid string   `json:"uuid"`
+}
+
+// アカウント名。uuidで管理されるが、ユーザー視点の観点で重複を許さない
+type UserName string
+
+// UserPassword defines model for UserPassword.
+type UserPassword string
+
+// 質問idに対するユーザーの権限
+type UserStatus struct {
+	// only_browable 質問の閲覧　can_answer 解答できる　can_access_details 結果の表示
+	AccsessMode UserStatusAccsessMode `json:"accsess_mode"`
+
+	// オーナーか
+	IsOwner bool `json:"is_owner"`
+}
+
+// only_browable 質問の閲覧　can_answer 解答できる　can_access_details 結果の表示
+type UserStatusAccsessMode string
+
+// GetPollsParams defines parameters for GetPolls.
+type GetPollsParams struct {
+	// 最大質問数
+	Limit *int `json:"limit,omitempty"`
+
+	// 質問オフセット
+	Offset *int `json:"offset,omitempty"`
+
+	// タイトルの部分一致
+	Match *string `json:"match,omitempty"`
+}
+
+// PostPollsJSONBody defines parameters for PostPolls.
+type PostPollsJSONBody PollBase
+
+// PostPollsPollIDJSONBody defines parameters for PostPollsPollID.
+type PostPollsPollIDJSONBody PostPollId
+
+// GetPollsPollIDCommentsParams defines parameters for GetPollsPollIDComments.
+type GetPollsPollIDCommentsParams struct {
+	// 最大コメント数
+	Max *int `json:"max,omitempty"`
+}
+
+// PostTagsJSONBody defines parameters for PostTags.
+type PostTagsJSONBody PostTag
+
+// PostUsersJSONBody defines parameters for PostUsers.
+type PostUsersJSONBody PostUser
+
+// PostUsersSigninJSONBody defines parameters for PostUsersSignin.
+type PostUsersSigninJSONBody PostUser
+
+// PostPollsJSONRequestBody defines body for PostPolls for application/json ContentType.
+type PostPollsJSONRequestBody PostPollsJSONBody
+
+// PostPollsPollIDJSONRequestBody defines body for PostPollsPollID for application/json ContentType.
+type PostPollsPollIDJSONRequestBody PostPollsPollIDJSONBody
+
+// PostTagsJSONRequestBody defines body for PostTags for application/json ContentType.
+type PostTagsJSONRequestBody PostTagsJSONBody
+
+// PostUsersJSONRequestBody defines body for PostUsers for application/json ContentType.
+type PostUsersJSONRequestBody PostUsersJSONBody
+
+// PostUsersSigninJSONRequestBody defines body for PostUsersSignin for application/json ContentType.
+type PostUsersSigninJSONRequestBody PostUsersSigninJSONBody
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-	// List API versions
-	// (GET /)
-	ListVersionsv2(ctx echo.Context) error
+
+	// (GET /polls)
+	GetPolls(ctx echo.Context, params GetPollsParams) error
+
+	// (POST /polls)
+	PostPolls(ctx echo.Context) error
+
+	// (DELETE /polls/{pollID})
+	DeletePollsPollID(ctx echo.Context, pollID string) error
+
+	// (GET /polls/{pollID})
+	GetPollsPollID(ctx echo.Context, pollID string) error
+
+	// (POST /polls/{pollID})
+	PostPollsPollID(ctx echo.Context, pollID string) error
+
+	// (GET /polls/{pollID}/comments)
+	GetPollsPollIDComments(ctx echo.Context, pollID string, params GetPollsPollIDCommentsParams) error
+
+	// (GET /polls/{pollID}/results)
+	GetPollsPollIDResults(ctx echo.Context, pollID string) error
+
+	// (GET /tags)
+	GetTags(ctx echo.Context) error
+
+	// (POST /tags)
+	PostTags(ctx echo.Context) error
+
+	// (POST /users)
+	PostUsers(ctx echo.Context) error
+
+	// (DELETE /users/me)
+	DeleteUsersMe(ctx echo.Context) error
+
+	// (GET /users/me)
+	GetUsersMe(ctx echo.Context) error
+
+	// (GET /users/me/answers)
+	GetUsersMeAnswers(ctx echo.Context) error
+
+	// (GET /users/me/owners)
+	GetUsersMeOwners(ctx echo.Context) error
+
+	// (POST /users/signin)
+	PostUsersSignin(ctx echo.Context) error
+
+	// (POST /users/signout)
+	PostUsersSignout(ctx echo.Context) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -28,12 +282,214 @@ type ServerInterfaceWrapper struct {
 	Handler ServerInterface
 }
 
-// ListVersionsv2 converts echo context to params.
-func (w *ServerInterfaceWrapper) ListVersionsv2(ctx echo.Context) error {
+// GetPolls converts echo context to params.
+func (w *ServerInterfaceWrapper) GetPolls(ctx echo.Context) error {
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetPollsParams
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "limit", ctx.QueryParams(), &params.Limit)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter limit: %s", err))
+	}
+
+	// ------------- Optional query parameter "offset" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "offset", ctx.QueryParams(), &params.Offset)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter offset: %s", err))
+	}
+
+	// ------------- Optional query parameter "match" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "match", ctx.QueryParams(), &params.Match)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter match: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetPolls(ctx, params)
+	return err
+}
+
+// PostPolls converts echo context to params.
+func (w *ServerInterfaceWrapper) PostPolls(ctx echo.Context) error {
 	var err error
 
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.ListVersionsv2(ctx)
+	err = w.Handler.PostPolls(ctx)
+	return err
+}
+
+// DeletePollsPollID converts echo context to params.
+func (w *ServerInterfaceWrapper) DeletePollsPollID(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "pollID" -------------
+	var pollID string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "pollID", runtime.ParamLocationPath, ctx.Param("pollID"), &pollID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter pollID: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.DeletePollsPollID(ctx, pollID)
+	return err
+}
+
+// GetPollsPollID converts echo context to params.
+func (w *ServerInterfaceWrapper) GetPollsPollID(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "pollID" -------------
+	var pollID string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "pollID", runtime.ParamLocationPath, ctx.Param("pollID"), &pollID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter pollID: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetPollsPollID(ctx, pollID)
+	return err
+}
+
+// PostPollsPollID converts echo context to params.
+func (w *ServerInterfaceWrapper) PostPollsPollID(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "pollID" -------------
+	var pollID string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "pollID", runtime.ParamLocationPath, ctx.Param("pollID"), &pollID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter pollID: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.PostPollsPollID(ctx, pollID)
+	return err
+}
+
+// GetPollsPollIDComments converts echo context to params.
+func (w *ServerInterfaceWrapper) GetPollsPollIDComments(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "pollID" -------------
+	var pollID string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "pollID", runtime.ParamLocationPath, ctx.Param("pollID"), &pollID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter pollID: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetPollsPollIDCommentsParams
+	// ------------- Optional query parameter "max" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "max", ctx.QueryParams(), &params.Max)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter max: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetPollsPollIDComments(ctx, pollID, params)
+	return err
+}
+
+// GetPollsPollIDResults converts echo context to params.
+func (w *ServerInterfaceWrapper) GetPollsPollIDResults(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "pollID" -------------
+	var pollID string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "pollID", runtime.ParamLocationPath, ctx.Param("pollID"), &pollID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter pollID: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetPollsPollIDResults(ctx, pollID)
+	return err
+}
+
+// GetTags converts echo context to params.
+func (w *ServerInterfaceWrapper) GetTags(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetTags(ctx)
+	return err
+}
+
+// PostTags converts echo context to params.
+func (w *ServerInterfaceWrapper) PostTags(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.PostTags(ctx)
+	return err
+}
+
+// PostUsers converts echo context to params.
+func (w *ServerInterfaceWrapper) PostUsers(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.PostUsers(ctx)
+	return err
+}
+
+// DeleteUsersMe converts echo context to params.
+func (w *ServerInterfaceWrapper) DeleteUsersMe(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.DeleteUsersMe(ctx)
+	return err
+}
+
+// GetUsersMe converts echo context to params.
+func (w *ServerInterfaceWrapper) GetUsersMe(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetUsersMe(ctx)
+	return err
+}
+
+// GetUsersMeAnswers converts echo context to params.
+func (w *ServerInterfaceWrapper) GetUsersMeAnswers(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetUsersMeAnswers(ctx)
+	return err
+}
+
+// GetUsersMeOwners converts echo context to params.
+func (w *ServerInterfaceWrapper) GetUsersMeOwners(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetUsersMeOwners(ctx)
+	return err
+}
+
+// PostUsersSignin converts echo context to params.
+func (w *ServerInterfaceWrapper) PostUsersSignin(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.PostUsersSignin(ctx)
+	return err
+}
+
+// PostUsersSignout converts echo context to params.
+func (w *ServerInterfaceWrapper) PostUsersSignout(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.PostUsersSignout(ctx)
 	return err
 }
 
@@ -65,18 +521,74 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 		Handler: si,
 	}
 
-	router.GET(baseURL+"/", wrapper.ListVersionsv2)
+	router.GET(baseURL+"/polls", wrapper.GetPolls)
+	router.POST(baseURL+"/polls", wrapper.PostPolls)
+	router.DELETE(baseURL+"/polls/:pollID", wrapper.DeletePollsPollID)
+	router.GET(baseURL+"/polls/:pollID", wrapper.GetPollsPollID)
+	router.POST(baseURL+"/polls/:pollID", wrapper.PostPollsPollID)
+	router.GET(baseURL+"/polls/:pollID/comments", wrapper.GetPollsPollIDComments)
+	router.GET(baseURL+"/polls/:pollID/results", wrapper.GetPollsPollIDResults)
+	router.GET(baseURL+"/tags", wrapper.GetTags)
+	router.POST(baseURL+"/tags", wrapper.PostTags)
+	router.POST(baseURL+"/users", wrapper.PostUsers)
+	router.DELETE(baseURL+"/users/me", wrapper.DeleteUsersMe)
+	router.GET(baseURL+"/users/me", wrapper.GetUsersMe)
+	router.GET(baseURL+"/users/me/answers", wrapper.GetUsersMeAnswers)
+	router.GET(baseURL+"/users/me/owners", wrapper.GetUsersMeOwners)
+	router.POST(baseURL+"/users/signin", wrapper.PostUsersSignin)
+	router.POST(baseURL+"/users/signout", wrapper.PostUsersSignout)
 
 }
 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/1SQT2sDIRTEv0qYs6hJbt56DPRQKPRSepDNayOs+tCX3ZbF717c3RZy8c84M/x8C4Yc",
-	"OSdKUuGWphDSZ4brehI/SD8mHwkOTy+Xw+udOReBwr2McLiJsDNmnmdN3z7ySHrI0dTd1hSuVIcSWEJO",
-	"WwcUJMhI/7eJSt1ej9pq20OZKXkOcDhrq09QYC+3TgjTly9awTJT8b35coXDc6jytnXVqWcKVc6p0po7",
-	"Wdu3R5yTtYc/F1pTqPcYffnZ2w79yzteRVsNVLoA9748jmDMgx9vuYo7W2uN52CmI9pH+w0AAP//wSZu",
-	"LGMBAAA=",
+	"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",
+	"ydmN7y8OZW6UGv8NAAD//3p/OjLtLAAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

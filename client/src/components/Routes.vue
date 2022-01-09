@@ -4,6 +4,7 @@
     <router-link :to="{ name: 'signup' }">サインアップ</router-link> |
     <router-link :to="{ name: 'signin' }">サインイン</router-link> |
     <router-link :to="{ name: 'profile' }">プロフィール</router-link>
+    <router-link :to="{ name: 'details' }">ディテール</router-link>
   </div>
 </template>
 

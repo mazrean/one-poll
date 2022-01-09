@@ -13,14 +13,54 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-type API struct {
-	*Checker
-	openapi.ServerInterface
+type unimplemented interface {
+	// (GET /polls)
+	GetPolls(ctx echo.Context, params openapi.GetPollsParams) error
+
+	// (POST /polls)
+	PostPolls(ctx echo.Context) error
+
+	// (DELETE /polls/{pollID})
+	DeletePollsPollID(ctx echo.Context, pollID string) error
+
+	// (GET /polls/{pollID})
+	GetPollsPollID(ctx echo.Context, pollID string) error
+
+	// (POST /polls/{pollID})
+	PostPollsPollID(ctx echo.Context, pollID string) error
+
+	// (GET /polls/{pollID}/comments)
+	GetPollsPollIDComments(ctx echo.Context, pollID string, params openapi.GetPollsPollIDCommentsParams) error
+
+	// (GET /polls/{pollID}/results)
+	GetPollsPollIDResults(ctx echo.Context, pollID string) error
+
+	// (GET /tags)
+	GetTags(ctx echo.Context) error
+
+	// (POST /tags)
+	PostTags(ctx echo.Context) error
+
+	// (GET /users/me/answers)
+	GetUsersMeAnswers(ctx echo.Context) error
+
+	// (GET /users/me/owners)
+	GetUsersMeOwners(ctx echo.Context) error
 }
 
-func NewAPI(checker *Checker) *API {
+type API struct {
+	*Checker
+	*User
+	unimplemented
+}
+
+func NewAPI(
+	checker *Checker,
+	user *User,
+) *API {
 	return &API{
 		Checker: checker,
+		User:    user,
 	}
 }
 

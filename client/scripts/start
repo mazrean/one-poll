@@ -1,0 +1,6 @@
+#!/bin/zsh
+npm i
+npm run gen-api
+npm run build
+npm run gen-api
+npm run dev
