@@ -39,7 +39,7 @@
           ></router-link>
         </h4>
       </li>
-      <li>
+      <li v-if="userID !== ''">
         <h4>
           <router-link class="nav-link link px-0" :to="{ name: 'profile' }">
             <svg
@@ -58,28 +58,71 @@
         <a href="#" class="nav-link link-dark px-0">
           <div class="py-1">
             <button
+              v-if="userID !== ''"
               type="button"
               class="btn btn-lg btn-primary"
               data-bs-toggle="modal"
               data-bs-target="#newPollModal">
               <em class="bi bi-pencil-fill" />
             </button>
+            <router-link
+              v-else
+              class="btn btn-lg btn-primary"
+              :to="{ name: 'signin' }"
+              ><em class="bi bi-person-fill"
+            /></router-link>
           </div>
         </a>
       </li>
     </ul>
+    <div v-if="userID !== ''">
+      <hr />
+      <div class="dropdown">
+        <a
+          id="dropdownUser2"
+          href="#"
+          class="d-flex align-items-center link dropdown-toggle"
+          data-bs-toggle="dropdown"
+          aria-expanded="false">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="32"
+            height="32"
+            fill="currentColor"
+            class="bi bi-person-fill rounded-circle me-2"
+            viewBox="0 0 16 16">
+            <path
+              d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+          </svg>
+        </a>
+        <ul
+          class="dropdown-menu text-small shadow"
+          aria-labelledby="dropdownUser2">
+          <li><a class="dropdown-item" href="#">サインアウト</a></li>
+          <li><hr class="dropdown-divider" /></li>
+          <li><a class="dropdown-item" href="#">退会</a></li>
+        </ul>
+      </div>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, computed } from 'vue'
+import { useMainStore } from '/@/store/index'
 
 export default defineComponent({
   name: 'SideMenuComponent',
   isNarrow: false,
   components: {},
   setup() {
-    return {}
+    const store = useMainStore()
+    const userID = computed(() => store.userID)
+    return {
+      userID,
+      getUserID: store.getUserID,
+      serUserID: store.setUserID
+    }
   }
 })
 </script>

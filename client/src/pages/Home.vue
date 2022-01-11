@@ -132,10 +132,6 @@ export default {
           {
             id: 3,
             choice: 'choice 3 3'
-          },
-          {
-            id: 4,
-            choice: 'choice 3 4'
           }
         ],
         createdAt: 'created_at 3',

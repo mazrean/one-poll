@@ -21,7 +21,7 @@
             <label for="title" class="col-sm-2 col-form-label">タイトル</label>
             <input
               id="title"
-              v-model="title"
+              v-model="state.title"
               type="text"
               class="form-control mb-3"
               name="title"
@@ -30,20 +30,20 @@
             <label for="detail" class="col-sm-2 col-form-label">質問文</label>
             <textarea
               id="detail"
-              v-model="detail"
+              v-model="state.detail"
               class="form-control mb-3"
               name="detail"
               maxlength="140"
               placeholder="質問する内容を入力" />
             <label for="options" class="col-sm-2 col-form-label">選択肢</label>
             <ul
-              v-for="(v, i) in options"
+              v-for="(v, i) in state.options"
               :key="v"
               class="nav nav-pills flex-column">
               <li class="nav-item">
                 <div class="d-inline-block d-flex">
                   <input
-                    v-model="options[i]"
+                    v-model="state.options[i]"
                     type="text"
                     class="form-control d-flex my-1"
                     name="option"
@@ -58,7 +58,7 @@
               </li>
             </ul>
             <button
-              v-show="options.length < 5"
+              v-show="state.options.length < 5"
               class="btn link"
               type="button"
               @Click="insertOption()">
@@ -78,7 +78,7 @@
             <label for="tag" class="col-sm-2 col-form-label">タグ</label>
             <div>
               <ul
-                v-for="v in newTags"
+                v-for="v in state.newTags"
                 :key="v"
                 class="nav nav-pills d-inline-block">
                 <li class="nav-item d-flex">
@@ -95,8 +95,8 @@
             </div>
             <input
               id="tag"
-              v-model="newTag"
-              :disabled="newTags.size >= 10"
+              v-model="state.newTag"
+              :disabled="state.newTags.size >= 10"
               type="text"
               class="form-control mt-2"
               name="tag"
@@ -104,7 +104,7 @@
               placeholder="新しく追加するタグ名を入力"
               @Input="calculateFilter()"
               @keydown.enter="insertTag()" />
-            <ul v-for="v in autocompletes" :key="v" class="list-group">
+            <ul v-for="v in state.autocompletes" :key="v" class="list-group">
               <button
                 class="list-group-item list-group-item-action p-1"
                 type="button"
@@ -115,7 +115,7 @@
             <label for="deadline" class="col-sm-2 col-form-label">締切</label>
             <select
               id="deadline"
-              v-model="deadline"
+              v-model="state.deadline"
               name="detail"
               class="form-select mb-3">
               <option value="0">1時間後</option>
@@ -140,12 +140,21 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
-
+import { defineComponent, reactive } from 'vue'
+interface State {
+  title: string
+  detail: string
+  deadline: string
+  options: string[]
+  newTags: Set<string>
+  newTag: string
+  tags: string[]
+  autocompletes: string[]
+}
 export default defineComponent({
   name: 'NewPollComponent',
-  data() {
-    return {
+  setup() {
+    const state = reactive<State>({
       title: '',
       detail: '',
       deadline: '0',
@@ -166,51 +175,58 @@ export default defineComponent({
         'ウマ娘mad'
       ],
       autocompletes: ['hoge']
+    })
+
+    const insertTag = function () {
+      if (state.newTag.length === 0) return
+      state.newTags.add(state.newTag)
+      state.newTag = ''
     }
-  },
-  mounted: function () {
-    this.calculateFilter()
-  },
-  methods: {
-    insertTag: function () {
-      if (this.newTag.length === 0) return
-      this.newTags.add(this.newTag)
-      this.newTag = ''
-    },
-    deleteTag: function (str: string) {
-      this.newTags.delete(str)
-    },
-    insertOption: function () {
-      this.options.push('')
-    },
-    deleteOption: function (idx: number) {
-      this.options.splice(idx, 1)
-    },
-    calculateFilter: function () {
-      if (this.newTag.length === 0) {
-        this.autocompletes = []
+    const deleteTag = function (str: string) {
+      state.newTags.delete(str)
+    }
+    const insertOption = function () {
+      state.options.push('')
+    }
+    const deleteOption = function (idx: number) {
+      state.options.splice(idx, 1)
+    }
+    const calculateFilter = function () {
+      if (state.newTag.length === 0) {
+        state.autocompletes = []
       } else {
-        this.autocompletes = this.tags
-          .filter(v => {
-            return v.indexOf(this.newTag) === 0
+        state.autocompletes = state.tags
+          .filter((v: string) => {
+            return v.indexOf(state.newTag) === 0
           })
           .slice(0, 5)
       }
-    },
-    onAutocomplete: function (str: string) {
+    }
+    const onAutocomplete = function (str: string) {
       if (str.length === 0) return
-      this.newTags.add(str)
-      this.newTag = ''
-      this.calculateFilter()
-    },
-    submitPoll: function () {
-      this.title = ''
-      this.detail = ''
-      this.options = ['', '']
-      this.newTags = new Set()
-      this.newTag = ''
-      this.calculateFilter()
-      this.deadline = '0'
+      state.newTags.add(str)
+      state.newTag = ''
+      calculateFilter()
+    }
+    const submitPoll = function () {
+      state.title = ''
+      state.detail = ''
+      state.options = ['', '']
+      state.newTags = new Set()
+      state.newTag = ''
+      calculateFilter()
+      state.deadline = '0'
+    }
+
+    return {
+      state,
+      insertTag,
+      deleteTag,
+      insertOption,
+      deleteOption,
+      calculateFilter,
+      onAutocomplete,
+      submitPoll
     }
   }
 })

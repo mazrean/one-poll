@@ -49,7 +49,17 @@
         class="tab-pane fade show active"
         role="tabpanel"
         aria-labelledby="home-tab">
-        ここはアカウント情報画面
+        ログイン中のアカウントID<br />
+        <strong>@{{ userID }}</strong
+        ><br />
+        <router-link
+          class="btn btn-outline-secondary m-1"
+          :to="{ name: 'signin' }"
+          >サインアウトする</router-link
+        >
+        <router-link class="btn btn-outline-danger m-1" :to="{ name: 'signin' }"
+          >退会する</router-link
+        >
       </div>
       <div
         id="profile"
@@ -70,10 +80,20 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, computed } from 'vue'
+import { useMainStore } from '/@/store/index'
 
 export default defineComponent({
   name: 'ProfilePage',
-  components: {}
+  components: {},
+  setup() {
+    const store = useMainStore()
+    const userID = computed(() => store.userID)
+    return {
+      userID,
+      getUserID: store.getUserID,
+      serUserID: store.setUserID
+    }
+  }
 })
 </script>
