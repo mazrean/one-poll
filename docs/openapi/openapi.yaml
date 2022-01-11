@@ -25,8 +25,8 @@ components:
       properties:
         title:
           type: string
-          maxLength: 300
           minLength: 1
+          maxLength: 140
         type:
           $ref: '#/components/schemas/PollType'
         deadline:
@@ -211,7 +211,7 @@ components:
           enum:
             - only_browsable
             - can_answer
-            - can_asccess_details
+            - can_access_details
           description: only_browable 質問の閲覧　can_answer 解答できる　can_access_details 結果の表示
       required:
         - is_owner
@@ -399,7 +399,7 @@ paths:
                 $ref: '#/components/schemas/PollSummaries'
               examples: {}
       operationId: get-polls
-      description: 投票リストを取得する。デフォルトでは最新の10件を取得する。
+      description: 投票リストを取得する。デフォルトでは新しい順にすべてを取得する。
       parameters:
         - schema:
             type: integer
