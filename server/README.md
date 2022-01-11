@@ -10,7 +10,7 @@ VSCodeから設定できる環境が立ち上がる。
 
 1. serverディレクトリで`go generate ./...`
    - wire,mockgen,oapi-codegenのinstallをしていないとここでエラーが出る可能性がある
-2. プロジェクトルートで`docker compose -f dev/compose.yaml up`
+2. プロジェクトルートで`docker compose -f dev/compose.yml up`
 3. debuggerを使用する場合はVSCodeでRemote Docker Debugを実行
 
 ## ディレクトリ構成
