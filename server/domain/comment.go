@@ -10,8 +10,8 @@ type Comment struct {
 func NewComment(
 	id values.CommentID,
 	content values.CommentContent,
-) Comment {
-	return Comment{
+) *Comment {
+	return &Comment{
 		id:      id,
 		content: content,
 	}
