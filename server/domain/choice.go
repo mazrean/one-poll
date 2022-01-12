@@ -10,8 +10,8 @@ type Choice struct {
 func NewChoice(
 	id values.ChoiceID,
 	label values.ChoiceLabel,
-) Choice {
-	return Choice{
+) *Choice {
+	return &Choice{
 		id:    id,
 		label: label,
 	}

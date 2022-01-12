@@ -10,8 +10,8 @@ type Tag struct {
 func NewTag(
 	id values.TagID,
 	name values.TagName,
-) Tag {
-	return Tag{
+) *Tag {
+	return &Tag{
 		id:   id,
 		name: name,
 	}

@@ -21,8 +21,8 @@ func NewPollWithDeadLine(
 	pollType values.PollType,
 	deadline time.Time,
 	createdAt time.Time,
-) Poll {
-	return Poll{
+) *Poll {
+	return &Poll{
 		id:       id,
 		title:    title,
 		pollType: pollType,
@@ -39,8 +39,8 @@ func NewPollWithoutDeadLine(
 	title values.PollTitle,
 	pollType values.PollType,
 	createdAt time.Time,
-) Poll {
-	return Poll{
+) *Poll {
+	return &Poll{
 		id:        id,
 		title:     title,
 		pollType:  pollType,
