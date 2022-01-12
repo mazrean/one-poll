@@ -1,7 +1,14 @@
 package v1
 
 import (
+	"context"
+	"fmt"
+	"time"
+
+	"github.com/cs-sysimpl/suzukake/domain"
+	"github.com/cs-sysimpl/suzukake/domain/values"
 	"github.com/cs-sysimpl/suzukake/repository"
+	"github.com/cs-sysimpl/suzukake/service"
 )
 
 type Poll struct {
@@ -23,4 +30,87 @@ func NewPoll(
 		choiceRepository: choiceRepository,
 		tagRepository:    tagRepository,
 	}
+}
+
+func (p *Poll) CreatePoll(
+	ctx context.Context,
+	user *domain.User,
+	title values.PollTitle,
+	pollType values.PollType,
+	deadline *time.Time,
+	choiceLabels []values.ChoiceLabel,
+	tagNames []values.TagName,
+) (*service.PollInfo, error) {
+	var (
+		poll    *domain.Poll
+		choices []*domain.Choice
+		tags    []*domain.Tag
+	)
+	err := p.db.Transaction(ctx, nil, func(ctx context.Context) error {
+		if deadline == nil {
+			poll = domain.NewPollWithoutDeadLine(
+				values.NewPollID(),
+				title,
+				pollType,
+				time.Now(),
+			)
+		} else {
+			poll = domain.NewPollWithDeadLine(
+				values.NewPollID(),
+				title,
+				pollType,
+				*deadline,
+				time.Now(),
+			)
+		}
+
+		err := p.pollRepository.CreatePoll(ctx, poll, user.GetID())
+		if err != nil {
+			return fmt.Errorf("failed to create poll: %w", err)
+		}
+
+		choices = make([]*domain.Choice, 0, len(choiceLabels))
+		for _, choiceLabel := range choiceLabels {
+			choices = append(choices, domain.NewChoice(
+				values.NewChoiceID(),
+				choiceLabel,
+			))
+		}
+
+		err = p.choiceRepository.CreateChoices(ctx, poll.GetID(), choices)
+		if err != nil {
+			return fmt.Errorf("failed to create choices: %w", err)
+		}
+
+		tags, err = p.tagRepository.GetTagsByName(ctx, tagNames, repository.LockTypeRecord)
+		if err != nil {
+			return fmt.Errorf("failed to get tags: %w", err)
+		}
+
+		if len(tags) != len(tagNames) {
+			return service.ErrNoTag
+		}
+
+		tagIDs := make([]values.TagID, 0, len(tags))
+		for _, tag := range tags {
+			tagIDs = append(tagIDs, tag.GetID())
+		}
+
+		err = p.pollRepository.AddTags(ctx, poll.GetID(), tagIDs)
+		if err != nil {
+			return fmt.Errorf("failed to add tags: %w", err)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed in transaction: %w", err)
+	}
+
+	return &service.PollInfo{
+		Poll:    poll,
+		Choices: choices,
+		Tags:    tags,
+		Owner:   user,
+	}, nil
 }
