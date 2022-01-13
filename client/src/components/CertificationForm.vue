@@ -2,16 +2,21 @@
   <div class="card">
     <div class="card-body">
       <h5 class="card-title">PollQ</h5>
-      <form class="needs-validation" @submit="Validation" novalidate>
+      <form
+        class="needs-validation"
+        v-bind:class="{ 'was-validated': Validated }"
+        novalidate
+        @submit="Validation">
         <div>
           <label for="user_name" class="card-text">User</label><br />
           <input
-            id="user_name"
+            id="name"
             type="text"
             class="form-control"
             placeholder="ユーザー名を入力"
             required
-            pattern="[0-9a-zA-Z_]{4,16}" />
+            pattern="[0-9a-zA-Z_]{4,16}"
+            v-model="name" />
           <div class="invalid-feedback">
             英数＋アンダーバー込で4~16文字を入力
           </div>
@@ -24,12 +29,13 @@
             class="form-control"
             placeholder="パスワードを入力"
             required
-            pattern="[0-9a-zA-Z_]{8,50}" />
+            pattern="[0-9a-zA-Z_]{8,50}"
+            v-model="password" />
           <div class="invalid-feedback">
             英数＋アンダーバー込で8~50文字を入力
           </div>
         </div>
-        <button type="submit" class="btn btn-primary">{{ Sign }}</button>
+        <button type="submit" class="btn btn-primary">{{ sign }}</button>
       </form>
     </div>
   </div>
@@ -40,22 +46,50 @@ import { defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'CertificationFormComponent',
-  props: ['Sign'],
-  methods: {
-    Validation: function (event: Event) {
-      const forms =
-        document.querySelectorAll<HTMLInputElement>('.needs-validation')
-      forms.forEach(form => {
-        if (!form.checkValidity()) {
-          event.preventDefault()
-          event.stopPropagation()
-        }
-        form.classList.add('was-validated')
-      }, false)
+  props: {
+    sign: {
+      type: String,
+      default: 'Sign in'
     }
   },
   setup() {
     return {}
+  },
+  data() {
+    return {
+      name: '',
+      password: '',
+      Validated: false,
+      error: [false, false]
+    }
+  },
+  watch: {
+    name() {
+      let re = new RegExp('[0-9a-zA-Z_]{4,16}')
+      if (re.test(this.name)) {
+        this.error[0] = false
+      } else {
+        this.error[0] = true
+      }
+    },
+    password() {
+      let re = new RegExp('[0-9a-zA-Z_]{8,50}')
+      if (re.test(this.password)) {
+        this.error[1] = false
+      } else {
+        this.error[1] = true
+      }
+    }
+  },
+  methods: {
+    Validation: function (event: Event) {
+      this.Validated = true
+      this.error.forEach(error => {
+        if (error) {
+          event.preventDefault()
+        }
+      })
+    }
   }
 })
 </script>
