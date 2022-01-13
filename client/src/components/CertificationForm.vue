@@ -4,19 +4,19 @@
       <h5 class="card-title">PollQ</h5>
       <form
         class="needs-validation"
-        v-bind:class="{ 'was-validated': Validated }"
+        :class="{ 'was-validated': Validated }"
         novalidate
         @submit="Validation">
         <div>
           <label for="user_name" class="card-text">User</label><br />
           <input
             id="name"
+            v-model="name"
             type="text"
             class="form-control"
             placeholder="ユーザー名を入力"
             required
-            pattern="[0-9a-zA-Z_]{4,16}"
-            v-model="name" />
+            pattern="[0-9a-zA-Z_]{4,16}" />
           <div class="invalid-feedback">
             英数＋アンダーバー込で4~16文字を入力
           </div>
@@ -25,12 +25,12 @@
           <label for="password" class="card-text">password</label><br />
           <input
             id="password"
+            v-model="password"
             type="password"
             class="form-control"
             placeholder="パスワードを入力"
             required
-            pattern="[0-9a-zA-Z_]{8,50}"
-            v-model="password" />
+            pattern="[0-9a-zA-Z_]{8,50}" />
           <div class="invalid-feedback">
             英数＋アンダーバー込で8~50文字を入力
           </div>
