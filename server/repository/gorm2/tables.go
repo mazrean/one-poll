@@ -1,6 +1,7 @@
 package gorm2
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -34,12 +35,13 @@ type PollTable struct {
 	OwnerID   uuid.UUID      `gorm:"type:char(36);not null;size:36"`
 	Title     string         `gorm:"type:varchar(50);not null;size:50"`
 	TypeID    int            `gorm:"type:int(11);not null"`
-	Deadline  time.Time      `gorm:"type:DATETIME NULL;default:NULL"`
+	Deadline  sql.NullTime   `gorm:"type:DATETIME NULL;default:NULL"`
 	CreatedAt time.Time      `gorm:"type:datetime;not null"`
 	DeletedAt gorm.DeletedAt `gorm:"type:DATETIME NULL;default:NULL"`
 	Owner     UserTable      `gorm:"foreignKey:OwnerID"`
 	Choices   []ChoiceTable  `gorm:"foreignKey:PollID"`
 	Tags      []TagTable     `gorm:"many2many:poll_tag_relations"`
+	PollType  PollTypeTable  `gorm:"foreignKey:TypeID"`
 }
 
 func (*PollTable) TableName() string {
