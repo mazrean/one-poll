@@ -114,3 +114,57 @@ func (p *Poll) CreatePoll(
 		Owner:   user,
 	}, nil
 }
+
+func (p *Poll) GetPolls(ctx context.Context, params *service.PollSearchParams) ([]*service.PollInfo, error) {
+	var repositoryParams *repository.PollSearchParams
+	if params != nil {
+		repositoryParams = &repository.PollSearchParams{
+			Limit:  params.Limit,
+			Offset: params.Offset,
+			Match:  params.Match,
+		}
+	}
+
+	polls, err := p.pollRepository.GetPolls(ctx, repositoryParams)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get polls: %w", err)
+	}
+
+	pollIDs := make([]values.PollID, 0, len(polls))
+	for _, poll := range polls {
+		pollIDs = append(pollIDs, poll.Poll.GetID())
+	}
+
+	tagMap, err := p.tagRepository.GetTagsByPollIDs(ctx, pollIDs, repository.LockTypeNone)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get tags: %w", err)
+	}
+
+	choiceMap, err := p.choiceRepository.GetChoicesByPollIDs(ctx, pollIDs, repository.LockTypeNone)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get choices: %w", err)
+	}
+
+	pollInfos := make([]*service.PollInfo, 0, len(polls))
+	for _, poll := range polls {
+		choices, ok := choiceMap[poll.Poll.GetID()]
+		if !ok {
+			choices = []*domain.Choice{}
+		}
+
+		tags, ok := tagMap[poll.Poll.GetID()]
+		if !ok {
+			tags = []*domain.Tag{}
+		}
+
+		pollInfo := &service.PollInfo{
+			Poll:    poll.Poll,
+			Choices: choices,
+			Tags:    tags,
+			Owner:   poll.Owner,
+		}
+		pollInfos = append(pollInfos, pollInfo)
+	}
+
+	return pollInfos, nil
+}
