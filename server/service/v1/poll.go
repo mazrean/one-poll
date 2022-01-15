@@ -228,3 +228,15 @@ func (p *Poll) ClosePoll(ctx context.Context, user *domain.User, id values.PollI
 
 	return nil
 }
+
+func (p *Poll) DeletePoll(ctx context.Context, user *domain.User, id values.PollID) error {
+	err := p.pollRepository.DeletePoll(ctx, id)
+	if errors.Is(err, repository.ErrNoRecordDeleted) {
+		return service.ErrNoPoll
+	}
+	if err != nil {
+		return fmt.Errorf("failed to delete poll: %w", err)
+	}
+
+	return nil
+}
