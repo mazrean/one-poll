@@ -2,6 +2,8 @@ package v1
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
@@ -191,4 +193,38 @@ func (p *Poll) GetPoll(ctx context.Context, id values.PollID) (*service.PollInfo
 		Tags:    tags,
 		Owner:   poll.Owner,
 	}, nil
+}
+
+func (p *Poll) ClosePoll(ctx context.Context, user *domain.User, id values.PollID) error {
+	err := p.db.Transaction(ctx, nil, func(ctx context.Context) error {
+		poll, err := p.pollRepository.GetPoll(ctx, id, repository.LockTypeRecord)
+		if errors.Is(err, repository.ErrRecordNotFound) {
+			return service.ErrNoPoll
+		}
+		if err != nil {
+			return fmt.Errorf("failed to get poll: %w", err)
+		}
+
+		if poll.Poll.IsExpired() {
+			return service.ErrPollClosed
+		}
+
+		err = p.pollRepository.UpdatePollDeadline(ctx, id, sql.NullTime{
+			Time:  time.Now(),
+			Valid: true,
+		})
+		if errors.Is(err, repository.ErrNoRecordUpdated) {
+			return service.ErrNoPoll
+		}
+		if err != nil {
+			return fmt.Errorf("failed to close poll: %w", err)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("failed in transaction: %w", err)
+	}
+
+	return nil
 }
