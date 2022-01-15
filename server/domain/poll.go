@@ -56,6 +56,18 @@ func (p *Poll) GetTitle() values.PollTitle {
 	return p.title
 }
 
+func (p *Poll) GetPollType() values.PollType {
+	return p.pollType
+}
+
+func (p *Poll) GetDeadline() sql.NullTime {
+	return p.deadline
+}
+
+func (p *Poll) GetCreatedAt() time.Time {
+	return p.createdAt
+}
+
 func (p *Poll) IsExpired() bool {
 	return p.deadline.Valid && p.deadline.Time.Before(time.Now())
 }
