@@ -250,3 +250,24 @@ func (p *Poll) GetPoll(ctx context.Context, id values.PollID, lockType repositor
 		),
 	}, nil
 }
+
+func (p *Poll) DeletePoll(ctx context.Context, id values.PollID) error {
+	db, err := p.db.getDB(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get db: %w", err)
+	}
+
+	result := db.
+		Where("id = ?", uuid.UUID(id)).
+		Delete(&PollTable{})
+	err = result.Error
+	if err != nil {
+		return fmt.Errorf("failed to delete poll: %w", err)
+	}
+
+	if result.RowsAffected == 0 {
+		return repository.ErrNoRecordDeleted
+	}
+
+	return nil
+}
