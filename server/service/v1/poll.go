@@ -168,3 +168,27 @@ func (p *Poll) GetPolls(ctx context.Context, params *service.PollSearchParams) (
 
 	return pollInfos, nil
 }
+
+func (p *Poll) GetPoll(ctx context.Context, id values.PollID) (*service.PollInfo, error) {
+	poll, err := p.pollRepository.GetPoll(ctx, id, repository.LockTypeNone)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get poll: %w", err)
+	}
+
+	tags, err := p.tagRepository.GetTagsByPollID(ctx, id, repository.LockTypeNone)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get tags: %w", err)
+	}
+
+	choices, err := p.choiceRepository.GetChoicesByPollID(ctx, id, repository.LockTypeNone)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get choices: %w", err)
+	}
+
+	return &service.PollInfo{
+		Poll:    poll.Poll,
+		Choices: choices,
+		Tags:    tags,
+		Owner:   poll.Owner,
+	}, nil
+}
