@@ -114,3 +114,35 @@ func (t *Tag) GetTagsByPollIDs(ctx context.Context, pollIDs []values.PollID, loc
 
 	return tags, nil
 }
+
+func (t *Tag) GetTagsByPollID(ctx context.Context, pollID values.PollID, lockType repository.LockType) ([]*domain.Tag, error) {
+	db, err := t.db.getDB(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get db: %w", err)
+	}
+
+	db, err = t.db.setLock(db, lockType)
+	if err != nil {
+		return nil, fmt.Errorf("failed to set lock: %w", err)
+	}
+
+	var pollTable PollTable
+	err = db.
+		Where("id = ?", uuid.UUID(pollID)).
+		Select("id", "Tags.id", "Tags.name").
+		Joins("Tags").
+		Take(&pollTable).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get tags: %w", err)
+	}
+
+	tags := make([]*domain.Tag, 0, len(pollTable.Tags))
+	for _, tag := range pollTable.Tags {
+		tags = append(tags, domain.NewTag(
+			values.NewTagIDFromUUID(tag.ID),
+			values.NewTagName(tag.Name),
+		))
+	}
+
+	return tags, nil
+}
