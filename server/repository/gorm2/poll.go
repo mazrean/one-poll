@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/cs-sysimpl/suzukake/domain"
+	"github.com/cs-sysimpl/suzukake/domain/values"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -54,4 +57,38 @@ func setupPollTypeTable(db *gorm.DB) ([]PollTypeTable, error) {
 	}
 
 	return pollTypes, nil
+}
+
+func (p *Poll) CreatePoll(ctx context.Context, poll *domain.Poll, ownerID values.UserID) error {
+	db, err := p.db.getDB(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get db: %w", err)
+	}
+
+	var pollTypeID int
+	for _, pollType := range p.pollTypes {
+		switch poll.GetPollType() {
+		case values.PollTypeRadio:
+			if pollType.Name == pollTypeRadio {
+				pollTypeID = pollType.ID
+			}
+		default:
+			return fmt.Errorf("unsupported poll type: %d", poll.GetPollType())
+		}
+	}
+
+	pollTable := PollTable{
+		ID:        uuid.UUID(poll.GetID()),
+		OwnerID:   uuid.UUID(ownerID),
+		Title:     string(poll.GetTitle()),
+		TypeID:    pollTypeID,
+		Deadline:  poll.GetDeadline(),
+		CreatedAt: poll.GetCreatedAt(),
+	}
+	err = db.Create(&pollTable).Error
+	if err != nil {
+		return fmt.Errorf("failed to create poll: %w", err)
+	}
+
+	return nil
 }
