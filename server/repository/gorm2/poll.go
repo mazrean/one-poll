@@ -116,3 +116,75 @@ func (p *Poll) UpdatePollDeadline(ctx context.Context, id values.PollID, deadlin
 
 	return nil
 }
+
+func (p *Poll) GetPolls(ctx context.Context, params *repository.PollSearchParams) ([]*repository.PollInfo, error) {
+	db, err := p.db.getDB(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get db: %w", err)
+	}
+
+	var pollTables []PollTable
+	query := db.
+		Joins("Owner").
+		Joins("PollType").
+		Order("created_at DESC")
+
+	if params == nil {
+		if params.Match != "" {
+			query = query.Where("polls.title like ?", "%"+params.Match+"%")
+		}
+
+		if params.Limit > 0 {
+			query = query.Limit(params.Limit)
+		}
+
+		if params.Offset > 0 {
+			query = query.Offset(params.Offset)
+		}
+	}
+
+	err = query.Find(&pollTables).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get polls: %w", err)
+	}
+
+	pollInfos := make([]*repository.PollInfo, 0, len(pollTables))
+	for _, pollTable := range pollTables {
+		var polltype values.PollType
+		switch pollTable.PollType.Name {
+		case pollTypeRadio:
+			polltype = values.PollTypeRadio
+		default:
+			return nil, fmt.Errorf("unsupported poll type: %s", pollTable.PollType.Name)
+		}
+
+		var poll *domain.Poll
+		if pollTable.Deadline.Valid {
+			poll = domain.NewPollWithDeadLine(
+				values.NewPollIDFromUUID(pollTable.ID),
+				values.NewPollTitle(pollTable.Title),
+				polltype,
+				pollTable.Deadline.Time,
+				pollTable.CreatedAt,
+			)
+		} else {
+			poll = domain.NewPollWithoutDeadLine(
+				values.NewPollIDFromUUID(pollTable.ID),
+				values.NewPollTitle(pollTable.Title),
+				polltype,
+				pollTable.CreatedAt,
+			)
+		}
+
+		pollInfos = append(pollInfos, &repository.PollInfo{
+			Poll: poll,
+			Owner: domain.NewUser(
+				values.NewUserIDFromUUID(pollTable.Owner.ID),
+				values.NewUserName(pollTable.Owner.Name),
+				values.NewUserHashedPassword([]byte(pollTable.Owner.Password)),
+			),
+		})
+	}
+
+	return pollInfos, nil
+}
