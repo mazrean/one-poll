@@ -2,10 +2,12 @@ package gorm2
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	"github.com/cs-sysimpl/suzukake/domain"
 	"github.com/cs-sysimpl/suzukake/domain/values"
+	"github.com/cs-sysimpl/suzukake/repository"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -88,6 +90,28 @@ func (p *Poll) CreatePoll(ctx context.Context, poll *domain.Poll, ownerID values
 	err = db.Create(&pollTable).Error
 	if err != nil {
 		return fmt.Errorf("failed to create poll: %w", err)
+	}
+
+	return nil
+}
+
+func (p *Poll) UpdatePollDeadline(ctx context.Context, id values.PollID, deadline sql.NullTime) error {
+	db, err := p.db.getDB(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get db: %w", err)
+	}
+
+	result := db.
+		Model(&PollTable{}).
+		Where("id = ?", uuid.UUID(id)).
+		Update("deadline", deadline)
+	err = result.Error
+	if err != nil {
+		return fmt.Errorf("failed to update poll deadline: %w", err)
+	}
+
+	if result.RowsAffected == 0 {
+		return repository.ErrNoRecordUpdated
 	}
 
 	return nil
