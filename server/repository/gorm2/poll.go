@@ -271,3 +271,28 @@ func (p *Poll) DeletePoll(ctx context.Context, id values.PollID) error {
 
 	return nil
 }
+
+func (p *Poll) AddTags(ctx context.Context, pollID values.PollID, tagIDs []values.TagID) error {
+	db, err := p.db.getDB(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get db: %w", err)
+	}
+
+	tagTables := make([]TagTable, 0, len(tagIDs))
+	for _, tagID := range tagIDs {
+		tagTables = append(tagTables, TagTable{
+			ID: uuid.UUID(tagID),
+		})
+	}
+
+	err = db.
+		Model(&PollTable{}).
+		Where("id = ?", uuid.UUID(pollID)).
+		Association("Tags").
+		Append(tagTables)
+	if err != nil {
+		return fmt.Errorf("failed to add tags: %w", err)
+	}
+
+	return nil
+}
