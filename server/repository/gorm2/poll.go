@@ -3,6 +3,7 @@ package gorm2
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/cs-sysimpl/suzukake/domain"
@@ -187,4 +188,65 @@ func (p *Poll) GetPolls(ctx context.Context, params *repository.PollSearchParams
 	}
 
 	return pollInfos, nil
+}
+
+func (p *Poll) GetPoll(ctx context.Context, id values.PollID, lockType repository.LockType) (*repository.PollInfo, error) {
+	db, err := p.db.getDB(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get db: %w", err)
+	}
+
+	db, err = p.db.setLock(db, lockType)
+	if err != nil {
+		return nil, fmt.Errorf("failed to set lock: %w", err)
+	}
+
+	var pollTable PollTable
+	query := db.
+		Joins("Owner").
+		Joins("PollType").
+		Where("id = ?", uuid.UUID(id))
+
+	err = query.Take(&pollTable).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, repository.ErrRecordNotFound
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to get poll: %w", err)
+	}
+
+	var polltype values.PollType
+	switch pollTable.PollType.Name {
+	case pollTypeRadio:
+		polltype = values.PollTypeRadio
+	default:
+		return nil, fmt.Errorf("unsupported poll type: %s", pollTable.PollType.Name)
+	}
+
+	var poll *domain.Poll
+	if pollTable.Deadline.Valid {
+		poll = domain.NewPollWithDeadLine(
+			values.NewPollIDFromUUID(pollTable.ID),
+			values.NewPollTitle(pollTable.Title),
+			polltype,
+			pollTable.Deadline.Time,
+			pollTable.CreatedAt,
+		)
+	} else {
+		poll = domain.NewPollWithoutDeadLine(
+			values.NewPollIDFromUUID(pollTable.ID),
+			values.NewPollTitle(pollTable.Title),
+			polltype,
+			pollTable.CreatedAt,
+		)
+	}
+
+	return &repository.PollInfo{
+		Poll: poll,
+		Owner: domain.NewUser(
+			values.NewUserIDFromUUID(pollTable.Owner.ID),
+			values.NewUserName(pollTable.Owner.Name),
+			values.NewUserHashedPassword([]byte(pollTable.Owner.Password)),
+		),
+	}, nil
 }
