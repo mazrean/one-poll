@@ -59,8 +59,8 @@ func (*PollTypeTable) TableName() string {
 }
 
 type TagTable struct {
-	ID   int    `gorm:"type:int(11);not null;primaryKey;autoIncrement"`
-	Name string `gorm:"type:varchar(50);not null;size:50;unique"`
+	ID   uuid.UUID `gorm:"type:char(36);not null;primaryKey;size:36"`
+	Name string    `gorm:"type:varchar(50);not null;size:50;unique"`
 }
 
 func (*TagTable) TableName() string {
