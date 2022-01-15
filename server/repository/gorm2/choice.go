@@ -109,3 +109,34 @@ func (c *Choice) GetChoicesByPollIDs(ctx context.Context, pollIDs []values.PollI
 
 	return choices, nil
 }
+
+func (c *Choice) GetChoicesByPollID(ctx context.Context, pollID values.PollID, lockType repository.LockType) ([]*domain.Choice, error) {
+	db, err := c.db.getDB(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get db: %w", err)
+	}
+
+	db, err = c.db.setLock(db, lockType)
+	if err != nil {
+		return nil, fmt.Errorf("failed to set lock: %w", err)
+	}
+
+	var choiceTables []ChoiceTable
+	err = db.
+		Where("poll_id = ?", uuid.UUID(pollID)).
+		Select("id", "name").
+		Find(&choiceTables).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get choices: %w", err)
+	}
+
+	choices := make([]*domain.Choice, 0, len(choiceTables))
+	for _, choiceTable := range choiceTables {
+		choices = append(choices, domain.NewChoice(
+			values.NewChoiceIDFromUUID(choiceTable.ID),
+			values.NewChoiceLabel(choiceTable.Name),
+		))
+	}
+
+	return choices, nil
+}
