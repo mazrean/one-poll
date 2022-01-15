@@ -73,3 +73,44 @@ func (t *Tag) GetTagsByName(ctx context.Context, names []values.TagName, lockTyp
 
 	return tags, nil
 }
+
+func (t *Tag) GetTagsByPollIDs(ctx context.Context, pollIDs []values.PollID, lockType repository.LockType) (map[values.PollID][]*domain.Tag, error) {
+	db, err := t.db.getDB(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get db: %w", err)
+	}
+
+	db, err = t.db.setLock(db, lockType)
+	if err != nil {
+		return nil, fmt.Errorf("failed to set lock: %w", err)
+	}
+
+	uuidPollIDs := make([]uuid.UUID, 0, len(pollIDs))
+	for _, pollID := range pollIDs {
+		uuidPollIDs = append(uuidPollIDs, uuid.UUID(pollID))
+	}
+
+	var pollTables []PollTable
+	err = db.
+		Where("id IN ?", uuidPollIDs).
+		Joins("Tags").
+		Select("polls.id", "Tags.id", "Tags.name").
+		Find(&pollTables).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get tags: %w", err)
+	}
+
+	tags := make(map[values.PollID][]*domain.Tag, len(pollTables))
+	for _, pollTable := range pollTables {
+		pollID := values.NewPollIDFromUUID(pollTable.ID)
+		tags[pollID] = make([]*domain.Tag, 0, len(pollTable.Tags))
+		for _, tag := range pollTable.Tags {
+			tags[pollID] = append(tags[pollID], domain.NewTag(
+				values.NewTagIDFromUUID(tag.ID),
+				values.NewTagName(tag.Name),
+			))
+		}
+	}
+
+	return tags, nil
+}
