@@ -46,7 +46,7 @@ func (u *User) PostUsers(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid user password")
 	}
 
-	_, err = u.authorizationService.Signup(
+	user, err := u.authorizationService.Signup(
 		c.Request().Context(),
 		name,
 		password,
@@ -57,6 +57,20 @@ func (u *User) PostUsers(c echo.Context) error {
 	if err != nil {
 		log.Printf("failed to signup: %v\n", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to signup")
+	}
+
+	session, err := u.Session.getSession(c)
+	if err != nil {
+		log.Printf("failed to get session: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get session")
+	}
+
+	u.Session.setUser(session, user)
+
+	err = u.Session.save(c, session)
+	if err != nil {
+		log.Printf("failed to save session: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to save session")
 	}
 
 	return c.NoContent(http.StatusCreated)
