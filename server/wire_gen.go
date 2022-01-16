@@ -31,7 +31,16 @@ func InjectService(config *Config) (*Service, error) {
 	user := gorm2.NewUser(db)
 	authorization := v1_2.NewAuthorization(db, user)
 	v1User := v1.NewUser(session, authorization)
-	api := v1.NewAPI(checker, v1User)
+	poll, err := gorm2.NewPoll(db)
+	if err != nil {
+		return nil, err
+	}
+	choice := gorm2.NewChoice(db)
+	tag := gorm2.NewTag(db)
+	response := gorm2.NewResponse(db)
+	v1Poll := v1_2.NewPoll(db, poll, choice, tag, response)
+	poll2 := v1.NewPoll(session, v1Poll)
+	api := v1.NewAPI(checker, v1User, poll2)
 	service := NewService(api)
 	return service, nil
 }
@@ -51,10 +60,15 @@ var (
 )
 
 var (
-	dbBind             = wire.Bind(new(repository.DB), new(*gorm2.DB))
-	userRepositoryBind = wire.Bind(new(repository.User), new(*gorm2.User))
+	dbBind                 = wire.Bind(new(repository.DB), new(*gorm2.DB))
+	userRepositoryBind     = wire.Bind(new(repository.User), new(*gorm2.User))
+	pollRepositoryBind     = wire.Bind(new(repository.Poll), new(*gorm2.Poll))
+	choiceRepositoryBind   = wire.Bind(new(repository.Choice), new(*gorm2.Choice))
+	tagRepositoryBind      = wire.Bind(new(repository.Tag), new(*gorm2.Tag))
+	responseRepositoryBind = wire.Bind(new(repository.Response), new(*gorm2.Response))
 
 	authorizationServiceBind = wire.Bind(new(service.Authorization), new(*v1_2.Authorization))
+	pollServiceBind          = wire.Bind(new(service.Poll), new(*v1_2.Poll))
 )
 
 type Service struct {
