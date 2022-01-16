@@ -40,7 +40,10 @@ func InjectService(config *Config) (*Service, error) {
 	response := gorm2.NewResponse(db)
 	v1Poll := v1_2.NewPoll(db, poll, choice, tag, response)
 	poll2 := v1.NewPoll(session, v1Poll)
-	api := v1.NewAPI(checker, v1User, poll2)
+	comment := gorm2.NewComment(db)
+	v1Comment := v1_2.NewComment(response, comment)
+	comment2 := v1.NewComment(v1Comment)
+	api := v1.NewAPI(checker, v1User, poll2, comment2)
 	service := NewService(api)
 	return service, nil
 }
@@ -66,9 +69,11 @@ var (
 	choiceRepositoryBind   = wire.Bind(new(repository.Choice), new(*gorm2.Choice))
 	tagRepositoryBind      = wire.Bind(new(repository.Tag), new(*gorm2.Tag))
 	responseRepositoryBind = wire.Bind(new(repository.Response), new(*gorm2.Response))
+	commentRepositoryBind  = wire.Bind(new(repository.Comment), new(*gorm2.Comment))
 
 	authorizationServiceBind = wire.Bind(new(service.Authorization), new(*v1_2.Authorization))
 	pollServiceBind          = wire.Bind(new(service.Poll), new(*v1_2.Poll))
+	commentServiceBind       = wire.Bind(new(service.Comment), new(*v1_2.Comment))
 )
 
 type Service struct {
