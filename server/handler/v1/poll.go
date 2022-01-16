@@ -231,6 +231,48 @@ func (p *Poll) GetPollsPollID(c echo.Context, pollID string) error {
 	return c.JSON(http.StatusOK, apiPollInfo)
 }
 
+func (p *Poll) PostPollsClose(c echo.Context, pollID string) error {
+	session, err := p.Session.getSession(c)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid session")
+	}
+
+	user, err := p.Session.getUser(session)
+	if errors.Is(err, ErrNoValue) {
+		return echo.NewHTTPError(http.StatusUnauthorized, "login required")
+	}
+	if err != nil {
+		log.Printf("failed to get user: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get user")
+	}
+
+	uuidPollID, err := uuid.Parse(pollID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid poll id")
+	}
+
+	err = p.pollService.ClosePoll(
+		c.Request().Context(),
+		user,
+		values.NewPollIDFromUUID(uuidPollID),
+	)
+	if errors.Is(err, service.ErrNoPoll) {
+		return echo.NewHTTPError(http.StatusBadRequest, "no poll")
+	}
+	if errors.Is(err, service.ErrPollClosed) {
+		return echo.NewHTTPError(http.StatusBadRequest, "poll already closed")
+	}
+	if errors.Is(err, service.ErrNotOwner) {
+		return echo.NewHTTPError(http.StatusForbidden, "not owner")
+	}
+	if err != nil {
+		log.Printf("failed to close poll: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to close poll")
+	}
+
+	return c.NoContent(http.StatusNoContent)
+}
+
 func (p *Poll) pollInfoToPollSummary(user *domain.User, pollInfo *service.PollInfo) (openapi.PollSummary, error) {
 	var apiPollType openapi.PollType
 	switch pollInfo.Poll.GetPollType() {
