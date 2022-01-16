@@ -130,7 +130,7 @@ func (p *Poll) GetPolls(ctx context.Context, params *repository.PollSearchParams
 		Joins("PollType").
 		Order("created_at DESC")
 
-	if params == nil {
+	if params != nil {
 		if params.Match != "" {
 			query = query.Where("polls.title like ?", "%"+params.Match+"%")
 		}
@@ -205,7 +205,7 @@ func (p *Poll) GetPoll(ctx context.Context, id values.PollID, lockType repositor
 	query := db.
 		Joins("Owner").
 		Joins("PollType").
-		Where("id = ?", uuid.UUID(id))
+		Where("polls.id = ?", uuid.UUID(id))
 
 	err = query.Take(&pollTable).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {

@@ -89,9 +89,14 @@ func (r *Response) GetResponsesByUserIDAndPollIDs(ctx context.Context, userID va
 		return nil, fmt.Errorf("failed to set lock: %w", err)
 	}
 
+	uuidPollIDs := make([]uuid.UUID, 0, len(pollIDs))
+	for _, pollID := range pollIDs {
+		uuidPollIDs = append(uuidPollIDs, uuid.UUID(pollID))
+	}
+
 	var responseTables []ResponseTable
 	err = db.
-		Where("poll_id IN ? AND respondent_id = ?", pollIDs, uuid.UUID(userID)).
+		Where("poll_id IN ? AND respondent_id = ?", uuidPollIDs, uuid.UUID(userID)).
 		Select("id", "poll_id", "created_at").
 		Find(&responseTables).Error
 	if err != nil {
