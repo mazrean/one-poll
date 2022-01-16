@@ -22,7 +22,7 @@ func NewResponse(db *DB) *Response {
 	}
 }
 
-func (r *Response) GetResponsesByPollID(ctx context.Context, pollID values.PollID) ([]*domain.Response, error) {
+func (r *Response) GetResponsesByPollID(ctx context.Context, pollID values.PollID) ([]*repository.ResponseInfo, error) {
 	db, err := r.db.getDB(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get db: %w", err)
@@ -31,6 +31,7 @@ func (r *Response) GetResponsesByPollID(ctx context.Context, pollID values.PollI
 	var responseTables []ResponseTable
 	err = db.
 		Where("poll_id = ?", uuid.UUID(pollID)).
+		Joins("Respondent").
 		Order("created_at DESC").
 		Select("id", "created_at").
 		Find(&responseTables).Error
@@ -38,15 +39,24 @@ func (r *Response) GetResponsesByPollID(ctx context.Context, pollID values.PollI
 		return nil, fmt.Errorf("failed to get responses: %w", err)
 	}
 
-	responses := make([]*domain.Response, 0, len(responseTables))
+	responseInfos := make([]*repository.ResponseInfo, 0, len(responseTables))
 	for _, responseTable := range responseTables {
-		responses = append(responses, domain.NewResponse(
-			values.NewResponseIDFromUUID(responseTable.ID),
-			responseTable.CreatedAt,
-		))
+		responseInfos = append(responseInfos,
+			&repository.ResponseInfo{
+				Response: domain.NewResponse(
+					values.NewResponseIDFromUUID(responseTable.ID),
+					responseTable.CreatedAt,
+				),
+				Respondent: domain.NewUser(
+					values.NewUserIDFromUUID(responseTable.Respondent.ID),
+					values.NewUserName(responseTable.Respondent.Name),
+					values.NewUserHashedPassword([]byte(responseTable.Respondent.Password)),
+				),
+			},
+		)
 	}
 
-	return responses, nil
+	return responseInfos, nil
 }
 
 func (r *Response) GetResponseByUserIDAndPollID(ctx context.Context, userID values.UserID, pollID values.PollID, lockType repository.LockType) (*domain.Response, error) {
