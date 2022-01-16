@@ -77,3 +77,34 @@ func (r *Response) GetResponseByUserIDAndPollID(ctx context.Context, userID valu
 		responseTable.CreatedAt,
 	), nil
 }
+
+func (r *Response) GetResponsesByUserIDAndPollIDs(ctx context.Context, userID values.UserID, pollIDs []values.PollID, lockType repository.LockType) (map[values.PollID]*domain.Response, error) {
+	db, err := r.db.getDB(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get db: %w", err)
+	}
+
+	db, err = r.db.setLock(db, lockType)
+	if err != nil {
+		return nil, fmt.Errorf("failed to set lock: %w", err)
+	}
+
+	var responseTables []ResponseTable
+	err = db.
+		Where("poll_id IN ? AND respondent_id = ?", pollIDs, uuid.UUID(userID)).
+		Select("id", "poll_id", "created_at").
+		Find(&responseTables).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get responses: %w", err)
+	}
+
+	responses := make(map[values.PollID]*domain.Response, len(responseTables))
+	for _, responseTable := range responseTables {
+		responses[values.NewPollIDFromUUID(responseTable.PollID)] = domain.NewResponse(
+			values.NewResponseIDFromUUID(responseTable.ID),
+			responseTable.CreatedAt,
+		)
+	}
+
+	return responses, nil
+}
