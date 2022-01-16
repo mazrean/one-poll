@@ -2,6 +2,7 @@ package v1
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"time"
 
@@ -91,6 +92,65 @@ func (p *Poll) PostPolls(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusCreated, apiPollInfo)
+}
+
+func (p *Poll) GetPolls(c echo.Context, params openapi.GetPollsParams) error {
+	session, err := p.Session.getSession(c)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid session")
+	}
+
+	user, err := p.Session.getUser(session)
+	if errors.Is(err, ErrNoValue) {
+		user = nil
+	}
+	if err != nil && !errors.Is(err, ErrNoValue) {
+		log.Printf("failed to get user: %v", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get user")
+	}
+
+	var searchParams *service.PollSearchParams
+	if params.Limit != nil || params.Offset != nil || params.Match != nil {
+		searchParams = &service.PollSearchParams{
+			Limit:  0,
+			Offset: 0,
+			Match:  "",
+		}
+
+		if params.Limit != nil {
+			searchParams.Limit = *params.Limit
+		}
+
+		if params.Offset != nil {
+			searchParams.Offset = *params.Offset
+		}
+
+		if params.Match != nil {
+			searchParams.Match = *params.Match
+		}
+	}
+
+	polls, err := p.pollService.GetPolls(
+		c.Request().Context(),
+		user,
+		searchParams,
+	)
+	if err != nil {
+		log.Printf("failed to get polls: %v", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get polls")
+	}
+
+	apiPolls := make([]*openapi.PollSummary, 0, len(polls))
+	for _, poll := range polls {
+		apiPoll, err := p.pollInfoToPollSummary(user, poll)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, "failed to convert poll info")
+		}
+
+		apiPolls = append(apiPolls, &apiPoll)
+	}
+
+	return c.JSON(http.StatusOK, apiPolls)
 }
 
 func (p *Poll) pollInfoToPollSummary(user *domain.User, pollInfo *service.PollInfo) (openapi.PollSummary, error) {
