@@ -24,6 +24,9 @@ func (c *Comment) GetComments(ctx context.Context, pollID values.PollID) ([]serv
 		responseIDs = append(responseIDs, responseInfo.Response.GetID())
 	}
 	dbComments, err := c.commentRepository.GetCommentsByResponseIDs(ctx, responseIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get comments: %w", err)
+	}
 
 	commentInfos := make([]service.CommentInfo, 0, len(responseInfos))
 	for _, responseInfo := range responseInfos {
