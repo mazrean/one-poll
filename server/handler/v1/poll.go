@@ -153,6 +153,42 @@ func (p *Poll) GetPolls(c echo.Context, params openapi.GetPollsParams) error {
 	return c.JSON(http.StatusOK, apiPolls)
 }
 
+func (p *Poll) DeletePollsPollID(ctx echo.Context, pollID string) error {
+	session, err := p.Session.getSession(ctx)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid session")
+	}
+
+	user, err := p.Session.getUser(session)
+	if errors.Is(err, ErrNoValue) {
+		return echo.NewHTTPError(http.StatusUnauthorized, "login required")
+	}
+	if err != nil {
+		log.Printf("failed to get user: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get user")
+	}
+
+	uuidPollID, err := uuid.Parse(pollID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid poll id")
+	}
+
+	err = p.pollService.DeletePoll(
+		ctx.Request().Context(),
+		user,
+		values.NewPollIDFromUUID(uuidPollID),
+	)
+	if errors.Is(err, service.ErrNoPoll) {
+		return echo.NewHTTPError(http.StatusBadRequest, "no poll")
+	}
+	if err != nil {
+		log.Printf("failed to get polls: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to delete poll")
+	}
+
+	return ctx.NoContent(http.StatusNoContent)
+}
+
 func (p *Poll) pollInfoToPollSummary(user *domain.User, pollInfo *service.PollInfo) (openapi.PollSummary, error) {
 	var apiPollType openapi.PollType
 	switch pollInfo.Poll.GetPollType() {
