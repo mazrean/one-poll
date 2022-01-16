@@ -14,6 +14,16 @@ type Comment struct {
 	commentRepository  repository.Comment
 }
 
+func NewComment(
+	responseRepository repository.Response,
+	commentRepository repository.Comment,
+) *Comment {
+	return &Comment{
+		responseRepository: responseRepository,
+		commentRepository:  commentRepository,
+	}
+}
+
 func (c *Comment) GetComments(ctx context.Context, pollID values.PollID) ([]service.CommentInfo, error) {
 	responseInfos, err := c.responseRepository.GetResponsesByPollID(ctx, pollID)
 	if err != nil {
