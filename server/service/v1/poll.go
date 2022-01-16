@@ -14,10 +14,11 @@ import (
 )
 
 type Poll struct {
-	db               repository.DB
-	pollRepository   repository.Poll
-	choiceRepository repository.Choice
-	tagRepository    repository.Tag
+	db                 repository.DB
+	pollRepository     repository.Poll
+	choiceRepository   repository.Choice
+	tagRepository      repository.Tag
+	responseRepository repository.Response
 }
 
 func NewPoll(
@@ -25,12 +26,14 @@ func NewPoll(
 	pollRepository repository.Poll,
 	choiceRepository repository.Choice,
 	tagRepository repository.Tag,
+	responseRepository repository.Response,
 ) *Poll {
 	return &Poll{
-		db:               db,
-		pollRepository:   pollRepository,
-		choiceRepository: choiceRepository,
-		tagRepository:    tagRepository,
+		db:                 db,
+		pollRepository:     pollRepository,
+		choiceRepository:   choiceRepository,
+		tagRepository:      tagRepository,
+		responseRepository: responseRepository,
 	}
 }
 
@@ -110,14 +113,15 @@ func (p *Poll) CreatePoll(
 	}
 
 	return &service.PollInfo{
-		Poll:    poll,
-		Choices: choices,
-		Tags:    tags,
-		Owner:   user,
+		Poll:     poll,
+		Choices:  choices,
+		Tags:     tags,
+		Owner:    user,
+		Response: nil,
 	}, nil
 }
 
-func (p *Poll) GetPolls(ctx context.Context, params *service.PollSearchParams) ([]*service.PollInfo, error) {
+func (p *Poll) GetPolls(ctx context.Context, user *domain.User, params *service.PollSearchParams) ([]*service.PollInfo, error) {
 	var repositoryParams *repository.PollSearchParams
 	if params != nil {
 		repositoryParams = &repository.PollSearchParams{
@@ -147,6 +151,11 @@ func (p *Poll) GetPolls(ctx context.Context, params *service.PollSearchParams) (
 		return nil, fmt.Errorf("failed to get choices: %w", err)
 	}
 
+	responseMap, err := p.responseRepository.GetResponsesByUserIDAndPollIDs(ctx, user.GetID(), pollIDs, repository.LockTypeNone)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get responses: %w", err)
+	}
+
 	pollInfos := make([]*service.PollInfo, 0, len(polls))
 	for _, poll := range polls {
 		choices, ok := choiceMap[poll.Poll.GetID()]
@@ -159,11 +168,17 @@ func (p *Poll) GetPolls(ctx context.Context, params *service.PollSearchParams) (
 			tags = []*domain.Tag{}
 		}
 
+		response, ok := responseMap[poll.Poll.GetID()]
+		if !ok {
+			response = nil
+		}
+
 		pollInfo := &service.PollInfo{
-			Poll:    poll.Poll,
-			Choices: choices,
-			Tags:    tags,
-			Owner:   poll.Owner,
+			Poll:     poll.Poll,
+			Choices:  choices,
+			Tags:     tags,
+			Owner:    poll.Owner,
+			Response: response,
 		}
 		pollInfos = append(pollInfos, pollInfo)
 	}
@@ -171,8 +186,11 @@ func (p *Poll) GetPolls(ctx context.Context, params *service.PollSearchParams) (
 	return pollInfos, nil
 }
 
-func (p *Poll) GetPoll(ctx context.Context, id values.PollID) (*service.PollInfo, error) {
+func (p *Poll) GetPoll(ctx context.Context, user *domain.User, id values.PollID) (*service.PollInfo, error) {
 	poll, err := p.pollRepository.GetPoll(ctx, id, repository.LockTypeNone)
+	if errors.Is(err, repository.ErrRecordNotFound) {
+		return nil, service.ErrNoPoll
+	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to get poll: %w", err)
 	}
@@ -187,11 +205,19 @@ func (p *Poll) GetPoll(ctx context.Context, id values.PollID) (*service.PollInfo
 		return nil, fmt.Errorf("failed to get choices: %w", err)
 	}
 
+	response, err := p.responseRepository.GetResponseByUserIDAndPollID(ctx, user.GetID(), id, repository.LockTypeNone)
+	if errors.Is(err, repository.ErrRecordNotFound) {
+		response = nil
+	} else if err != nil {
+		return nil, fmt.Errorf("failed to get response: %w", err)
+	}
+
 	return &service.PollInfo{
-		Poll:    poll.Poll,
-		Choices: choices,
-		Tags:    tags,
-		Owner:   poll.Owner,
+		Poll:     poll.Poll,
+		Choices:  choices,
+		Tags:     tags,
+		Owner:    poll.Owner,
+		Response: response,
 	}, nil
 }
 
@@ -207,6 +233,10 @@ func (p *Poll) ClosePoll(ctx context.Context, user *domain.User, id values.PollI
 
 		if poll.Poll.IsExpired() {
 			return service.ErrPollClosed
+		}
+
+		if poll.Owner.GetID() != user.GetID() {
+			return service.ErrNotOwner
 		}
 
 		err = p.pollRepository.UpdatePollDeadline(ctx, id, sql.NullTime{
