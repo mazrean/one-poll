@@ -15,6 +15,14 @@ type Comment struct {
 	commentService service.Comment
 }
 
+func NewComment(
+	commentService service.Comment,
+) *Comment {
+	return &Comment{
+		commentService: commentService,
+	}
+}
+
 // todo Comment の数の制限については未実装
 func (c Comment) GetPollsPollIDComments(ctx echo.Context, pollID string, params openapi.GetPollsPollIDCommentsParams) error {
 	uuidPollID, err := uuid.Parse(pollID)
