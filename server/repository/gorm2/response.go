@@ -33,7 +33,7 @@ func (r *Response) GetResponsesByPollID(ctx context.Context, pollID values.PollI
 		Where("poll_id = ?", uuid.UUID(pollID)).
 		Joins("Respondent").
 		Order("created_at DESC").
-		Select("id", "created_at").
+		Select("responses.id", "created_at").
 		Find(&responseTables).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get responses: %w", err)
