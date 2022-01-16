@@ -17,9 +17,6 @@ type unimplemented interface {
 	// (POST /polls/{pollID})
 	PostPollsPollID(ctx echo.Context, pollID string) error
 
-	// (GET /polls/{pollID}/comments)
-	GetPollsPollIDComments(ctx echo.Context, pollID string, params openapi.GetPollsPollIDCommentsParams) error
-
 	// (GET /polls/{pollID}/results)
 	GetPollsPollIDResults(ctx echo.Context, pollID string) error
 
@@ -40,6 +37,7 @@ type API struct {
 	*Checker
 	*User
 	*Poll
+	*Comment
 	unimplemented
 }
 
@@ -47,11 +45,13 @@ func NewAPI(
 	checker *Checker,
 	user *User,
 	poll *Poll,
+	comment *Comment,
 ) *API {
 	return &API{
 		Checker: checker,
 		User:    user,
 		Poll:    poll,
+		Comment: comment,
 	}
 }
 
