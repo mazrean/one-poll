@@ -13,6 +13,12 @@ type Comment struct {
 	db *DB
 }
 
+func NewComment(db *DB) *Comment {
+	return &Comment{
+		db: db,
+	}
+}
+
 func (c *Comment) CreateComment(ctx context.Context, responseID values.ResponseID, comment *domain.Comment) error {
 	db, err := c.db.getDB(ctx)
 	if err != nil {
