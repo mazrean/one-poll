@@ -18,8 +18,8 @@ type Poll interface {
 		choices []values.ChoiceLabel,
 		tags []values.TagName,
 	) (*PollInfo, error)
-	GetPolls(ctx context.Context, params *PollSearchParams) ([]*PollInfo, error)
-	GetPoll(ctx context.Context, id values.PollID) (*PollInfo, error)
+	GetPolls(ctx context.Context, user *domain.User, params *PollSearchParams) ([]*PollInfo, error)
+	GetPoll(ctx context.Context, user *domain.User, id values.PollID) (*PollInfo, error)
 	ClosePoll(ctx context.Context, user *domain.User, id values.PollID) error
 	DeletePoll(ctx context.Context, user *domain.User, id values.PollID) error
 }
@@ -29,6 +29,8 @@ type PollInfo struct {
 	Tags    []*domain.Tag
 	Choices []*domain.Choice
 	Owner   *domain.User
+	// Response nullableなことに注意
+	Response *domain.Response
 }
 
 type PollSearchParams struct {
