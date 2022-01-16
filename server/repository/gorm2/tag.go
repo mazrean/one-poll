@@ -8,6 +8,7 @@ import (
 	"github.com/cs-sysimpl/suzukake/domain/values"
 	"github.com/cs-sysimpl/suzukake/repository"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type Tag struct {
@@ -92,9 +93,11 @@ func (t *Tag) GetTagsByPollIDs(ctx context.Context, pollIDs []values.PollID, loc
 
 	var pollTables []PollTable
 	err = db.
-		Where("id IN ?", uuidPollIDs).
-		Joins("Tags").
-		Select("polls.id", "Tags.id", "Tags.name").
+		Where("polls.id IN ?", uuidPollIDs).
+		Preload("Tags", func(db *gorm.DB) *gorm.DB {
+			return db.Select("id", "name")
+		}).
+		Select("polls.id").
 		Find(&pollTables).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get tags: %w", err)
@@ -128,9 +131,11 @@ func (t *Tag) GetTagsByPollID(ctx context.Context, pollID values.PollID, lockTyp
 
 	var pollTable PollTable
 	err = db.
-		Where("id = ?", uuid.UUID(pollID)).
-		Select("id", "Tags.id", "Tags.name").
-		Joins("Tags").
+		Where("polls.id = ?", uuid.UUID(pollID)).
+		Preload("Tags", func(db *gorm.DB) *gorm.DB {
+			return db.Select("id", "name")
+		}).
+		Select("polls.id").
 		Take(&pollTable).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get tags: %w", err)

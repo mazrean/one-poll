@@ -34,7 +34,7 @@ type PollTable struct {
 	ID        uuid.UUID      `gorm:"type:char(36);not null;primaryKey;size:36"`
 	OwnerID   uuid.UUID      `gorm:"type:char(36);not null;size:36"`
 	Title     string         `gorm:"type:varchar(50);not null;size:50"`
-	TypeID    int            `gorm:"type:int(11);not null"`
+	TypeID    int            `gorm:"type:tinyint;not null"`
 	Deadline  sql.NullTime   `gorm:"type:DATETIME NULL;default:NULL"`
 	CreatedAt time.Time      `gorm:"type:datetime;not null"`
 	DeletedAt gorm.DeletedAt `gorm:"type:DATETIME NULL;default:NULL"`
@@ -49,7 +49,7 @@ func (*PollTable) TableName() string {
 }
 
 type PollTypeTable struct {
-	ID     int    `gorm:"type:int(11);not null;primaryKey;autoIncrement"`
+	ID     int    `gorm:"type:TINYINT AUTO_INCREMENT;not null;primaryKey"`
 	Name   string `gorm:"type:varchar(50);not null;size:50;unique"`
 	Active bool   `gorm:"type:bool;not null;default:true"`
 }
