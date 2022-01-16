@@ -189,6 +189,48 @@ func (p *Poll) DeletePollsPollID(ctx echo.Context, pollID string) error {
 	return ctx.NoContent(http.StatusNoContent)
 }
 
+func (p *Poll) GetPollsPollID(c echo.Context, pollID string) error {
+	session, err := p.Session.getSession(c)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid session")
+	}
+
+	user, err := p.Session.getUser(session)
+	if errors.Is(err, ErrNoValue) {
+		user = nil
+	}
+	if err != nil && !errors.Is(err, ErrNoValue) {
+		log.Printf("failed to get user: %v", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get user")
+	}
+
+	uuidPollID, err := uuid.Parse(pollID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid poll id")
+	}
+
+	pollInfo, err := p.pollService.GetPoll(
+		c.Request().Context(),
+		user,
+		values.NewPollIDFromUUID(uuidPollID),
+	)
+	if errors.Is(err, service.ErrNoPoll) {
+		return echo.NewHTTPError(http.StatusBadRequest, "no poll")
+	}
+	if err != nil {
+		log.Printf("failed to get poll: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get poll")
+	}
+
+	apiPollInfo, err := p.pollInfoToPollSummary(user, pollInfo)
+	if err != nil {
+		log.Printf("failed to parse poll info: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to convert poll info")
+	}
+
+	return c.JSON(http.StatusOK, apiPollInfo)
+}
+
 func (p *Poll) pollInfoToPollSummary(user *domain.User, pollInfo *service.PollInfo) (openapi.PollSummary, error) {
 	var apiPollType openapi.PollType
 	switch pollInfo.Poll.GetPollType() {
