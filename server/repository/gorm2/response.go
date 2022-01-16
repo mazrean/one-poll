@@ -2,11 +2,14 @@ package gorm2
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/cs-sysimpl/suzukake/domain"
 	"github.com/cs-sysimpl/suzukake/domain/values"
+	"github.com/cs-sysimpl/suzukake/repository"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type Response struct {
@@ -44,4 +47,33 @@ func (r *Response) GetResponsesByPollID(ctx context.Context, pollID values.PollI
 	}
 
 	return responses, nil
+}
+
+func (r *Response) GetResponseByUserIDAndPollID(ctx context.Context, userID values.UserID, pollID values.PollID, lockType repository.LockType) (*domain.Response, error) {
+	db, err := r.db.getDB(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get db: %w", err)
+	}
+
+	db, err = r.db.setLock(db, lockType)
+	if err != nil {
+		return nil, fmt.Errorf("failed to set lock: %w", err)
+	}
+
+	var responseTable ResponseTable
+	err = db.
+		Where("poll_id = ? AND respondent_id = ?", uuid.UUID(pollID), uuid.UUID(userID)).
+		Select("id", "created_at").
+		Take(&responseTable).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, repository.ErrRecordNotFound
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to get response: %w", err)
+	}
+
+	return domain.NewResponse(
+		values.NewResponseIDFromUUID(responseTable.ID),
+		responseTable.CreatedAt,
+	), nil
 }
