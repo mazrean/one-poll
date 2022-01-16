@@ -24,7 +24,7 @@ func (p *PollAuthority) CanRead(ctx context.Context, user *domain.User, poll *do
 		return true, nil
 	}
 
-	_, err := p.responseRepository.GetResponseByUserAndPollID(ctx, user.GetID(), poll.GetID(), repository.LockTypeNone)
+	_, err := p.responseRepository.GetResponseByUserIDAndPollID(ctx, user.GetID(), poll.GetID(), repository.LockTypeNone)
 	if errors.Is(err, repository.ErrRecordNotFound) {
 		return true, nil
 	}
