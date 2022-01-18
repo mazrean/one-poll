@@ -14,14 +14,14 @@ type Comment struct {
 	responseRepository repository.Response
 	commentRepository  repository.Comment
 	pollRepository     repository.Poll
-	pollAuthority      PollAuthority
+	pollAuthority      *PollAuthority
 }
 
 func NewComment(
 	responseRepository repository.Response,
 	commentRepository repository.Comment,
 	pollRepository repository.Poll,
-	pollAuthority PollAuthority,
+	pollAuthority *PollAuthority,
 ) *Comment {
 	return &Comment{
 		responseRepository: responseRepository,
