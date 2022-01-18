@@ -323,28 +323,28 @@ func (p *Poll) pollInfoToPollSummary(user *domain.User, pollInfo *service.PollIn
 	switch {
 	case pollInfo.Owner.GetID() == user.GetID():
 		apiUserStatus = openapi.UserStatus{
-			AccsessMode: openapi.UserStatusAccsessModeCanAccessDetails,
-			IsOwner:     true,
+			AccessMode: openapi.UserStatusAccessModeCanAccessDetails,
+			IsOwner:    true,
 		}
 	case pollInfo.Poll.IsExpired():
 		apiUserStatus = openapi.UserStatus{
-			AccsessMode: openapi.UserStatusAccsessModeCanAccessDetails,
-			IsOwner:     false,
+			AccessMode: openapi.UserStatusAccessModeCanAccessDetails,
+			IsOwner:    false,
 		}
 	case user == nil:
 		apiUserStatus = openapi.UserStatus{
-			AccsessMode: openapi.UserStatusAccsessModeOnlyBrowsable,
-			IsOwner:     false,
+			AccessMode: openapi.UserStatusAccessModeOnlyBrowsable,
+			IsOwner:    false,
 		}
 	case pollInfo.Response == nil:
 		apiUserStatus = openapi.UserStatus{
-			AccsessMode: openapi.UserStatusAccsessModeCanAnswer,
-			IsOwner:     false,
+			AccessMode: openapi.UserStatusAccessModeCanAnswer,
+			IsOwner:    false,
 		}
 	default:
 		apiUserStatus = openapi.UserStatus{
-			AccsessMode: openapi.UserStatusAccsessModeCanAccessDetails,
-			IsOwner:     false,
+			AccessMode: openapi.UserStatusAccessModeCanAccessDetails,
+			IsOwner:    false,
 		}
 	}
 
