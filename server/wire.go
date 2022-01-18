@@ -76,6 +76,7 @@ func InjectService(config *Config) (*Service, error) {
 		v1Service.NewAuthorization,
 		v1Service.NewPoll,
 		v1Service.NewComment,
+		v1Service.NewPollAuthority,
 
 		v1Handler.NewAPI,
 		v1Handler.NewSession,
