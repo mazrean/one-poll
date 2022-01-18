@@ -58,6 +58,7 @@ export default defineComponent({
       default: ''
     }
   },
+  emits: ['on-submit-event'],
   setup(propsm, context) {
     const name = ref<string>('')
     const password = ref<string>('')

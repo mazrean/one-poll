@@ -20,7 +20,7 @@ export default defineComponent({
     const store = useMainStore()
     const onSubmitForm = async (name: string, password: string) => {
       const user: PostUser = { name: name, password: password }
-      await api.postUsers(user).catch(error => console.log(error.message))
+      await api.postUsers(user)
       store.setUserID()
     }
     return { onSubmitForm }
