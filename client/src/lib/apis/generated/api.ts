@@ -29,10 +29,10 @@ import { BASE_PATH, COLLECTION_FORMATS, RequestArgs, BaseAPI, RequiredError } fr
 export interface Choice {
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof Choice
      */
-    'id': number;
+    'id': string;
     /**
      * 質問文
      * @type {string}
@@ -61,6 +61,43 @@ export interface InlineResponse200 {
 }
 /**
  * 質問idは存在しない。POST /polls/のボディ。
+ * @export
+ * @interface NewPoll
+ */
+export interface NewPoll {
+    /**
+     * 
+     * @type {string}
+     * @memberof NewPoll
+     */
+    'title': string;
+    /**
+     * 
+     * @type {PollType}
+     * @memberof NewPoll
+     */
+    'type': PollType;
+    /**
+     * deadlineをpostする、またはq_statusがlimitedの時、存在する。回答締め切り時刻。
+     * @type {string}
+     * @memberof NewPoll
+     */
+    'deadline'?: string;
+    /**
+     * 初期実装では含まない。
+     * @type {Array<string>}
+     * @memberof NewPoll
+     */
+    'tags'?: Array<string>;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof NewPoll
+     */
+    'question': Array<string>;
+}
+/**
+ * 質問idは存在しない。
  * @export
  * @interface PollBase
  */
@@ -380,17 +417,17 @@ export interface UserStatus {
      * @type {string}
      * @memberof UserStatus
      */
-    'accsess_mode': UserStatusAccsessModeEnum;
+    'access_mode': UserStatusAccessModeEnum;
 }
 
 /**
     * @export
     * @enum {string}
     */
-export enum UserStatusAccsessModeEnum {
+export enum UserStatusAccessModeEnum {
     OnlyBrowsable = 'only_browsable',
     CanAnswer = 'can_answer',
-    CanAsccessDetails = 'can_asccess_details'
+    CanAccessDetails = 'can_access_details'
 }
 
 
@@ -403,11 +440,12 @@ export const CommentApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * IDに対応するコメント配列を取得する。
          * @param {string} pollID 
-         * @param {number} [max] 最大コメント数
+         * @param {number} [limit] 最大コメント取得数
+         * @param {number} [offset] オフセット
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPollsPollIDComments: async (pollID: string, max?: number, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getPollsPollIDComments: async (pollID: string, limit?: number, offset?: number, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'pollID' is not null or undefined
             assertParamExists('getPollsPollIDComments', 'pollID', pollID)
             const localVarPath = `/polls/{pollID}/comments`
@@ -423,8 +461,12 @@ export const CommentApiAxiosParamCreator = function (configuration?: Configurati
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-            if (max !== undefined) {
-                localVarQueryParameter['max'] = max;
+            if (limit !== undefined) {
+                localVarQueryParameter['limit'] = limit;
+            }
+
+            if (offset !== undefined) {
+                localVarQueryParameter['offset'] = offset;
             }
 
 
@@ -451,12 +493,13 @@ export const CommentApiFp = function(configuration?: Configuration) {
         /**
          * IDに対応するコメント配列を取得する。
          * @param {string} pollID 
-         * @param {number} [max] 最大コメント数
+         * @param {number} [limit] 最大コメント取得数
+         * @param {number} [offset] オフセット
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getPollsPollIDComments(pollID: string, max?: number, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<PollComment>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getPollsPollIDComments(pollID, max, options);
+        async getPollsPollIDComments(pollID: string, limit?: number, offset?: number, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<PollComment>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getPollsPollIDComments(pollID, limit, offset, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -472,12 +515,13 @@ export const CommentApiFactory = function (configuration?: Configuration, basePa
         /**
          * IDに対応するコメント配列を取得する。
          * @param {string} pollID 
-         * @param {number} [max] 最大コメント数
+         * @param {number} [limit] 最大コメント取得数
+         * @param {number} [offset] オフセット
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPollsPollIDComments(pollID: string, max?: number, options?: any): AxiosPromise<Array<PollComment>> {
-            return localVarFp.getPollsPollIDComments(pollID, max, options).then((request) => request(axios, basePath));
+        getPollsPollIDComments(pollID: string, limit?: number, offset?: number, options?: any): AxiosPromise<Array<PollComment>> {
+            return localVarFp.getPollsPollIDComments(pollID, limit, offset, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -492,13 +536,14 @@ export class CommentApi extends BaseAPI {
     /**
      * IDに対応するコメント配列を取得する。
      * @param {string} pollID 
-     * @param {number} [max] 最大コメント数
+     * @param {number} [limit] 最大コメント取得数
+     * @param {number} [offset] オフセット
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof CommentApi
      */
-    public getPollsPollIDComments(pollID: string, max?: number, options?: AxiosRequestConfig) {
-        return CommentApiFp(this.configuration).getPollsPollIDComments(pollID, max, options).then((request) => request(this.axios, this.basePath));
+    public getPollsPollIDComments(pollID: string, limit?: number, offset?: number, options?: AxiosRequestConfig) {
+        return CommentApiFp(this.configuration).getPollsPollIDComments(pollID, limit, offset, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -543,7 +588,7 @@ export const PollApiAxiosParamCreator = function (configuration?: Configuration)
             };
         },
         /**
-         * 投票リストを取得する。デフォルトでは最新の10件を取得する。
+         * 投票リストを取得する。デフォルトでは新しい順にすべてを取得する。
          * @param {number} [limit] 最大質問数
          * @param {number} [offset] 質問オフセット
          * @param {string} [match] タイトルの部分一致
@@ -621,11 +666,11 @@ export const PollApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 投票を作成する
-         * @param {PollBase} [pollBase] 
+         * @param {NewPoll} [newPoll] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postPolls: async (pollBase?: PollBase, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        postPolls: async (newPoll?: NewPoll, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/polls`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -645,7 +690,40 @@ export const PollApiAxiosParamCreator = function (configuration?: Configuration)
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(pollBase, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(newPoll, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * IDに対応する投票をcloseする
+         * @param {string} pollID 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postPollsClose: async (pollID: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'pollID' is not null or undefined
+            assertParamExists('postPollsClose', 'pollID', pollID)
+            const localVarPath = `/polls/{pollID}/close`
+                .replace(`{${"pollID"}}`, encodeURIComponent(String(pollID)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -710,7 +788,7 @@ export const PollApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         * 投票リストを取得する。デフォルトでは最新の10件を取得する。
+         * 投票リストを取得する。デフォルトでは新しい順にすべてを取得する。
          * @param {number} [limit] 最大質問数
          * @param {number} [offset] 質問オフセット
          * @param {string} [match] タイトルの部分一致
@@ -727,18 +805,28 @@ export const PollApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getPollsPollID(pollID: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<PollSummary>>> {
+        async getPollsPollID(pollID: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PollSummary>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getPollsPollID(pollID, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
          * 投票を作成する
-         * @param {PollBase} [pollBase] 
+         * @param {NewPoll} [newPoll] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async postPolls(pollBase?: PollBase, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object & PollBase>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.postPolls(pollBase, options);
+        async postPolls(newPoll?: NewPoll, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PollSummary>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postPolls(newPoll, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * IDに対応する投票をcloseする
+         * @param {string} pollID 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async postPollsClose(pollID: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postPollsClose(pollID, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -772,7 +860,7 @@ export const PollApiFactory = function (configuration?: Configuration, basePath?
             return localVarFp.deletePollsPollID(pollID, options).then((request) => request(axios, basePath));
         },
         /**
-         * 投票リストを取得する。デフォルトでは最新の10件を取得する。
+         * 投票リストを取得する。デフォルトでは新しい順にすべてを取得する。
          * @param {number} [limit] 最大質問数
          * @param {number} [offset] 質問オフセット
          * @param {string} [match] タイトルの部分一致
@@ -788,17 +876,26 @@ export const PollApiFactory = function (configuration?: Configuration, basePath?
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPollsPollID(pollID: string, options?: any): AxiosPromise<Array<PollSummary>> {
+        getPollsPollID(pollID: string, options?: any): AxiosPromise<PollSummary> {
             return localVarFp.getPollsPollID(pollID, options).then((request) => request(axios, basePath));
         },
         /**
          * 投票を作成する
-         * @param {PollBase} [pollBase] 
+         * @param {NewPoll} [newPoll] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postPolls(pollBase?: PollBase, options?: any): AxiosPromise<object & PollBase> {
-            return localVarFp.postPolls(pollBase, options).then((request) => request(axios, basePath));
+        postPolls(newPoll?: NewPoll, options?: any): AxiosPromise<PollSummary> {
+            return localVarFp.postPolls(newPoll, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * IDに対応する投票をcloseする
+         * @param {string} pollID 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postPollsClose(pollID: string, options?: any): AxiosPromise<void> {
+            return localVarFp.postPollsClose(pollID, options).then((request) => request(axios, basePath));
         },
         /**
          * IDに対応する投票への回答
@@ -832,7 +929,7 @@ export class PollApi extends BaseAPI {
     }
 
     /**
-     * 投票リストを取得する。デフォルトでは最新の10件を取得する。
+     * 投票リストを取得する。デフォルトでは新しい順にすべてを取得する。
      * @param {number} [limit] 最大質問数
      * @param {number} [offset] 質問オフセット
      * @param {string} [match] タイトルの部分一致
@@ -857,13 +954,24 @@ export class PollApi extends BaseAPI {
 
     /**
      * 投票を作成する
-     * @param {PollBase} [pollBase] 
+     * @param {NewPoll} [newPoll] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof PollApi
      */
-    public postPolls(pollBase?: PollBase, options?: AxiosRequestConfig) {
-        return PollApiFp(this.configuration).postPolls(pollBase, options).then((request) => request(this.axios, this.basePath));
+    public postPolls(newPoll?: NewPoll, options?: AxiosRequestConfig) {
+        return PollApiFp(this.configuration).postPolls(newPoll, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * IDに対応する投票をcloseする
+     * @param {string} pollID 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof PollApi
+     */
+    public postPollsClose(pollID: string, options?: AxiosRequestConfig) {
+        return PollApiFp(this.configuration).postPollsClose(pollID, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -1585,13 +1693,14 @@ export class Apis extends BaseAPI {
     /**
      * IDに対応するコメント配列を取得する。
      * @param {string} pollID
-     * @param {number} [max] 最大コメント数
+     * @param {number} [limit] 最大コメント取得数
+     * @param {number} [offset] オフセット
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof CommentApi
      */
-    public getPollsPollIDComments(pollID: string, max?: number, options?: AxiosRequestConfig) {
-        return CommentApiFp(this.configuration).getPollsPollIDComments(pollID, max, options).then((request) => request(this.axios, this.basePath));
+    public getPollsPollIDComments(pollID: string, limit?: number, offset?: number, options?: AxiosRequestConfig) {
+        return CommentApiFp(this.configuration).getPollsPollIDComments(pollID, limit, offset, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -1606,7 +1715,7 @@ export class Apis extends BaseAPI {
     }
 
     /**
-     * 投票リストを取得する。デフォルトでは最新の10件を取得する。
+     * 投票リストを取得する。デフォルトでは新しい順にすべてを取得する。
      * @param {number} [limit] 最大質問数
      * @param {number} [offset] 質問オフセット
      * @param {string} [match] タイトルの部分一致
@@ -1631,13 +1740,24 @@ export class Apis extends BaseAPI {
 
     /**
      * 投票を作成する
-     * @param {PollBase} [pollBase]
+     * @param {NewPoll} [newPoll]
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof PollApi
      */
-    public postPolls(pollBase?: PollBase, options?: AxiosRequestConfig) {
-        return PollApiFp(this.configuration).postPolls(pollBase, options).then((request) => request(this.axios, this.basePath));
+    public postPolls(newPoll?: NewPoll, options?: AxiosRequestConfig) {
+        return PollApiFp(this.configuration).postPolls(newPoll, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * IDに対応する投票をcloseする
+     * @param {string} pollID
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof PollApi
+     */
+    public postPollsClose(pollID: string, options?: AxiosRequestConfig) {
+        return PollApiFp(this.configuration).postPollsClose(pollID, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

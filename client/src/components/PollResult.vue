@@ -7,37 +7,33 @@
       {{ choice.choice }}
     </div>
   </div>
+  <div class="d-flex justify-content-around">
+    <div>{{ count }} 票</div>
+    <div class="card-link"><a href="#">詳細を見る</a></div>
+  </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
-
-interface Choice {
-  id: number
-  choice: string
-  count: number
-}
-
-/*
-interface Result {
-  choice: Array<Choice>
-}
-*/
+import { Choice } from '../lib/apis'
 
 export default defineComponent({
   props: {
+    pollId: {
+      type: String,
+      required: true
+    },
+    type: {
+      type: String,
+      required: true
+    },
+    count: {
+      type: Number,
+      required: true
+    },
     result: {
       type: Array as PropType<Choice[]>,
-      default() {
-        return [
-          {
-            id: -1,
-            choice: 'choice',
-            count: 0
-          }
-        ]
-      },
-      required: false
+      required: true
     }
   },
   setup() {
@@ -51,7 +47,7 @@ export default defineComponent({
 
 <style>
 .poll-choice {
-  width: 30rem;
+  width: 100%;
   height: 2.7rem;
 }
 .poll-bar {

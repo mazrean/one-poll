@@ -1,0 +1,104 @@
+[
+  {
+    "pollId": "poll_id1",
+    "title": "Title1",
+    "type": "radio",
+    "deadline": "2022-01-20",
+    "question": [
+      {
+        "id": "1",
+        "choice": "choice1"
+      },
+      {
+        "id": "2",
+        "choice": "choice2"
+      },
+      {
+        "id": "3",
+        "choice": "choice3"
+      },
+      {
+        "id": "4",
+        "choice": "choice4"
+      }
+    ],
+    "createdAt": "2022-01-19",
+    "qStatus" : "opened",
+    "owner": {
+      "uuid": "uuid",
+      "name": "ownername"
+    },
+    "userStatus": {
+      "is_owner": false,
+      "access_mode": "can_answer"
+    }
+  },
+  {
+    "pollId": "poll_id2",
+    "title": "Title2",
+    "type": "radio",
+    "deadline": "2022-01-20",
+    "question": [
+      {
+        "id": "1",
+        "choice": "choice1"
+      },
+      {
+        "id": "2",
+        "choice": "choice2"
+      },
+      {
+        "id": "3",
+        "choice": "choice3"
+      },
+      {
+        "id": "4",
+        "choice": "choice4"
+      }
+    ],
+    "createdAt": "2022-01-19",
+    "qStatus" : "opened",
+    "owner": {
+      "uuid": "uuid",
+      "name": "ownername"
+    },
+    "userStatus": {
+      "is_owner": false,
+      "access_mode": "only_browsable"
+    }
+  },
+  {
+    "pollId": "poll_id3",
+    "title": "Title3",
+    "type": "radio",
+    "deadline": "2022-01-20",
+    "question": [
+      {
+        "id": "1",
+        "choice": "choice1"
+      },
+      {
+        "id": "2",
+        "choice": "choice2"
+      },
+      {
+        "id": "3",
+        "choice": "choice3"
+      },
+      {
+        "id": "4",
+        "choice": "choice4"
+      }
+    ],
+    "createdAt": "2022-01-19",
+    "qStatus" : "opened",
+    "owner": {
+      "uuid": "uuid",
+      "name": "ownername"
+    },
+    "userStatus": {
+      "is_owner": false,
+      "access_mode": "can_access_details"
+    }
+  }
+]
