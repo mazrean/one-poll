@@ -237,7 +237,7 @@ components:
         is_owner:
           type: boolean
           description: オーナーか
-        accsess_mode:
+        access_mode:
           type: string
           enum:
             - only_browsable
@@ -246,7 +246,7 @@ components:
           description: only_browable 質問の閲覧　can_answer 解答できる　can_access_details 結果の表示
       required:
         - is_owner
-        - accsess_mode
+        - access_mode
     Choice:
       title: Choice
       description: 選択肢ボタン
@@ -549,7 +549,7 @@ paths:
       tags:
         - poll
       description: 質問を削除する
-  /polls/{pollID}/close:
+  '/polls/{pollID}/close':
     parameters:
       - schema:
           type: string
