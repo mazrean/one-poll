@@ -42,7 +42,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, ref, watch } from 'vue'
 
 export default defineComponent({
   name: 'CertificationFormComponent',
@@ -53,42 +53,35 @@ export default defineComponent({
     }
   },
   setup() {
-    return {}
-  },
-  data() {
-    return {
-      name: '',
-      password: '',
-      validated: false,
-      nameError: false,
-      passError: false
-    }
-  },
-  watch: {
-    name() {
+    const name = ref<string>('')
+    const password = ref<string>('')
+    const validated = ref<boolean>(false)
+    let nameError = false
+    let passError = false
+    watch(name, () => {
       let re = new RegExp('[0-9a-zA-Z_]{4,16}')
-      if (re.test(this.name)) {
-        this.nameError = false
+      if (re.test(name.value)) {
+        nameError = false
       } else {
-        this.nameError = true
+        nameError = true
       }
-    },
-    password() {
+    })
+    watch(password, () => {
       let re = new RegExp('[0-9a-zA-Z_]{8,50}')
-      if (re.test(this.password)) {
-        this.passError = false
+      if (re.test(password.value)) {
+        passError = false
       } else {
-        this.passError = true
+        passError = true
       }
-    }
-  },
-  methods: {
-    validation: function (event: Event) {
-      this.validated = true
-      if (this.nameError || this.passError) {
+    })
+    //method
+    const validation = (event: Event): void => {
+      validated.value = true
+      if (nameError || passError) {
         event.preventDefault()
       }
     }
+    return { name, password, validated, validation }
   }
 })
 </script>
