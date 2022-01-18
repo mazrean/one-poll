@@ -52,10 +52,21 @@ func (c *Comment) GetCommentsByResponseIDs(ctx context.Context, responseIDs []va
 	}
 
 	var commentTables []CommentTable
-	err = db.
-		Where("response_id IN ?", uuidResponseIDs).
-		Select("id", "response_id", "comment").
-		Find(&commentTables).Error
+	query := db.
+		Where("response_id IN ?", uuidResponseIDs)
+
+	if params.Limit != nil {
+		if *params.Limit > 0 {
+			query = query.Limit(*params.Limit)
+		}
+	}
+	if params.Offset != nil {
+		if *params.Offset > 0 {
+			query = query.Offset(*params.Offset)
+		}
+	}
+
+	err = query.Select("id", "response_id", "comment").Find(&commentTables).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get comments: %w", err)
 	}
