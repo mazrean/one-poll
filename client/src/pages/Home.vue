@@ -1,16 +1,17 @@
 <template>
   <div class="d-flex flex-wrap">
     <PollCardComponent
-      v-for="card in cards"
-      :key="card.pollId"
-      :poll-id="card.pollId"
-      :title="card.title"
-      :tags="card.tags"
-      :question="card.question"
-      :count="card.count"
-      :created-at="card.createdAt"
-      :owner="card.owner"
-      :user-status="card.userStatus"
+      v-for="PollSummary in PollSummaries"
+      :key="PollSummary.pollId"
+      :poll-id="PollSummary.pollId"
+      :title="PollSummary.title"
+      :type="PollSummary.type"
+      :deadline="PollSummary.deadline"
+      :question="PollSummary.question"
+      :created-at="PollSummary.createdAt"
+      :q-status="PollSummary.qStatus"
+      :owner="PollSummary.owner"
+      :user-status="PollSummary.userStatus"
       class="m-3">
     </PollCardComponent>
   </div>
@@ -18,14 +19,16 @@
 
 <script lang="ts">
 import PollCardComponent from '/@/components/PollCard.vue'
-import cards from '/@/assets/poll_card_data.json'
+import PollSummaries from '/@/assets/poll_summaries.json'
+//import apis from '../lib/apis'
 
 export default {
   name: 'HomePage',
   components: { PollCardComponent },
   setup() {
+    //const PollSummaries = apis.getPolls()
     return {
-      cards,
+      PollSummaries,
       PollCardComponent
     }
   }

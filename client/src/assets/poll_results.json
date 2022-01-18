@@ -1,0 +1,27 @@
+{
+  "pollId": "poll-id1",
+  "type" : "radio",
+  "count" : 15,
+  "result" : [
+    {
+      "id": 1,
+      "choice": "choice1",
+      "count": 2
+    },
+    {
+      "id": 2,
+      "choice": "choice2",
+      "count": 4
+    },
+    {
+      "id": 3,
+      "choice": "choice3",
+      "count": 6
+    },
+    {
+      "id": 4,
+      "choice": "choice4",
+      "count": 3
+    }
+  ]
+}
