@@ -26,6 +26,22 @@ func (p *PollAuthority) CanRead(ctx context.Context, user *domain.User, poll *do
 
 	_, err := p.responseRepository.GetResponseByUserIDAndPollID(ctx, user.GetID(), poll.GetID(), repository.LockTypeNone)
 	if errors.Is(err, repository.ErrRecordNotFound) {
+		return false, nil
+	}
+	if err != nil {
+		return false, fmt.Errorf("failed to get response: %w", err)
+	}
+
+	return true, nil
+}
+
+func (p *PollAuthority) CanResponse(ctx context.Context, user *domain.User, poll *domain.Poll) (bool, error) {
+	if poll.IsExpired() {
+		return true, nil
+	}
+
+	_, err := p.responseRepository.GetResponseByUserIDAndPollID(ctx, user.GetID(), poll.GetID(), repository.LockTypeNone)
+	if errors.Is(err, repository.ErrRecordNotFound) {
 		return true, nil
 	}
 	if err != nil {
