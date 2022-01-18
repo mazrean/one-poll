@@ -7,10 +7,20 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import CertificationForm from '../components/CertificationForm.vue'
-import api from '/@/lib/apis'
+import api, { PostUser } from '/@/lib/apis'
+import { useMainStore } from '/@/store/index'
 
 export default defineComponent({
   name: 'SigninPage',
-  components: { CertificationForm }
+  components: { CertificationForm },
+  setup() {
+    const store = useMainStore()
+    const onSubmitForm = async (name: string, password: string) => {
+      const user: PostUser = { name: name, password: password }
+      await api.postUsersSignin(user).catch(error => console.log(error.message))
+      store.setUserID()
+    }
+    return { onSubmitForm }
+  }
 })
 </script>
