@@ -671,5 +671,10 @@ paths:
         - schema:
             type: integer
           in: query
-          name: max
-          description: 最大コメント数
+          name: limit
+          description: 最大コメント取得数
+        - schema:
+            type: integer
+          in: query
+          name: offset
+          description: オフセット
