@@ -7,7 +7,7 @@ import Details from '/@/pages/Details.vue'
 
 export const routerHistory = createWebHistory()
 
-export default createRouter({
+const router = createRouter({
   history: routerHistory,
   routes: [
     {
@@ -28,7 +28,8 @@ export default createRouter({
     {
       path: '/profile',
       name: 'profile',
-      component: Profile
+      component: Profile,
+      meta: { requiresAuth: true }
     },
     {
       path: '/details',
@@ -37,3 +38,22 @@ export default createRouter({
     }
   ]
 })
+
+import { useMainStore } from '/@/store/index'
+
+router.beforeEach((to, from, next) => {
+  const store = useMainStore()
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    // requiresAuthがtrueなら評価
+    if (store.getUserID === '') {
+      // 未ログインならログインページへ
+      next('/signin')
+    } else {
+      next() // スルー
+    }
+  } else {
+    next() // スルー
+  }
+})
+
+export default router
