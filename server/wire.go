@@ -26,10 +26,17 @@ var (
 )
 
 var (
-	dbBind             = wire.Bind(new(repository.DB), new(*gorm2.DB))
-	userRepositoryBind = wire.Bind(new(repository.User), new(*gorm2.User))
+	dbBind                 = wire.Bind(new(repository.DB), new(*gorm2.DB))
+	userRepositoryBind     = wire.Bind(new(repository.User), new(*gorm2.User))
+	pollRepositoryBind     = wire.Bind(new(repository.Poll), new(*gorm2.Poll))
+	choiceRepositoryBind   = wire.Bind(new(repository.Choice), new(*gorm2.Choice))
+	tagRepositoryBind      = wire.Bind(new(repository.Tag), new(*gorm2.Tag))
+	responseRepositoryBind = wire.Bind(new(repository.Response), new(*gorm2.Response))
+	commentRepositoryBind  = wire.Bind(new(repository.Comment), new(*gorm2.Comment))
 
 	authorizationServiceBind = wire.Bind(new(service.Authorization), new(*v1Service.Authorization))
+	pollServiceBind          = wire.Bind(new(service.Poll), new(*v1Service.Poll))
+	commentServiceBind       = wire.Bind(new(service.Comment), new(*v1Service.Comment))
 )
 
 type Service struct {
@@ -50,17 +57,33 @@ func InjectService(config *Config) (*Service, error) {
 
 		dbBind,
 		userRepositoryBind,
+		pollRepositoryBind,
+		choiceRepositoryBind,
+		tagRepositoryBind,
+		responseRepositoryBind,
+		commentRepositoryBind,
 		gorm2.NewDB,
 		gorm2.NewUser,
+		gorm2.NewPoll,
+		gorm2.NewChoice,
+		gorm2.NewTag,
+		gorm2.NewResponse,
+		gorm2.NewComment,
 
 		authorizationServiceBind,
+		pollServiceBind,
+		commentServiceBind,
 		v1Service.NewAuthorization,
+		v1Service.NewPoll,
+		v1Service.NewComment,
 
 		v1Handler.NewAPI,
 		v1Handler.NewSession,
 		//v1Handler.NewContext,
 		v1Handler.NewChecker,
 		v1Handler.NewUser,
+		v1Handler.NewPoll,
+		v1Handler.NewComment,
 
 		NewService,
 	)

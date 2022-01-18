@@ -1,6 +1,6 @@
 package v1
 
-//go:generate sh -c "oapi-codegen -generate types,server,spec ../../../docs/openapi/openapi.yaml > openapi/openapi.gen.go"
+//go:generate sh -c "go run github.com/deepmap/oapi-codegen/cmd/oapi-codegen@latest -generate types,server,spec ../../../docs/openapi/openapi.yaml > openapi/openapi.gen.go"
 //go:generate go fmt ./openapi/openapi.gen.go
 
 import (
@@ -14,23 +14,8 @@ import (
 )
 
 type unimplemented interface {
-	// (GET /polls)
-	GetPolls(ctx echo.Context, params openapi.GetPollsParams) error
-
-	// (POST /polls)
-	PostPolls(ctx echo.Context) error
-
-	// (DELETE /polls/{pollID})
-	DeletePollsPollID(ctx echo.Context, pollID string) error
-
-	// (GET /polls/{pollID})
-	GetPollsPollID(ctx echo.Context, pollID string) error
-
 	// (POST /polls/{pollID})
 	PostPollsPollID(ctx echo.Context, pollID string) error
-
-	// (GET /polls/{pollID}/comments)
-	GetPollsPollIDComments(ctx echo.Context, pollID string, params openapi.GetPollsPollIDCommentsParams) error
 
 	// (GET /polls/{pollID}/results)
 	GetPollsPollIDResults(ctx echo.Context, pollID string) error
@@ -51,16 +36,22 @@ type unimplemented interface {
 type API struct {
 	*Checker
 	*User
+	*Poll
+	*Comment
 	unimplemented
 }
 
 func NewAPI(
 	checker *Checker,
 	user *User,
+	poll *Poll,
+	comment *Comment,
 ) *API {
 	return &API{
 		Checker: checker,
 		User:    user,
+		Poll:    poll,
+		Comment: comment,
 	}
 }
 

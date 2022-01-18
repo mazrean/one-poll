@@ -17,7 +17,7 @@ tags:
 components:
   securitySchemes: {}
   schemas:
-    PollBase:
+    NewPoll:
       title: PollBase
       type: object
       x-examples: {}
@@ -27,6 +27,37 @@ components:
           type: string
           maxLength: 300
           minLength: 1
+        type:
+          $ref: '#/components/schemas/PollType'
+        deadline:
+          type: string
+          format: date-time
+          description: deadlineをpostする、またはq_statusがlimitedの時、存在する。回答締め切り時刻。
+        tags:
+          type: array
+          minItems: 1
+          description: 初期実装では含まない。
+          items:
+            type: string
+        question:
+          type: array
+          minItems: 1
+          items:
+            type: string
+      required:
+        - title
+        - type
+        - question
+    PollBase:
+      title: PollBase
+      type: object
+      x-examples: {}
+      description: 質問idは存在しない。POST /polls/のボディ。
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 140
         type:
           $ref: '#/components/schemas/PollType'
         deadline:
@@ -211,7 +242,7 @@ components:
           enum:
             - only_browsable
             - can_answer
-            - can_asccess_details
+            - can_access_details
           description: only_browable 質問の閲覧　can_answer 解答できる　can_access_details 結果の表示
       required:
         - is_owner
@@ -227,7 +258,8 @@ components:
       x-internal: false
       properties:
         id:
-          type: integer
+          type: string
+          format: uuid
         choice:
           type: string
           minLength: 1
@@ -399,7 +431,7 @@ paths:
                 $ref: '#/components/schemas/PollSummaries'
               examples: {}
       operationId: get-polls
-      description: 投票リストを取得する。デフォルトでは最新の10件を取得する。
+      description: 投票リストを取得する。デフォルトでは新しい順にすべてを取得する。
       parameters:
         - schema:
             type: integer
@@ -426,25 +458,7 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - type: object
-                    properties:
-                      poll_id:
-                        $ref: '#/components/schemas/PollID'
-                  - $ref: '#/components/schemas/PollBase'
-              examples:
-                example-1:
-                  value:
-                    poll_id: 712230da-d683-493a-8a4d-ca41e4ceb233
-                    title: string
-                    type: radio
-                    deadline: '2019-08-24T14:15:22Z'
-                    tags:
-                      - id: 497f6eca-6276-4993-bfeb-53cbbbba6f08
-                        name: string
-                    question:
-                      - id: 0
-                        choice: string
+                $ref: '#/components/schemas/PollSummary'
         '400':
           description: Bad Request
         '401':
@@ -455,7 +469,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PollBase'
+              $ref: '#/components/schemas/NewPoll'
   '/polls/{pollID}':
     parameters:
       - schema:
@@ -473,7 +487,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PollSummaries'
+                $ref: '#/components/schemas/PollSummary'
         '401':
           description: Unauthorized
         '404':
@@ -524,7 +538,7 @@ paths:
       summary: ''
       operationId: delete-polls-pollID
       responses:
-        '200':
+        '204':
           description: OK
         '401':
           description: Unauthorized
@@ -535,6 +549,26 @@ paths:
       tags:
         - poll
       description: 質問を削除する
+  /polls/{pollID}/close:
+    parameters:
+      - schema:
+          type: string
+        name: pollID
+        in: path
+        required: true
+    post:
+      summary: ''
+      tags:
+        - poll
+      responses:
+        '204':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+      operationId: post-polls-close
+      description: IDに対応する投票をcloseする
   /tags:
     get:
       summary: ''
@@ -590,7 +624,7 @@ paths:
                     type: radio
                     count: 0
                     result:
-                      - id: 0
+                      - id: 712230da-d683-493a-8a4d-ca41e4ceb233
                         choice: string
                         count: 0
         '401':

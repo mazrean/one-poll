@@ -8,6 +8,6 @@ import (
 )
 
 type Comment interface {
-	CreateComment(ctx context.Context, comment *domain.Comment, pollID values.PollID) error
-	GetCommentByPollID(ctx context.Context, pollID values.PollID) (*domain.Comment, error)
+	CreateComment(ctx context.Context, responseID values.ResponseID, comment *domain.Comment) error
+	GetCommentsByResponseIDs(ctx context.Context, responseIDs []values.ResponseID) (map[values.ResponseID]*domain.Comment, error)
 }

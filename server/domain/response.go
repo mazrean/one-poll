@@ -14,8 +14,8 @@ type Response struct {
 func NewResponse(
 	id values.ResponseID,
 	createdAt time.Time,
-) Response {
-	return Response{
+) *Response {
+	return &Response{
 		id:        id,
 		createdAt: createdAt,
 	}

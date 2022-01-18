@@ -1,6 +1,7 @@
 package gorm2
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -33,13 +34,14 @@ type PollTable struct {
 	ID        uuid.UUID      `gorm:"type:char(36);not null;primaryKey;size:36"`
 	OwnerID   uuid.UUID      `gorm:"type:char(36);not null;size:36"`
 	Title     string         `gorm:"type:varchar(50);not null;size:50"`
-	TypeID    int            `gorm:"type:int(11);not null"`
-	Deadline  time.Time      `gorm:"type:DATETIME NULL;default:NULL"`
+	TypeID    int            `gorm:"type:tinyint;not null"`
+	Deadline  sql.NullTime   `gorm:"type:DATETIME NULL;default:NULL"`
 	CreatedAt time.Time      `gorm:"type:datetime;not null"`
 	DeletedAt gorm.DeletedAt `gorm:"type:DATETIME NULL;default:NULL"`
 	Owner     UserTable      `gorm:"foreignKey:OwnerID"`
 	Choices   []ChoiceTable  `gorm:"foreignKey:PollID"`
 	Tags      []TagTable     `gorm:"many2many:poll_tag_relations"`
+	PollType  PollTypeTable  `gorm:"foreignKey:TypeID"`
 }
 
 func (*PollTable) TableName() string {
@@ -47,7 +49,7 @@ func (*PollTable) TableName() string {
 }
 
 type PollTypeTable struct {
-	ID     int    `gorm:"type:int(11);not null;primaryKey;autoIncrement"`
+	ID     int    `gorm:"type:TINYINT AUTO_INCREMENT;not null;primaryKey"`
 	Name   string `gorm:"type:varchar(50);not null;size:50;unique"`
 	Active bool   `gorm:"type:bool;not null;default:true"`
 }
@@ -57,8 +59,8 @@ func (*PollTypeTable) TableName() string {
 }
 
 type TagTable struct {
-	ID   int    `gorm:"type:int(11);not null;primaryKey;autoIncrement"`
-	Name string `gorm:"type:varchar(50);not null;size:50;unique"`
+	ID   uuid.UUID `gorm:"type:char(36);not null;primaryKey;size:36"`
+	Name string    `gorm:"type:varchar(50);not null;size:50;unique"`
 }
 
 func (*TagTable) TableName() string {
