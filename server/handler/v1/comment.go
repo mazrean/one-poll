@@ -27,7 +27,6 @@ func NewComment(
 	}
 }
 
-// todo Comment の数の制限については未実装
 func (c Comment) GetPollsPollIDComments(ctx echo.Context, pollID string, params openapi.GetPollsPollIDCommentsParams) error {
 	uuidPollID, err := uuid.Parse(pollID)
 	if err != nil {
@@ -51,6 +50,7 @@ func (c Comment) GetPollsPollIDComments(ctx echo.Context, pollID string, params 
 		ctx.Request().Context(),
 		values.NewPollIDFromUUID(uuidPollID),
 		user,
+		(service.CommentGetParams)(params),
 	)
 
 	if err != nil {

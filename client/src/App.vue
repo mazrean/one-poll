@@ -13,32 +13,28 @@
 import SideMenu from './components/SideMenu.vue'
 import SideMenuNarrow from './components/SideMenuNarrow.vue'
 import NewPoll from './components/NewPoll.vue'
-import { defineComponent } from 'vue'
-
+import { defineComponent, ref, onMounted, onBeforeUnmount } from 'vue'
 export default defineComponent({
   name: 'App',
   components: { SideMenu, SideMenuNarrow, NewPoll },
   setup() {
-    return {}
-  },
-  data: function () {
-    return {
-      width: window.innerWidth,
-      height: window.innerHeight
+    const width = ref(0)
+    const height = ref(0)
+
+    const handleResize = () => {
+      width.value = window.innerWidth
+      height.value = window.innerHeight
     }
-  },
-  mounted: function () {
-    window.addEventListener('resize', this.handleResize)
-  },
-  beforeUnmount: function () {
-    window.removeEventListener('resize', this.handleResize)
-  },
-  methods: {
-    handleResize: function () {
-      // resizeのたびにこいつが発火するので、ここでやりたいことをやる
-      this.width = window.innerWidth
-      this.height = window.innerHeight
-    }
+
+    onMounted(() => {
+      window.addEventListener('resize', handleResize)
+    })
+
+    onBeforeUnmount(() => {
+      window.removeEventListener('resize', handleResize)
+    })
+
+    return { width, height, handleResize }
   }
 })
 </script>

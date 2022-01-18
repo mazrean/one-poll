@@ -18,7 +18,7 @@ components:
   securitySchemes: {}
   schemas:
     NewPoll:
-      title: PollBase
+      title: NewPoll
       type: object
       x-examples: {}
       description: 質問idは存在しない。POST /polls/のボディ。
@@ -52,7 +52,7 @@ components:
       title: PollBase
       type: object
       x-examples: {}
-      description: 質問idは存在しない。POST /polls/のボディ。
+      description: 質問idは存在しない。
       properties:
         title:
           type: string
@@ -237,7 +237,7 @@ components:
         is_owner:
           type: boolean
           description: オーナーか
-        accsess_mode:
+        access_mode:
           type: string
           enum:
             - only_browsable
@@ -246,7 +246,7 @@ components:
           description: only_browable 質問の閲覧　can_answer 解答できる　can_access_details 結果の表示
       required:
         - is_owner
-        - accsess_mode
+        - access_mode
     Choice:
       title: Choice
       description: 選択肢ボタン
@@ -549,7 +549,7 @@ paths:
       tags:
         - poll
       description: 質問を削除する
-  /polls/{pollID}/close:
+  '/polls/{pollID}/close':
     parameters:
       - schema:
           type: string
@@ -671,5 +671,10 @@ paths:
         - schema:
             type: integer
           in: query
-          name: max
-          description: 最大コメント数
+          name: limit
+          description: 最大コメント取得数
+        - schema:
+            type: integer
+          in: query
+          name: offset
+          description: オフセット
