@@ -44,7 +44,7 @@ func (c *Comment) GetComments(ctx context.Context, pollID values.PollID, user *d
 		return nil, fmt.Errorf("failed to get response: %w", err)
 	}
 
-	if tf == true {
+	if tf {
 		return nil, fmt.Errorf("poll is expired or poll is not found: %w", err)
 	}
 
