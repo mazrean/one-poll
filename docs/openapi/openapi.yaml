@@ -18,7 +18,7 @@ components:
   securitySchemes: {}
   schemas:
     NewPoll:
-      title: PollBase
+      title: NewPoll
       type: object
       x-examples: {}
       description: 質問idは存在しない。POST /polls/のボディ。
@@ -52,7 +52,7 @@ components:
       title: PollBase
       type: object
       x-examples: {}
-      description: 質問idは存在しない。POST /polls/のボディ。
+      description: 質問idは存在しない。
       properties:
         title:
           type: string
