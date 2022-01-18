@@ -6,6 +6,7 @@ import (
 
 	"github.com/cs-sysimpl/suzukake/domain"
 	"github.com/cs-sysimpl/suzukake/domain/values"
+	"github.com/cs-sysimpl/suzukake/repository"
 	"github.com/google/uuid"
 )
 
@@ -39,7 +40,7 @@ func (c *Comment) CreateComment(ctx context.Context, responseID values.ResponseI
 	return nil
 }
 
-func (c *Comment) GetCommentsByResponseIDs(ctx context.Context, responseIDs []values.ResponseID) (map[values.ResponseID]*domain.Comment, error) {
+func (c *Comment) GetCommentsByResponseIDs(ctx context.Context, responseIDs []values.ResponseID, params repository.CommentGetParams) (map[values.ResponseID]*domain.Comment, error) {
 	db, err := c.db.getDB(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get db: %w", err)
