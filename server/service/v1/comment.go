@@ -24,7 +24,7 @@ func NewComment(
 	}
 }
 
-func (c *Comment) GetComments(ctx context.Context, pollID values.PollID) ([]service.CommentInfo, error) {
+func (c *Comment) GetComments(ctx context.Context, pollID values.PollID, params service.CommentGetParams) ([]service.CommentInfo, error) {
 	responseInfos, err := c.responseRepository.GetResponsesByPollID(ctx, pollID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get responseInfos: %w", err)
@@ -33,7 +33,7 @@ func (c *Comment) GetComments(ctx context.Context, pollID values.PollID) ([]serv
 	for _, responseInfo := range responseInfos {
 		responseIDs = append(responseIDs, responseInfo.Response.GetID())
 	}
-	dbComments, err := c.commentRepository.GetCommentsByResponseIDs(ctx, responseIDs)
+	dbComments, err := c.commentRepository.GetCommentsByResponseIDs(ctx, responseIDs, (repository.CommentGetParams)(params))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get comments: %w", err)
 	}

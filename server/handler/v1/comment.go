@@ -31,7 +31,7 @@ func (c Comment) GetPollsPollIDComments(ctx echo.Context, pollID string, params 
 	commentInfos, err := c.commentService.GetComments(
 		ctx.Request().Context(),
 		values.NewPollIDFromUUID(uuidPollID),
-		service.CommentGetParams{Limit: *params.Limit, Offset: *params.Offset},
+		(service.CommentGetParams)(params),
 	)
 	if err != nil {
 		log.Printf("failed to get comments: %v", err)

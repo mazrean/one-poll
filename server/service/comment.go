@@ -18,6 +18,6 @@ type CommentInfo struct {
 }
 
 type CommentGetParams struct {
-	Limit  int
-	Offset int
+	Limit  *int
+	Offset *int
 }
