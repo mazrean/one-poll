@@ -39,7 +39,7 @@ func (c Comment) GetPollsPollIDComments(ctx echo.Context, pollID string, params 
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid session")
 	}
 
-	_, err = c.Session.getUser(session)
+	user, err := c.Session.getUser(session)
 	if errors.Is(err, ErrNoValue) {
 		return echo.NewHTTPError(http.StatusUnauthorized, "login required")
 	}
@@ -50,7 +50,9 @@ func (c Comment) GetPollsPollIDComments(ctx echo.Context, pollID string, params 
 	commentInfos, err := c.commentService.GetComments(
 		ctx.Request().Context(),
 		values.NewPollIDFromUUID(uuidPollID),
+		user,
 	)
+
 	if err != nil {
 		log.Printf("failed to get comments: %v", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get comments")

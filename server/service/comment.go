@@ -8,7 +8,7 @@ import (
 )
 
 type Comment interface {
-	GetComments(ctx context.Context, pollID values.PollID) ([]CommentInfo, error)
+	GetComments(ctx context.Context, pollID values.PollID, user *domain.User) ([]CommentInfo, error)
 }
 
 type CommentInfo struct {

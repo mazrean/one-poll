@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/cs-sysimpl/suzukake/domain"
 	"github.com/cs-sysimpl/suzukake/domain/values"
 	"github.com/cs-sysimpl/suzukake/repository"
 	"github.com/cs-sysimpl/suzukake/service"
@@ -12,19 +13,41 @@ import (
 type Comment struct {
 	responseRepository repository.Response
 	commentRepository  repository.Comment
+	pollRepository     repository.Poll
+	pollAuthority      PollAuthority
 }
 
 func NewComment(
 	responseRepository repository.Response,
 	commentRepository repository.Comment,
+	pollRepository repository.Poll,
+	pollAuthority PollAuthority,
 ) *Comment {
 	return &Comment{
 		responseRepository: responseRepository,
 		commentRepository:  commentRepository,
+		pollRepository:     pollRepository,
+		pollAuthority:      pollAuthority,
 	}
 }
 
-func (c *Comment) GetComments(ctx context.Context, pollID values.PollID) ([]service.CommentInfo, error) {
+func (c *Comment) GetComments(ctx context.Context, pollID values.PollID, user *domain.User) ([]service.CommentInfo, error) {
+
+	pollInfo, err := c.pollRepository.GetPoll(ctx, pollID, repository.LockTypeNone)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get polls: %w", err)
+	}
+
+	tf, err := c.pollAuthority.CanRead(ctx, user, pollInfo.Poll)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get response: %w", err)
+	}
+
+	if tf == true {
+		return nil, fmt.Errorf("poll is expired or poll is not found: %w", err)
+	}
+
 	responseInfos, err := c.responseRepository.GetResponsesByPollID(ctx, pollID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get responseInfos: %w", err)
