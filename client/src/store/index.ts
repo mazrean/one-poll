@@ -1,19 +1,22 @@
 import { defineStore } from 'pinia'
+import api from '/@/lib/apis'
 
 export const useMainStore = defineStore('main', {
-  state: () => ({
-    count: 0
-  }),
-  getters: {
-    countString: state => {
-      if (state.count === 0) return 'zero'
-      if (state.count === 1) return 'once'
-      return `${state.count} times`
+  state: () => {
+    return {
+      userID: 'default_user'
     }
   },
+
+  getters: {
+    getUserID(state) {
+      return state.userID
+    }
+  },
+
   actions: {
-    increment() {
-      this.count++
+    setUserID() {
+      this.userID = api.getUsersMe.name
     }
   }
 })
