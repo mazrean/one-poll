@@ -4,9 +4,9 @@
       <h5 class="card-title">PollQ</h5>
       <form
         class="needs-validation"
-        :class="{ 'was-validated': Validated }"
+        :class="{ 'was-validated': validated }"
         novalidate
-        @submit="Validation">
+        @submit="validation">
         <div>
           <label for="user_name" class="card-text">User</label><br />
           <input
@@ -18,7 +18,7 @@
             required
             pattern="[0-9a-zA-Z_]{4,16}" />
           <div class="invalid-feedback">
-            英数＋アンダーバー込で4~16文字を入力
+            ユーザー名は英数＋アンダーバー込で4~16文字にしてください
           </div>
         </div>
         <div>
@@ -32,7 +32,7 @@
             required
             pattern="[0-9a-zA-Z_]{8,50}" />
           <div class="invalid-feedback">
-            英数＋アンダーバー込で8~50文字を入力
+            パスワードは英数＋アンダーバー込で8~50文字にしてください
           </div>
         </div>
         <button type="submit" class="btn btn-primary">{{ sign }}</button>
@@ -59,36 +59,35 @@ export default defineComponent({
     return {
       name: '',
       password: '',
-      Validated: false,
-      error: [false, false]
+      validated: false,
+      nameError: false,
+      passError: false
     }
   },
   watch: {
     name() {
       let re = new RegExp('[0-9a-zA-Z_]{4,16}')
       if (re.test(this.name)) {
-        this.error[0] = false
+        this.nameError = false
       } else {
-        this.error[0] = true
+        this.nameError = true
       }
     },
     password() {
       let re = new RegExp('[0-9a-zA-Z_]{8,50}')
       if (re.test(this.password)) {
-        this.error[1] = false
+        this.passError = false
       } else {
-        this.error[1] = true
+        this.passError = true
       }
     }
   },
   methods: {
-    Validation: function (event: Event) {
-      this.Validated = true
-      this.error.forEach(error => {
-        if (error) {
-          event.preventDefault()
-        }
-      })
+    validation: function (event: Event) {
+      this.validated = true
+      if (this.nameError || this.passError) {
+        event.preventDefault()
+      }
     }
   }
 })
