@@ -4,7 +4,7 @@ import api from '/@/lib/apis'
 export const useMainStore = defineStore('main', {
   state: () => {
     return {
-      userID: 'default_user'
+      userID: ''
     }
   },
 

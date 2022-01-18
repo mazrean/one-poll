@@ -1,14 +1,14 @@
 <template>
   <div class="card">
     <div class="card-body">
-      <h5 class="card-title">PollQ</h5>
+      <h5 class="card-title">{{ sign }}</h5>
       <form
         class="needs-validation"
         :class="{ 'was-validated': validated }"
         novalidate
         @submit="validation">
         <div>
-          <label for="user_name" class="card-text">User</label><br />
+          <label for="user_name" class="card-text">ユーザー</label><br />
           <input
             id="name"
             v-model="name"
@@ -18,11 +18,11 @@
             required
             pattern="[0-9a-zA-Z_]{4,16}" />
           <div class="invalid-feedback">
-            ユーザー名は英数＋アンダーバー込で4~16文字にしてください
+            ユーザー名は4~16文字の英数字・アンダーバーにしてください
           </div>
         </div>
         <div>
-          <label for="password" class="card-text">password</label><br />
+          <label for="password" class="card-text">パスワード</label><br />
           <input
             id="password"
             v-model="password"
@@ -32,11 +32,17 @@
             required
             pattern="[0-9a-zA-Z_]{8,50}" />
           <div class="invalid-feedback">
-            パスワードは英数＋アンダーバー込で8~50文字にしてください
+            パスワードは8~50文字の英数字・アンダーバーにしてください
           </div>
         </div>
-        <button type="submit" class="btn btn-primary">{{ sign }}</button>
+        <button type="submit" class="btn btn-primary mt-3">{{ sign }}</button>
       </form>
+      <router-link
+        v-if="sign === 'サインイン'"
+        class="mt-1"
+        :to="{ name: 'signup' }"
+        >新しくアカウントを作成する</router-link
+      >
     </div>
   </div>
 </template>
@@ -49,15 +55,18 @@ export default defineComponent({
   props: {
     sign: {
       type: String,
-      default: 'Sign in'
+      default: ''
     }
   },
-  setup() {
+  setup(propsm, context) {
     const name = ref<string>('')
     const password = ref<string>('')
     const validated = ref<boolean>(false)
-    let nameError = false
-    let passError = false
+    const onSubmitForm = () => {
+      context.emit('on-submit-event', name.value, password.value)
+    }
+    let nameError = true
+    let passError = true
     watch(name, () => {
       let re = new RegExp('[0-9a-zA-Z_]{4,16}')
       if (re.test(name.value)) {
@@ -80,8 +89,12 @@ export default defineComponent({
       if (nameError || passError) {
         event.preventDefault()
       }
+      //validationが通り、実際にAPIを投げる
+      else {
+        onSubmitForm()
+      }
     }
-    return { name, password, validated, validation }
+    return { name, password, validated, onSubmitForm, validation }
   }
 })
 </script>

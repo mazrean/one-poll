@@ -1,13 +1,13 @@
 <template>
   <div class="container">
-    <!-- <Routes /> -->
-    <certification-form sign="Sign in" />
+    <certification-form class="m-auto" sign="サインイン" />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
 import CertificationForm from '../components/CertificationForm.vue'
+import api from '/@/lib/apis'
 
 export default defineComponent({
   name: 'SigninPage',
