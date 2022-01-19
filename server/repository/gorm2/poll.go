@@ -148,13 +148,13 @@ func (p *Poll) GetPolls(ctx context.Context, params repository.PollSearchParams)
 			return nil, repository.ErrInvalidParameterValue("Offset", "be positive")
 		}
 	}
-	if params.Owner != nil {
-		// TODO Implemention
-	}
-	if params.Answer != nil {
-		// TODO Implemention
-		// Answersに対応するにはおそらくResponseTableもJoinすることが必要
-	}
+	// if params.Owner != nil {
+	// 	// TODO Implemention
+	// }
+	// if params.Answer != nil {
+	// 	// TODO Implemention
+	// 	// Answersに対応するにはおそらくResponseTableもJoinすることが必要
+	// }
 
 	err = query.Find(&pollTables).Error
 	if err != nil {

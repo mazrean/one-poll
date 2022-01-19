@@ -9,11 +9,11 @@ import (
 
 func (p *Poll) GetOwnerPolls(ctx context.Context, owner *domain.User) ([]*service.PollInfo, error) {
 	// TODO Implementation
-	pollInfos := make([]*service.PollInfo, 0, 0)
+	pollInfos := make([]*service.PollInfo, 0)
 	return pollInfos, nil
 }
 func (p *Poll) GetAnsweredPolls(ctx context.Context, owner *domain.User) ([]*service.PollInfo, error) {
 	// TODO Implementation
-	pollInfos := make([]*service.PollInfo, 0, 0)
+	pollInfos := make([]*service.PollInfo, 0)
 	return pollInfos, nil
 }
