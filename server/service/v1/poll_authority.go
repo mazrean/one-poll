@@ -19,9 +19,14 @@ func NewPollAuthority(responseRepository repository.Response) *PollAuthority {
 	}
 }
 
+// CanRead userはnullable
 func (p *PollAuthority) CanRead(ctx context.Context, user *domain.User, poll *domain.Poll) (bool, error) {
 	if poll.IsExpired() {
 		return true, nil
+	}
+
+	if user == nil {
+		return false, nil
 	}
 
 	_, err := p.responseRepository.GetResponseByUserIDAndPollID(ctx, user.GetID(), poll.GetID(), repository.LockTypeNone)
