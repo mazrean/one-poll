@@ -102,7 +102,7 @@ export default defineComponent({
     }
     const onDeleteUser = async () => {
       await api.deleteUsersMe()
-      store.setUserID()
+      await store.setUserID()
       router.push('/')
     }
     return {
