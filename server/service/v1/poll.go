@@ -167,9 +167,14 @@ func (p *Poll) GetPolls(ctx context.Context, user *domain.User, params *service.
 		return nil, fmt.Errorf("failed to get choices: %w", err)
 	}
 
-	responseMap, err := p.responseRepository.GetResponsesByUserIDAndPollIDs(ctx, user.GetID(), pollIDs, repository.LockTypeNone)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get responses: %w", err)
+	var responseMap map[values.PollID]*domain.Response
+	if user != nil {
+		responseMap, err = p.responseRepository.GetResponsesByUserIDAndPollIDs(ctx, user.GetID(), pollIDs, repository.LockTypeNone)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get responses: %w", err)
+		}
+	} else {
+		responseMap = map[values.PollID]*domain.Response{}
 	}
 
 	pollInfos := make([]*service.PollInfo, 0, len(polls))
