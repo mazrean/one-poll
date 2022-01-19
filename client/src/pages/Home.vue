@@ -1,16 +1,16 @@
 <template>
   <div class="d-flex flex-wrap">
-    <div v-for="PollSummary in state.PollSummaries" :key="PollSummary.poll_id">
+    <div v-for="PollSummary in state.PollSummaries" :key="PollSummary.pollId">
       <PollCardComponent
-        :poll-id="PollSummary.poll_id"
+        :poll-id="PollSummary.pollId"
         :title="PollSummary.title"
         :type="PollSummary.type"
         :deadline="PollSummary.deadline"
         :question="PollSummary.question"
-        :created-at="PollSummary.created_at"
-        :q-status="PollSummary.q_status"
+        :created-at="PollSummary.createdAt"
+        :q-status="PollSummary.qStatus"
         :owner="PollSummary.owner"
-        :user-status="PollSummary.user_status"
+        :user-status="PollSummary.userStatus"
         class="m-3">
       </PollCardComponent>
     </div>

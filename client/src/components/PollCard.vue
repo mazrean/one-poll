@@ -91,11 +91,11 @@ export default defineComponent({
   },
   setup(props) {
     const only_browsable =
-      props.userStatus.access_mode == UserStatusAccessModeEnum.OnlyBrowsable
+      props.userStatus.accessMode == UserStatusAccessModeEnum.OnlyBrowsable
     const can_answer =
-      props.userStatus.access_mode == UserStatusAccessModeEnum.CanAnswer
+      props.userStatus.accessMode == UserStatusAccessModeEnum.CanAnswer
     const can_access_details =
-      props.userStatus.access_mode == UserStatusAccessModeEnum.CanAccessDetails
+      props.userStatus.accessMode == UserStatusAccessModeEnum.CanAccessDetails
     const vote = () => {
       return
     }
