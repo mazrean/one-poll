@@ -279,25 +279,23 @@ components:
       x-examples: {}
       items:
         $ref: '#/components/schemas/Choice'
-    Results:
-      title: Results
+    Result:
+      title: Result
       description: 結果
       x-examples:
         example-1:
-          - id: 0
-            choice: string
-            count: 0
-      type: array
-      items:
-        allOf:
-          - $ref: '#/components/schemas/Choice'
-          - type: object
-            properties:
-              count:
-                type: integer
-                description: その選択肢に回答をした人数
-            required:
-              - count
+          id: 0
+          choice: string
+          count: 0
+      allOf:
+        - $ref: '#/components/schemas/Choice'
+        - type: object
+          properties:
+            count:
+              type: integer
+              description: その選択肢に回答をした人数
+          required:
+            - count
     Answer:
       type: array
       title: Answer
@@ -318,7 +316,14 @@ components:
           type: integer
           description: 回答総数
         result:
-          $ref: '#/components/schemas/Results'
+          type: array
+          items:
+            $ref: '#/components/schemas/Result'
+      required:
+        - pollId
+        - type
+        - count
+        - result
     PostTag:
       title: PostTag
       type: string
