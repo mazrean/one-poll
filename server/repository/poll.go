@@ -25,9 +25,9 @@ type PollInfo struct {
 }
 
 type PollSearchParams struct {
-	Limit  int // default値(0)の時、指定なし
-	Offset int // default値(0)の時、指定なし
-	Match  string //default値("")の時、指定なし
-	Owner  *domain.User // nilの時指定なし
-	Answer *domain.User // nilの時指定なし
+	Limit  int          // default値(0)の時、指定なし
+	Offset int          // default値(0)の時、指定なし
+	Match  string       //default値("")の時、指定なし
+	Owner  *domain.User // default値(nil)の時指定なし
+	Answer *domain.User // default値(nil)の時指定なし
 }
