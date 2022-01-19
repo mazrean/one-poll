@@ -92,13 +92,29 @@ func (p *Poll) CreatePoll(
 			return fmt.Errorf("failed to get tags: %w", err)
 		}
 
-		if len(tags) != len(tagNames) {
-			return service.ErrNoTag
-		}
-
 		tagIDs := make([]values.TagID, 0, len(tags))
+		tagMap := make(map[values.TagName]struct{}, len(tags))
 		for _, tag := range tags {
 			tagIDs = append(tagIDs, tag.GetID())
+
+			tagMap[tag.GetName()] = struct{}{}
+		}
+
+		for _, tagName := range tagNames {
+			_, ok := tagMap[tagName]
+			if !ok {
+				tag := domain.NewTag(
+					values.NewTagID(),
+					tagName,
+				)
+				err = p.tagRepository.CreateTag(ctx, tag)
+				if err != nil {
+					return fmt.Errorf("failed to create tag: %w", err)
+				}
+
+				tagIDs = append(tagIDs, tag.GetID())
+				tags = append(tags, tag)
+			}
 		}
 
 		err = p.pollRepository.AddTags(ctx, poll.GetID(), tagIDs)
