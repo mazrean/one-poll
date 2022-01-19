@@ -142,6 +142,8 @@
 <script lang="ts">
 import { defineComponent, reactive } from 'vue'
 import api, { NewPoll, PollType } from '/@/lib/apis'
+import { useRouter } from 'vue-router'
+
 interface State {
   title: string
   detail: string
@@ -155,6 +157,7 @@ interface State {
 export default defineComponent({
   name: 'NewPollComponent',
   setup() {
+    const router = useRouter()
     const state = reactive<State>({
       title: '',
       detail: '',
@@ -209,7 +212,7 @@ export default defineComponent({
       state.newTag = ''
       calculateFilter()
     }
-    const submitPoll = function () {
+    const submitPoll = async () => {
       const poll: NewPoll = {
         title: state.title,
         type: PollType.Radio,
@@ -217,7 +220,7 @@ export default defineComponent({
         tags: Array.from(state.newTags),
         question: state.options
       }
-      api.postPolls(poll)
+      await api.postPolls(poll)
       state.title = ''
       state.detail = ''
       state.options = ['', '']
@@ -225,6 +228,7 @@ export default defineComponent({
       state.newTag = ''
       calculateFilter()
       state.deadline = '0'
+      router.push({ path: '/', force: true })
     }
 
     return {

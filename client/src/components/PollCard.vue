@@ -113,7 +113,7 @@ export default defineComponent({
 
 <style>
 .card {
-  width: 45%;
+  width: 500px;
 }
 .vote-button {
   width: 90%;

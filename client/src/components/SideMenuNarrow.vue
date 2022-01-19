@@ -98,9 +98,11 @@
         <ul
           class="dropdown-menu text-small shadow"
           aria-labelledby="dropdownUser2">
-          <li><a class="dropdown-item" href="#">サインアウト</a></li>
+          <li>
+            <a class="dropdown-item" @click="onSignOut()">サインアウト</a>
+          </li>
           <li><hr class="dropdown-divider" /></li>
-          <li><a class="dropdown-item" href="#">退会</a></li>
+          <li><a class="dropdown-item" @click="onDeleteUser()">退会</a></li>
         </ul>
       </div>
     </div>

@@ -1,22 +1,18 @@
 <template>
   <div class="d-flex flex-wrap">
-    {{ state.PollSummaries }}
-    <PollCardComponent
-      v-for="PollSummary in state.PollSummaries"
-      :key="PollSummary.pollId"
-      :poll-id="PollSummary.pollId"
-      :title="PollSummary.title"
-      :type="PollSummary.type"
-      :deadline="PollSummary.deadline"
-      :question="PollSummary.question"
-      :created-at="PollSummary.createdAt"
-      :q-status="PollSummary.qStatus"
-      :owner="PollSummary.owner"
-      :user-status="PollSummary.userStatus"
-      class="m-3">
-    </PollCardComponent>
-    <div v-for="v in state.PollSummaries" :key="v.pollId">
-      <p>{{ v.title }}</p>
+    <div v-for="PollSummary in state.PollSummaries" :key="PollSummary.poll_id">
+      <PollCardComponent
+        :poll-id="PollSummary.poll_id"
+        :title="PollSummary.title"
+        :type="PollSummary.type"
+        :deadline="PollSummary.deadline"
+        :question="PollSummary.question"
+        :created-at="PollSummary.created_at"
+        :q-status="PollSummary.q_status"
+        :owner="PollSummary.owner"
+        :user-status="PollSummary.user_status"
+        class="m-3">
+      </PollCardComponent>
     </div>
   </div>
 </template>

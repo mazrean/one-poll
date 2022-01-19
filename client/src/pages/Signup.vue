@@ -24,7 +24,7 @@ export default defineComponent({
       const user: PostUser = { name: name, password: password }
       await api.postUsers(user)
       await store.setUserID()
-      router.push('/')
+      router.push({ path: '/', force: true })
     }
     return { onSubmitForm }
   }
