@@ -10,4 +10,5 @@ var (
 	ErrNotOwner              = errors.New("not owner")
 	ErrPollClosed            = errors.New("poll closed")
 	ErrResponseAlreadyExists = errors.New("response already exists")
+	ErrForbidden             = errors.New("forbidden")
 )
