@@ -22,6 +22,42 @@ func NewResponse(db *DB) *Response {
 	}
 }
 
+func (r *Response) CreateResponse(ctx context.Context, userID values.UserID, pollID values.PollID, response *domain.Response, choiceIDs []values.ChoiceID) error {
+	db, err := r.db.getDB(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get db: %w", err)
+	}
+
+	responseTable := ResponseTable{
+		ID:           uuid.UUID(response.GetID()),
+		PollID:       uuid.UUID(pollID),
+		RespondentID: uuid.UUID(userID),
+		CreatedAt:    response.GetCreatedAt(),
+	}
+
+	err = db.Create(&responseTable).Error
+	if err != nil {
+		return fmt.Errorf("failed to create response: %w", err)
+	}
+
+	choiceTables := make([]ChoiceTable, 0, len(choiceIDs))
+	for _, choiceID := range choiceIDs {
+		choiceTables = append(choiceTables, ChoiceTable{
+			ID: uuid.UUID(choiceID),
+		})
+	}
+
+	err = db.
+		Model(&responseTable).
+		Association("Choices").
+		Append(choiceTables)
+	if err != nil {
+		return fmt.Errorf("failed to append choices: %w", err)
+	}
+
+	return nil
+}
+
 func (r *Response) GetResponsesByPollID(ctx context.Context, pollID values.PollID) ([]*repository.ResponseInfo, error) {
 	db, err := r.db.getDB(ctx)
 	if err != nil {
