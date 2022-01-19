@@ -440,11 +440,12 @@ export const CommentApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * IDに対応するコメント配列を取得する。
          * @param {string} pollID 
-         * @param {number} [max] 最大コメント数
+         * @param {number} [limit] 最大コメント取得数
+         * @param {number} [offset] オフセット
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPollsPollIDComments: async (pollID: string, max?: number, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getPollsPollIDComments: async (pollID: string, limit?: number, offset?: number, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'pollID' is not null or undefined
             assertParamExists('getPollsPollIDComments', 'pollID', pollID)
             const localVarPath = `/polls/{pollID}/comments`
@@ -460,8 +461,12 @@ export const CommentApiAxiosParamCreator = function (configuration?: Configurati
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-            if (max !== undefined) {
-                localVarQueryParameter['max'] = max;
+            if (limit !== undefined) {
+                localVarQueryParameter['limit'] = limit;
+            }
+
+            if (offset !== undefined) {
+                localVarQueryParameter['offset'] = offset;
             }
 
 
@@ -488,12 +493,13 @@ export const CommentApiFp = function(configuration?: Configuration) {
         /**
          * IDに対応するコメント配列を取得する。
          * @param {string} pollID 
-         * @param {number} [max] 最大コメント数
+         * @param {number} [limit] 最大コメント取得数
+         * @param {number} [offset] オフセット
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getPollsPollIDComments(pollID: string, max?: number, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<PollComment>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getPollsPollIDComments(pollID, max, options);
+        async getPollsPollIDComments(pollID: string, limit?: number, offset?: number, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<PollComment>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getPollsPollIDComments(pollID, limit, offset, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -509,12 +515,13 @@ export const CommentApiFactory = function (configuration?: Configuration, basePa
         /**
          * IDに対応するコメント配列を取得する。
          * @param {string} pollID 
-         * @param {number} [max] 最大コメント数
+         * @param {number} [limit] 最大コメント取得数
+         * @param {number} [offset] オフセット
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPollsPollIDComments(pollID: string, max?: number, options?: any): AxiosPromise<Array<PollComment>> {
-            return localVarFp.getPollsPollIDComments(pollID, max, options).then((request) => request(axios, basePath));
+        getPollsPollIDComments(pollID: string, limit?: number, offset?: number, options?: any): AxiosPromise<Array<PollComment>> {
+            return localVarFp.getPollsPollIDComments(pollID, limit, offset, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -529,13 +536,14 @@ export class CommentApi extends BaseAPI {
     /**
      * IDに対応するコメント配列を取得する。
      * @param {string} pollID 
-     * @param {number} [max] 最大コメント数
+     * @param {number} [limit] 最大コメント取得数
+     * @param {number} [offset] オフセット
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof CommentApi
      */
-    public getPollsPollIDComments(pollID: string, max?: number, options?: AxiosRequestConfig) {
-        return CommentApiFp(this.configuration).getPollsPollIDComments(pollID, max, options).then((request) => request(this.axios, this.basePath));
+    public getPollsPollIDComments(pollID: string, limit?: number, offset?: number, options?: AxiosRequestConfig) {
+        return CommentApiFp(this.configuration).getPollsPollIDComments(pollID, limit, offset, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -1685,13 +1693,14 @@ export class Apis extends BaseAPI {
     /**
      * IDに対応するコメント配列を取得する。
      * @param {string} pollID
-     * @param {number} [max] 最大コメント数
+     * @param {number} [limit] 最大コメント取得数
+     * @param {number} [offset] オフセット
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof CommentApi
      */
-    public getPollsPollIDComments(pollID: string, max?: number, options?: AxiosRequestConfig) {
-        return CommentApiFp(this.configuration).getPollsPollIDComments(pollID, max, options).then((request) => request(this.axios, this.basePath));
+    public getPollsPollIDComments(pollID: string, limit?: number, offset?: number, options?: AxiosRequestConfig) {
+        return CommentApiFp(this.configuration).getPollsPollIDComments(pollID, limit, offset, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

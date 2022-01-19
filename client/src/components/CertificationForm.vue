@@ -92,6 +92,7 @@ export default defineComponent({
       }
       //validationが通り、実際にAPIを投げる
       else {
+        event.preventDefault()
         onSubmitForm()
       }
     }

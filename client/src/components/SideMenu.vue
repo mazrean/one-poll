@@ -71,9 +71,11 @@
         <ul
           class="dropdown-menu text-small shadow"
           aria-labelledby="dropdownUser2">
-          <li><a class="dropdown-item" href="#">サインアウト</a></li>
+          <li>
+            <a class="dropdown-item" @click="onSignOut()">サインアウト</a>
+          </li>
           <li><hr class="dropdown-divider" /></li>
-          <li><a class="dropdown-item" href="#">退会</a></li>
+          <li><a class="dropdown-item" @click="onDeleteUser()">退会</a></li>
         </ul>
       </div>
     </div>
@@ -83,18 +85,30 @@
 <script lang="ts">
 import { defineComponent, computed } from 'vue'
 import { useMainStore } from '/@/store/index'
+import { useRouter } from 'vue-router'
+import api from '/@/lib/apis'
 
 export default defineComponent({
   name: 'SideMenuComponent',
-  isNarrow: false,
   components: {},
   setup() {
     const store = useMainStore()
+    const router = useRouter()
     const userID = computed(() => store.userID)
+    const onSignOut = async () => {
+      await api.postUsersSignout()
+      store.setUserID()
+      router.push('/')
+    }
+    const onDeleteUser = async () => {
+      await api.deleteUsersMe()
+      store.setUserID()
+      router.push('/')
+    }
     return {
       userID,
-      getUserID: store.getUserID,
-      serUserID: store.setUserID
+      onSignOut,
+      onDeleteUser
     }
   }
 })
