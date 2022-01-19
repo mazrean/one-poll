@@ -50,16 +50,7 @@
         role="tabpanel"
         aria-labelledby="home-tab">
         ログイン中のアカウントID<br />
-        <strong>@{{ userID }}</strong
-        ><br />
-        <router-link
-          class="btn btn-outline-secondary m-1"
-          :to="{ name: 'signin' }"
-          >サインアウトする</router-link
-        >
-        <router-link class="btn btn-outline-danger m-1" :to="{ name: 'signin' }"
-          >退会する</router-link
-        >
+        <strong>@{{ userID }}</strong>
       </div>
       <div
         id="profile"

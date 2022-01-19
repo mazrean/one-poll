@@ -28,8 +28,8 @@ export default defineComponent({
       width.value = window.innerWidth
       height.value = window.innerHeight
     }
-    onMounted(() => {
-      store.setUserID()
+    onMounted(async () => {
+      await store.setUserID()
     })
     onMounted(() => {
       window.addEventListener('resize', handleResize)
