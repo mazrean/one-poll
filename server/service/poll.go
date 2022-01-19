@@ -19,6 +19,8 @@ type Poll interface {
 		tags []values.TagName,
 	) (*PollInfo, error)
 	GetPolls(ctx context.Context, user *domain.User, params *PollSearchParams) ([]*PollInfo, error)
+	GetOwnerPolls(ctx context.Context, owner *domain.User) ([]*PollInfo, error)
+	GetAnsweredPolls(ctx context.Context, owner *domain.User) ([]*PollInfo, error)
 	GetPoll(ctx context.Context, user *domain.User, id values.PollID) (*PollInfo, error)
 	ClosePoll(ctx context.Context, user *domain.User, id values.PollID) error
 	DeletePoll(ctx context.Context, user *domain.User, id values.PollID) error
