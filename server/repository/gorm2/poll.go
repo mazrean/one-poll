@@ -137,11 +137,23 @@ func (p *Poll) GetPolls(ctx context.Context, params *repository.PollSearchParams
 
 		if params.Limit > 0 {
 			query = query.Limit(params.Limit)
+		} else if params.Limit < 0 {
+			return nil, repository.ErrInvalidParameterValue("Limit", "be positive")
 		}
 
 		if params.Offset > 0 {
 			query = query.Offset(params.Offset)
+		} else if params.Offset < 0 {
+			return nil, repository.ErrInvalidParameterValue("Offset", "be positive")
 		}
+
+		// if params.Owner != nil {
+		// 	// TODO Implemention
+		// }
+		// if params.Answer != nil {
+		// 	// TODO Implemention
+		// 	// Answersに対応するにはおそらくResponseTableもJoinすることが必要
+		// }
 	}
 
 	err = query.Find(&pollTables).Error
