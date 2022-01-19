@@ -14,10 +14,13 @@ import SideMenu from './components/SideMenu.vue'
 import SideMenuNarrow from './components/SideMenuNarrow.vue'
 import NewPoll from './components/NewPoll.vue'
 import { defineComponent, ref, onMounted, onBeforeUnmount } from 'vue'
+import { useMainStore } from '/@/store/index'
+
 export default defineComponent({
   name: 'App',
   components: { SideMenu, SideMenuNarrow, NewPoll },
   setup() {
+    const store = useMainStore()
     const width = ref(0)
     const height = ref(0)
 
@@ -25,7 +28,9 @@ export default defineComponent({
       width.value = window.innerWidth
       height.value = window.innerHeight
     }
-
+    onMounted(() => {
+      store.setUserID()
+    })
     onMounted(() => {
       window.addEventListener('resize', handleResize)
     })

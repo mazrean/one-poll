@@ -110,18 +110,30 @@
 <script lang="ts">
 import { defineComponent, computed } from 'vue'
 import { useMainStore } from '/@/store/index'
+import { useRouter } from 'vue-router'
+import api from '/@/lib/apis'
 
 export default defineComponent({
-  name: 'SideMenuComponent',
-  isNarrow: false,
+  name: 'SideMenuNarrowComponent',
   components: {},
   setup() {
     const store = useMainStore()
+    const router = useRouter()
     const userID = computed(() => store.userID)
+    const onSignOut = async () => {
+      await api.postUsersSignout()
+      store.setUserID()
+      router.push('/')
+    }
+    const onDeleteUser = async () => {
+      await api.deleteUsersMe()
+      store.setUserID()
+      router.push('/')
+    }
     return {
       userID,
-      getUserID: store.getUserID,
-      serUserID: store.setUserID
+      onSignOut,
+      onDeleteUser
     }
   }
 })

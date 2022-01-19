@@ -141,6 +141,7 @@
 
 <script lang="ts">
 import { defineComponent, reactive } from 'vue'
+import api, { NewPoll, PollType } from '/@/lib/apis'
 interface State {
   title: string
   detail: string
@@ -209,6 +210,14 @@ export default defineComponent({
       calculateFilter()
     }
     const submitPoll = function () {
+      const poll: NewPoll = {
+        title: state.title,
+        type: PollType.Radio,
+        deadline: '2022-01-18T14:01:28.205Z',
+        tags: Array.from(state.newTags),
+        question: state.options
+      }
+      api.postPolls(poll)
       state.title = ''
       state.detail = ''
       state.options = ['', '']

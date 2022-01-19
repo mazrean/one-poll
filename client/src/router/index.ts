@@ -45,7 +45,7 @@ router.beforeEach((to, from, next) => {
   const store = useMainStore()
   if (to.matched.some(record => record.meta.requiresAuth)) {
     // requiresAuthがtrueなら評価
-    if (store.getUserID === '') {
+    if (store.getUserID() === '') {
       // 未ログインならログインページへ
       next('/signin')
     } else {
