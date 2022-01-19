@@ -130,3 +130,46 @@ func (r *Response) CreateResponse(
 		Choices:  choices,
 	}, nil
 }
+
+func (r *Response) GetResult(ctx context.Context, user *domain.User, pollID values.PollID) (*service.Result, error) {
+	pollInfo, err := r.pollRepository.GetPoll(ctx, pollID, repository.LockTypeNone)
+	if errors.Is(err, repository.ErrRecordNotFound) {
+		return nil, service.ErrNoPoll
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to get poll: %w", err)
+	}
+
+	canResponse, err := r.pollAuthority.CanResponse(ctx, user, pollInfo.Poll)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check can response: %w", err)
+	}
+
+	if !canResponse {
+		return nil, service.ErrForbidden
+	}
+
+	choices, err := r.choiceRepository.GetChoicesByPollID(ctx, pollID, repository.LockTypeNone)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get choices: %w", err)
+	}
+
+	result, err := r.responseRepository.GetStatistics(ctx, pollID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get statistics: %w", err)
+	}
+
+	resultItems := make([]*service.ResultItem, 0, len(choices))
+	for _, choice := range choices {
+		resultItems = append(resultItems, &service.ResultItem{
+			Choice: choice,
+			Count:  result.ChoiceCount[choice.GetID()],
+		})
+	}
+
+	return &service.Result{
+		Poll:  pollInfo.Poll,
+		Count: result.Count,
+		Items: resultItems,
+	}, nil
+}
