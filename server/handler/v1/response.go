@@ -102,3 +102,64 @@ func (r *Response) PostPollsPollID(c echo.Context, pollID string) error {
 		CreatedAt: response.Response.GetCreatedAt(),
 	})
 }
+
+func (r *Response) GetPollsPollIDResults(c echo.Context, pollID string) error {
+	session, err := r.Session.getSession(c)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid session")
+	}
+
+	user, err := r.Session.getUser(session)
+	if errors.Is(err, ErrNoValue) {
+		user = nil
+	} else if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get user")
+	}
+
+	uuidPollID, err := uuid.Parse(pollID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid poll id")
+	}
+
+	result, err := r.responseService.GetResult(
+		c.Request().Context(),
+		user,
+		values.NewPollIDFromUUID(uuidPollID),
+	)
+	if errors.Is(err, service.ErrNoPoll) {
+		return echo.NewHTTPError(http.StatusBadRequest, "poll not found")
+	}
+	if errors.Is(err, service.ErrForbidden) {
+		return echo.NewHTTPError(http.StatusForbidden, "forbidden")
+	}
+	if err != nil {
+		log.Printf("failed to get poll: %v", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get poll")
+	}
+
+	var polltype openapi.PollType
+	switch result.Poll.GetPollType() {
+	case values.PollTypeRadio:
+		polltype = openapi.PollTypeRadio
+	default:
+		return echo.NewHTTPError(http.StatusInternalServerError, "invalid poll type")
+	}
+
+	results := make([]openapi.Result, 0, len(result.Items))
+	for _, item := range result.Items {
+		results = append(results, openapi.Result{
+			Choice: openapi.Choice{
+				Id:     uuid.UUID(item.Choice.GetID()).String(),
+				Choice: string(item.GetLabel()),
+			},
+			Count: item.Count,
+		})
+	}
+
+	return c.JSON(http.StatusOK, openapi.PollResults{
+		PollId: openapi.PollID(uuid.UUID(result.GetID()).String()),
+		Type:   polltype,
+		Count:  result.Count,
+		Result: results,
+	})
+}
