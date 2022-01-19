@@ -190,6 +190,9 @@ components:
           $ref: '#/components/schemas/Answer'
         comment:
           type: string
+      required:
+        - answer
+        - comment
     PollID:
       type: string
       title: PollID
@@ -301,7 +304,8 @@ components:
       description: 選択したボタンid配列
       minItems: 1
       items:
-        type: integer
+        type: string
+        format: uuid
     PollResults:
       title: PollResults
       type: object
@@ -318,6 +322,21 @@ components:
     PostTag:
       title: PostTag
       type: string
+    Response:
+      type: object
+      properties:
+        answer:
+          $ref: '#/components/schemas/Answer'
+        comment:
+          type: string
+          description: コメント本文
+          minLength: 0
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - answer
+        - createdAt
   parameters: {}
   requestBodies: {}
   responses: {}
@@ -504,24 +523,14 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                description: このレスポンスは検討中
-                properties:
-                  answer:
-                    $ref: '#/components/schemas/Answer'
-                  comment:
-                    $ref: '#/components/schemas/PollComment'
+                $ref: '#/components/schemas/Response'
               examples:
                 example-1:
                   value:
                     answer:
-                      - 0
-                    comment:
-                      user:
-                        uuid: 095be615-a8ad-4c33-8e9c-c7612fbf6c9f
-                        name: string
-                      createdAt: '2019-08-24T14:15:22Z'
-                      content: string
+                      - 095be615-a8ad-4c33-8e9c-c7612fbf6c9f
+                    comment: string
+                    createdAt: '2019-08-24T14:15:22Z'
         '401':
           description: Unauthorized
         '404':
