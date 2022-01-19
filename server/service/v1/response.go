@@ -81,6 +81,13 @@ func (r *Response) CreateResponse(
 			pollChoiceMap[pollChoice.GetID()] = pollChoice
 		}
 
+		switch poll.GetPollType() {
+		case values.PollTypeRadio:
+			if len(choiceIDs) != 1 {
+				return service.ErrTooManyChoice
+			}
+		}
+
 		choices = make([]*domain.Choice, 0, len(choiceIDs))
 		choiceMap := make(map[values.ChoiceID]struct{}, len(choiceIDs))
 		for _, choiceID := range choiceIDs {
@@ -107,14 +114,16 @@ func (r *Response) CreateResponse(
 			return fmt.Errorf("failed to create response: %w", err)
 		}
 
-		comment = domain.NewComment(
-			values.NewCommentID(),
-			commentContent,
-		)
+		if commentContent != "" {
+			comment = domain.NewComment(
+				values.NewCommentID(),
+				commentContent,
+			)
 
-		err = r.commentRepository.CreateComment(ctx, response.GetID(), comment)
-		if err != nil {
-			return fmt.Errorf("failed to create comment: %w", err)
+			err = r.commentRepository.CreateComment(ctx, response.GetID(), comment)
+			if err != nil {
+				return fmt.Errorf("failed to create comment: %w", err)
+			}
 		}
 
 		return nil
