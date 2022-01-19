@@ -168,6 +168,8 @@ func (r *Response) GetStatistics(ctx context.Context, pollID values.PollID) (*re
 
 	var responseCount int64
 	err = db.
+		Session(&gorm.Session{}).
+		Model(&ResponseTable{}).
 		Where("poll_id = ?", uuid.UUID(pollID)).
 		Count(&responseCount).Error
 	if err != nil {
@@ -180,9 +182,9 @@ func (r *Response) GetStatistics(ctx context.Context, pollID values.PollID) (*re
 	}
 	err = db.
 		Model(&ResponseTable{}).
-		Where("poll_id = ?", uuid.UUID(pollID)).
-		Joins("INNER JOIN response_choice_relations ON responses.id = response_choice_relations.response_id").
-		Joins("INNER JOIN choices ON response_choice_relations.choice_id = choices.id").
+		Where("responses.poll_id = ?", uuid.UUID(pollID)).
+		Joins("INNER JOIN response_choice_relations ON responses.id = response_choice_relations.response_table_id").
+		Joins("INNER JOIN choices ON response_choice_relations.choice_table_id = choices.id").
 		Group("choices.id").
 		Select("choices.id AS choice_id, COUNT(responses.id) AS count").
 		Find(&choiceCounts).Error

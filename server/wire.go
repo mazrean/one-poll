@@ -37,6 +37,7 @@ var (
 	authorizationServiceBind = wire.Bind(new(service.Authorization), new(*v1Service.Authorization))
 	pollServiceBind          = wire.Bind(new(service.Poll), new(*v1Service.Poll))
 	commentServiceBind       = wire.Bind(new(service.Comment), new(*v1Service.Comment))
+	responseServiceBind      = wire.Bind(new(service.Response), new(*v1Service.Response))
 )
 
 type Service struct {
@@ -73,9 +74,11 @@ func InjectService(config *Config) (*Service, error) {
 		authorizationServiceBind,
 		pollServiceBind,
 		commentServiceBind,
+		responseServiceBind,
 		v1Service.NewAuthorization,
 		v1Service.NewPoll,
 		v1Service.NewComment,
+		v1Service.NewResponse,
 		v1Service.NewPollAuthority,
 
 		v1Handler.NewAPI,
@@ -85,6 +88,7 @@ func InjectService(config *Config) (*Service, error) {
 		v1Handler.NewUser,
 		v1Handler.NewPoll,
 		v1Handler.NewComment,
+		v1Handler.NewResponse,
 
 		NewService,
 	)
