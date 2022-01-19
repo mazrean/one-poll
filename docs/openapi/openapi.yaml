@@ -35,7 +35,7 @@ components:
           description: deadlineをpostする、またはq_statusがlimitedの時、存在する。回答締め切り時刻。
         tags:
           type: array
-          minItems: 1
+          minItems: 0
           description: 初期実装では含まない。
           items:
             type: string
