@@ -159,3 +159,44 @@ func (r *Response) GetResponsesByUserIDAndPollIDs(ctx context.Context, userID va
 
 	return responses, nil
 }
+
+func (r *Response) GetStatistics(ctx context.Context, pollID values.PollID) (*repository.Statistics, error) {
+	db, err := r.db.getDB(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get db: %w", err)
+	}
+
+	var responseCount int64
+	err = db.
+		Where("poll_id = ?", uuid.UUID(pollID)).
+		Count(&responseCount).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get responses: %w", err)
+	}
+
+	var choiceCounts []struct {
+		ChoiceID uuid.UUID
+		Count    int64
+	}
+	err = db.
+		Model(&ResponseTable{}).
+		Where("poll_id = ?", uuid.UUID(pollID)).
+		Joins("INNER JOIN response_choice_relations ON responses.id = response_choice_relations.response_id").
+		Joins("INNER JOIN choices ON response_choice_relations.choice_id = choices.id").
+		Group("choices.id").
+		Select("choices.id AS choice_id, COUNT(responses.id) AS count").
+		Find(&choiceCounts).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get choice counts: %w", err)
+	}
+
+	choiceCountMap := make(map[values.ChoiceID]int, len(choiceCounts))
+	for _, choiceCount := range choiceCounts {
+		choiceCountMap[values.NewChoiceIDFromUUID(choiceCount.ChoiceID)] = int(choiceCount.Count)
+	}
+
+	return &repository.Statistics{
+		Count:       int(responseCount),
+		ChoiceCount: choiceCountMap,
+	}, nil
+}
