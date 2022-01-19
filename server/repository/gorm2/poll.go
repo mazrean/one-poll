@@ -118,7 +118,7 @@ func (p *Poll) UpdatePollDeadline(ctx context.Context, id values.PollID, deadlin
 	return nil
 }
 
-func (p *Poll) GetPolls(ctx context.Context, params *repository.PollSearchParams) ([]*repository.PollInfo, error) {
+func (p *Poll) GetPolls(ctx context.Context, params repository.PollSearchParams) ([]*repository.PollInfo, error) {
 	db, err := p.db.getDB(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get db: %w", err)
@@ -130,18 +130,30 @@ func (p *Poll) GetPolls(ctx context.Context, params *repository.PollSearchParams
 		Joins("PollType").
 		Order("created_at DESC")
 
-	if params != nil {
-		if params.Match != "" {
-			query = query.Where("polls.title like ?", "%"+params.Match+"%")
-		}
+	if params.Match != nil {
+		query = query.Where("polls.title like ?", "%"+*params.Match+"%")
+	}
 
-		if params.Limit > 0 {
-			query = query.Limit(params.Limit)
+	if params.Limit != nil {
+		if *params.Limit > 0 {
+			query = query.Limit(*params.Limit)
+		} else {
+			return nil, repository.ErrInvalidParameterValue("Limit", "be positive")
 		}
-
-		if params.Offset > 0 {
-			query = query.Offset(params.Offset)
+	}
+	if params.Offset != nil {
+		if *params.Offset > 0 {
+			query = query.Offset(*params.Offset)
+		} else {
+			return nil, repository.ErrInvalidParameterValue("Offset", "be positive")
 		}
+	}
+	if params.Owner != nil {
+		// TODO Implemention
+	}
+	if params.Answer != nil {
+		// TODO Implemention
+		// Answersに対応するにはおそらくResponseTableもJoinすることが必要
 	}
 
 	err = query.Find(&pollTables).Error

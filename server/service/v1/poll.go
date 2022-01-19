@@ -138,12 +138,12 @@ func (p *Poll) CreatePoll(
 }
 
 func (p *Poll) GetPolls(ctx context.Context, user *domain.User, params *service.PollSearchParams) ([]*service.PollInfo, error) {
-	var repositoryParams *repository.PollSearchParams
+	var repositoryParams repository.PollSearchParams
 	if params != nil {
-		repositoryParams = &repository.PollSearchParams{
-			Limit:  params.Limit,
-			Offset: params.Offset,
-			Match:  params.Match,
+		repositoryParams = repository.PollSearchParams{
+			Limit:  &params.Limit,
+			Offset: &params.Offset,
+			Match:  &params.Match,
 		}
 	}
 
