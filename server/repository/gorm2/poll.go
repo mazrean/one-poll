@@ -298,8 +298,10 @@ func (p *Poll) AddTags(ctx context.Context, pollID values.PollID, tagIDs []value
 	}
 
 	err = db.
-		Model(&PollTable{}).
-		Where("id = ?", uuid.UUID(pollID)).
+		Model(&PollTable{
+			ID: uuid.UUID(pollID),
+		}).
+		Omit("Tags.*").
 		Association("Tags").
 		Append(tagTables)
 	if err != nil {
