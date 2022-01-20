@@ -1,7 +1,6 @@
 <template>
   <div class="container">
-    <h1>プロフィール</h1>
-    <p>ここはプロフィール画面</p>
+    <h1><em class="bi bi-person-fill" /> プロフィール</h1>
     <ul id="myTab" class="nav nav-tabs" role="tablist">
       <li class="nav-item" role="presentation">
         <button

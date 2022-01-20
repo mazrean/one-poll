@@ -21,12 +21,10 @@ export default defineComponent({
   components: { SideMenu, SideMenuNarrow, NewPoll },
   setup() {
     const store = useMainStore()
-    const width = ref(0)
-    const height = ref(0)
+    const width = ref(window.innerWidth)
 
     const handleResize = () => {
       width.value = window.innerWidth
-      height.value = window.innerHeight
     }
     onMounted(async () => {
       await store.setUserID()
@@ -39,7 +37,7 @@ export default defineComponent({
       window.removeEventListener('resize', handleResize)
     })
 
-    return { width, height, handleResize }
+    return { width, handleResize }
   }
 })
 </script>

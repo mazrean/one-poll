@@ -112,7 +112,6 @@
 <script lang="ts">
 import { defineComponent, computed } from 'vue'
 import { useMainStore } from '/@/store/index'
-import { useRouter } from 'vue-router'
 import api from '/@/lib/apis'
 
 export default defineComponent({
@@ -120,17 +119,16 @@ export default defineComponent({
   components: {},
   setup() {
     const store = useMainStore()
-    const router = useRouter()
     const userID = computed(() => store.userID)
     const onSignOut = async () => {
       await api.postUsersSignout()
       store.setUserID()
-      router.push('/')
+      location.href = '/'
     }
     const onDeleteUser = async () => {
       await api.deleteUsersMe()
       await store.setUserID()
-      router.push('/')
+      location.href = '/'
     }
     return {
       userID,

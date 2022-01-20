@@ -38,15 +38,16 @@
             <label for="options" class="col-sm-2 col-form-label">選択肢</label>
             <ul
               v-for="(v, i) in state.options"
-              :key="v"
+              :key="i"
               class="nav nav-pills flex-column">
               <li class="nav-item">
                 <div class="d-inline-block d-flex">
                   <input
+                    :id="'option-' + i"
                     v-model="state.options[i]"
                     type="text"
                     class="form-control d-flex my-1"
-                    name="option"
+                    :name="'option-' + i"
                     maxlength="25"
                     placeholder="オプションの内容を入力" />
                   <button
@@ -142,7 +143,6 @@
 <script lang="ts">
 import { defineComponent, reactive } from 'vue'
 import api, { NewPoll, PollType } from '/@/lib/apis'
-import { useRouter } from 'vue-router'
 
 interface State {
   title: string
@@ -157,7 +157,6 @@ interface State {
 export default defineComponent({
   name: 'NewPollComponent',
   setup() {
-    const router = useRouter()
     const state = reactive<State>({
       title: '',
       detail: '',
@@ -178,7 +177,7 @@ export default defineComponent({
         'スマートファルコン',
         'ウマ娘mad'
       ],
-      autocompletes: ['hoge']
+      autocompletes: []
     })
 
     const insertTag = function () {
@@ -228,7 +227,7 @@ export default defineComponent({
       state.newTag = ''
       calculateFilter()
       state.deadline = '0'
-      router.push({ path: '/', force: true })
+      location.href = '/'
     }
 
     return {
