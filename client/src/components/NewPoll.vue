@@ -17,23 +17,15 @@
             aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form action="/hoge" method="POST" @submit.prevent>
-            <label for="title" class="col-sm-2 col-form-label">タイトル</label>
-            <input
+          <form class="needs-validation" @submit.prevent>
+            <label for="title" class="col-sm-2 col-form-label">質問文</label>
+            <textarea
               id="title"
               v-model="state.title"
-              type="text"
               class="form-control mb-3"
               name="title"
-              maxlength="32"
-              placeholder="タイトルを入力" />
-            <label for="detail" class="col-sm-2 col-form-label">質問文</label>
-            <textarea
-              id="detail"
-              v-model="state.detail"
-              class="form-control mb-3"
-              name="detail"
               maxlength="140"
+              required
               placeholder="質問する内容を入力" />
             <label for="options" class="col-sm-2 col-form-label">選択肢</label>
             <ul
@@ -49,6 +41,7 @@
                     class="form-control d-flex my-1"
                     :name="'option-' + i"
                     maxlength="25"
+                    required
                     placeholder="オプションの内容を入力" />
                   <button
                     :disabled="i < 2"
@@ -114,24 +107,45 @@
               </button>
             </ul>
             <label for="deadline" class="col-sm-2 col-form-label">締切</label>
-            <select
-              id="deadline"
-              v-model="state.deadline"
-              name="detail"
-              class="form-select mb-3">
-              <option value="0">1時間後</option>
-              <option value="1">6時間後</option>
-              <option value="2">12時間後</option>
-              <option value="3">1日後</option>
-              <option value="4">1週間後</option>
-              <option value="5">設定しない</option>
-            </select>
+            <div class="d-flex flex-wrap justify-content-center m-auto">
+              <select
+                id="day"
+                v-model="state.day"
+                name="day"
+                class="form-select form-select-lg mb-3 w-25">
+                <template v-for="n of 8" :key="n">
+                  <option :value="n - 1">{{ n - 1 }}</option>
+                </template>
+              </select>
+              <span class="m-auto">日</span>
+              <select
+                id="hour"
+                v-model="state.hour"
+                name="hour"
+                class="form-select form-select-lg mb-3 w-25">
+                <template v-for="n of 24" :key="n">
+                  <option :value="n - 1">{{ n - 1 }}</option>
+                </template>
+              </select>
+              <span class="m-auto">時間</span>
+              <select
+                id="minute"
+                v-model="state.minute"
+                name="minute"
+                class="form-select form-select-lg mb-3 w-25">
+                <template v-for="n of 60" :key="n">
+                  <option :value="n - 1">{{ n - 1 }}</option>
+                </template>
+              </select>
+              <span class="m-auto">分後</span>
+            </div>
             <button
               type="button"
-              class="btn btn-primary"
+              class="btn btn-lg btn-primary"
+              :disabled="!validationCheck()"
               data-bs-dismiss="modal"
               @click="submitPoll()">
-              投稿する <em class="bi bi-arrow-up-right-square-fill" /></button
+              <strong>投稿する</strong></button
             ><br />
           </form>
         </div>
@@ -146,21 +160,26 @@ import api, { NewPoll, PollType } from '/@/lib/apis'
 
 interface State {
   title: string
-  detail: string
   deadline: string
+  day: number
+  hour: number
+  minute: number
   options: string[]
   newTags: Set<string>
   newTag: string
   tags: string[]
   autocompletes: string[]
+  validated: boolean
 }
 export default defineComponent({
   name: 'NewPollComponent',
   setup() {
     const state = reactive<State>({
       title: '',
-      detail: '',
       deadline: '0',
+      day: 1,
+      hour: 0,
+      minute: 0,
       options: ['', ''],
       newTags: new Set(),
       newTag: '',
@@ -177,24 +196,25 @@ export default defineComponent({
         'スマートファルコン',
         'ウマ娘mad'
       ],
-      autocompletes: []
+      autocompletes: [],
+      validated: false
     })
 
-    const insertTag = function () {
+    const insertTag = () => {
       if (state.newTag.length === 0) return
       state.newTags.add(state.newTag)
       state.newTag = ''
     }
-    const deleteTag = function (str: string) {
+    const deleteTag = (str: string) => {
       state.newTags.delete(str)
     }
-    const insertOption = function () {
+    const insertOption = () => {
       state.options.push('')
     }
-    const deleteOption = function (idx: number) {
+    const deleteOption = (idx: number) => {
       state.options.splice(idx, 1)
     }
-    const calculateFilter = function () {
+    const calculateFilter = () => {
       if (state.newTag.length === 0) {
         state.autocompletes = []
       } else {
@@ -205,23 +225,41 @@ export default defineComponent({
           .slice(0, 5)
       }
     }
-    const onAutocomplete = function (str: string) {
+    const onAutocomplete = (str: string) => {
       if (str.length === 0) return
       state.newTags.add(str)
       state.newTag = ''
       calculateFilter()
     }
+    const validationCheck = () => {
+      if (state.title === '') return false
+      for (const opt of state.options) {
+        if (opt === '') return false
+      }
+      return true
+    }
     const submitPoll = async () => {
+      // deadlineの計算
+      const time: Date = new Date()
+      time.setDate(time.getDate() + state.day)
+      time.setHours(time.getHours() + state.hour)
+      time.setMinutes(time.getMinutes() + state.minute)
       const poll: NewPoll = {
         title: state.title,
         type: PollType.Radio,
-        deadline: '2022-01-25T14:01:28.205Z',
+        deadline: time.toISOString(),
         tags: Array.from(state.newTags),
         question: state.options
       }
-      await api.postPolls(poll)
+      try {
+        await api.postPolls(poll)
+      } catch {
+        alert(
+          '質問を投稿できませんでした。時間を空けてもう一度お試しください。'
+        )
+        return
+      }
       state.title = ''
-      state.detail = ''
       state.options = ['', '']
       state.newTags = new Set()
       state.newTag = ''
@@ -238,6 +276,7 @@ export default defineComponent({
       deleteOption,
       calculateFilter,
       onAutocomplete,
+      validationCheck,
       submitPoll
     }
   }

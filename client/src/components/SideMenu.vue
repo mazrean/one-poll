@@ -35,13 +35,13 @@
               class="btn btn-lg btn-primary"
               data-bs-toggle="modal"
               data-bs-target="#newPollModal">
-              新しい質問を作る
+              <strong>新しい質問を作る</strong>
             </button>
             <router-link
               v-else
               class="btn btn-lg btn-primary"
               :to="{ name: 'signin' }"
-              >サインインする</router-link
+              ><strong>サインインする</strong></router-link
             >
           </div>
         </a>
