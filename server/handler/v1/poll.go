@@ -321,7 +321,7 @@ func (p *Poll) pollInfoToPollSummary(user *domain.User, pollInfo *service.PollIn
 
 	var apiUserStatus openapi.UserStatus
 	switch {
-	case pollInfo.Owner.GetID() == user.GetID():
+	case user != nil && pollInfo.Owner.GetID() == user.GetID():
 		apiUserStatus = openapi.UserStatus{
 			AccessMode: openapi.UserStatusAccessModeCanAccessDetails,
 			IsOwner:    true,
