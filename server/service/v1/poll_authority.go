@@ -20,8 +20,8 @@ func NewPollAuthority(responseRepository repository.Response) *PollAuthority {
 }
 
 // CanRead userはnullable
-func (p *PollAuthority) CanRead(ctx context.Context, user *domain.User, poll *domain.Poll) (bool, error) {
-	if poll.IsExpired() {
+func (p *PollAuthority) CanRead(ctx context.Context, user *domain.User, owner *domain.User, poll *domain.Poll) (bool, error) {
+	if poll.IsExpired() || owner.GetID() == user.GetID() {
 		return true, nil
 	}
 
@@ -40,9 +40,9 @@ func (p *PollAuthority) CanRead(ctx context.Context, user *domain.User, poll *do
 	return true, nil
 }
 
-func (p *PollAuthority) CanResponse(ctx context.Context, user *domain.User, poll *domain.Poll) (bool, error) {
-	if poll.IsExpired() {
-		return true, nil
+func (p *PollAuthority) CanResponse(ctx context.Context, user *domain.User, owner *domain.User, poll *domain.Poll) (bool, error) {
+	if poll.IsExpired() || owner.GetID() == user.GetID() {
+		return false, nil
 	}
 
 	_, err := p.responseRepository.GetResponseByUserIDAndPollID(ctx, user.GetID(), poll.GetID(), repository.LockTypeNone)
