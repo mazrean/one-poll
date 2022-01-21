@@ -1,7 +1,7 @@
 <template>
   <div class="card">
     <div class="card-header text-start">
-      <h2 class="card-title">{{ title }}</h2>
+      <h4 class="card-title">{{ title }}</h4>
     </div>
     <div class="card-body">
       <div v-if="state.only_browsable">
@@ -41,17 +41,22 @@
       </div>
     </div>
     <div class="footer d-flex justify-content-around">
-      <div>締切 : {{ deadline }}</div>
+      <div>残り: {{ state.remain }}</div>
       <div>
         <a href="#">@{{ owner.name }}</a>
       </div>
-      <div>作成日 : {{ createdAt }}</div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, PropType, reactive } from 'vue'
+import {
+  defineComponent,
+  onMounted,
+  PropType,
+  reactive,
+  watchEffect
+} from 'vue'
 import PollResultComponent from '/@/components/PollResult.vue'
 import apis, {
   Choice,
@@ -67,6 +72,10 @@ interface State {
   only_browsable: boolean
   can_answer: boolean
   can_access_details: boolean
+  day: number
+  hour: number
+  minute: number
+  remain: string
   comment: string
   PollResult: PollResults
 }
@@ -116,6 +125,10 @@ export default defineComponent({
       only_browsable: false,
       can_answer: false,
       can_access_details: false,
+      day: 0,
+      hour: 0,
+      minute: 0,
+      remain: '',
       comment: '',
       PollResult: {
         pollId: '',
@@ -154,6 +167,25 @@ export default defineComponent({
       state.can_answer = false
       state.can_access_details = true
     }
+    let now = new Date()
+    const deadline = new Date(props.deadline)
+    setInterval(() => {
+      now = new Date()
+    }, 5000)
+    watchEffect(() => {
+      let dif = Math.floor((deadline.getTime() - now.getTime()) / (60 * 1000))
+      state.day = Math.floor(dif / 1440)
+      dif %= 1440
+      state.hour = Math.floor(dif / 60)
+      dif %= 60
+      state.minute = dif
+      state.remain =
+        state.day > 0
+          ? state.day.toString() + '日'
+          : state.hour > 0
+          ? state.hour.toString() + '時間' + state.minute.toString() + '分'
+          : state.minute.toString() + '分'
+    })
     return {
       PollResultComponent,
       state,
@@ -165,10 +197,10 @@ export default defineComponent({
 
 <style>
 .card {
-  width: 500px;
+  width: 490px;
 }
 .vote-button {
-  width: 90%;
-  height: 2.7rem;
+  width: 420px;
+  height: 30px;
 }
 </style>
