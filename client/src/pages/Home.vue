@@ -42,7 +42,7 @@
             :q-status="PollSummary.qStatus"
             :owner="PollSummary.owner"
             :user-status="PollSummary.userStatus"
-            class="m-3">
+            class="m-4">
           </PollCardComponent>
         </div>
       </div>
