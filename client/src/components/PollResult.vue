@@ -2,7 +2,7 @@
   <div v-for="(choice, i) in result" :key="choice.id" class="poll-choice mb-1">
     <div
       class="poll-bar position-absolute bg-secondary bg-opacity-25"
-      :style="{ width: w[i] + 'rem' }"></div>
+      :style="{ width: arr[i] + '%' }"></div>
     <div class="position-relative top-50 start-50 translate-middle">
       {{ choice.choice }}
     </div>
@@ -14,8 +14,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue'
-import { Choice } from '../lib/apis'
+import { defineComponent, PropType, watchEffect } from 'vue'
+import { Result } from '../lib/apis'
 
 export default defineComponent({
   props: {
@@ -32,14 +32,23 @@ export default defineComponent({
       required: true
     },
     result: {
-      type: Array as PropType<Choice[]>,
+      type: Array as PropType<Result[]>,
       required: true
     }
   },
-  setup() {
-    const w = [4, 8, 12, 6]
+  setup(props) {
+    const arr: number[] = []
+    watchEffect(() =>
+      props.result.forEach(el => {
+        if (el.count == 0 || props.count == 0) {
+          arr.push(1)
+        } else {
+          arr.push((el.count * 90) / props.count)
+        }
+      })
+    )
     return {
-      w
+      arr
     }
   }
 })

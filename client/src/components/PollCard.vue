@@ -4,7 +4,7 @@
       <h2 class="card-title">{{ title }}</h2>
     </div>
     <div class="card-body">
-      <div v-if="only_browsable">
+      <div v-if="state.only_browsable">
         <button
           v-for="q in question"
           :key="q.id"
@@ -14,22 +14,29 @@
           {{ q.choice }}
         </button>
       </div>
-      <div v-if="can_answer">
+      <div v-if="state.can_answer">
         <button
-          v-for="q in question"
+          v-for="(q, index) in question"
           :key="q.id"
           type="button"
           class="vote-button btn btn-outline-secondary mb-1"
-          @click="vote()">
+          @click="submitPollID(index)">
           {{ q.choice }}
         </button>
+        <textarea
+          :v-model="state.comment"
+          placeholder="コメント"
+          rows="3"
+          cols="50"
+          maxlength="2000"
+          class="m-2"></textarea>
       </div>
-      <div v-if="can_access_details">
+      <div v-if="state.can_access_details">
         <PollResultComponent
-          :poll-id="PollResults.pollId"
-          :type="PollResults.type"
-          :count="PollResults.count"
-          :result="PollResults.result">
+          :poll-id="state.PollResult.pollId"
+          :type="state.PollResult.type"
+          :count="state.PollResult.count"
+          :result="state.PollResult.result">
         </PollResultComponent>
       </div>
     </div>
@@ -44,10 +51,25 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue'
+import { defineComponent, onMounted, PropType, reactive } from 'vue'
 import PollResultComponent from '/@/components/PollResult.vue'
-import PollResults from '/@/assets/poll_results.json'
-import { Choice, User, UserStatus, UserStatusAccessModeEnum } from '../lib/apis'
+import apis, {
+  Choice,
+  User,
+  UserStatus,
+  UserStatusAccessModeEnum,
+  PostPollId,
+  PollResults,
+  PollType
+} from '../lib/apis'
+
+interface State {
+  only_browsable: boolean
+  can_answer: boolean
+  can_access_details: boolean
+  comment: string
+  PollResult: PollResults
+}
 
 export default defineComponent({
   components: { PollResultComponent },
@@ -90,22 +112,52 @@ export default defineComponent({
     }
   },
   setup(props) {
-    const only_browsable =
+    const state = reactive<State>({
+      only_browsable: false,
+      can_answer: false,
+      can_access_details: false,
+      comment: '',
+      PollResult: {
+        pollId: '',
+        type: PollType.Radio,
+        count: 0,
+        result: []
+      }
+    })
+    onMounted(async () => {
+      if (state.can_access_details)
+        state.PollResult = (await apis.getPollsPollIDResults(props.pollId)).data
+    })
+    state.only_browsable =
       props.userStatus.accessMode == UserStatusAccessModeEnum.OnlyBrowsable
-    const can_answer =
+    state.can_answer =
       props.userStatus.accessMode == UserStatusAccessModeEnum.CanAnswer
-    const can_access_details =
+    state.can_access_details =
       props.userStatus.accessMode == UserStatusAccessModeEnum.CanAccessDetails
-    const vote = () => {
-      return
+    const submitPollID = async (index: number) => {
+      const pollID: PostPollId = {
+        answer: [props.question[index].id],
+        comment: state.comment
+      }
+      try {
+        await apis.postPollsPollID(props.pollId, pollID)
+      } catch {
+        alert('投票できませんでした。時間を空けてもう一度お試しください。')
+        return
+      }
+      try {
+        state.PollResult = (await apis.getPollsPollIDResults(props.pollId)).data
+      } catch {
+        alert('投票結果を取得できませんでした。')
+        return
+      }
+      state.can_answer = false
+      state.can_access_details = true
     }
     return {
-      only_browsable,
-      can_answer,
-      can_access_details,
-      vote,
-      PollResults,
-      PollResultComponent
+      PollResultComponent,
+      state,
+      submitPollID
     }
   }
 })
