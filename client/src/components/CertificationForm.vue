@@ -8,7 +8,7 @@
         novalidate
         @submit="validation">
         <div>
-          <label for="user_name" class="card-text">ユーザー</label><br />
+          <label for="user_name" class="card-text">ユーザー名</label><br />
           <input
             id="name"
             v-model="name"
