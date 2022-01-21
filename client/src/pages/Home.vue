@@ -2,6 +2,25 @@
   <div class="container">
     <h1><em class="bi bi-house-fill" /> ホーム</h1>
     <div class="m-auto">
+      <div class="d-flex flex-wrap justify-content-center m-auto">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          fill="currentColor"
+          class="bi bi-search mx-3 my-auto"
+          viewBox="0 0 16 16">
+          <path
+            d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+        </svg>
+        <input
+          v-model="state.searchTitle"
+          type="searchTitle"
+          class="form-control d-flex my-1 w-50"
+          name="searchTitle"
+          placeholder="キーワードで検索"
+          @Input=";(state.searchTitle = $event.target.value), getPolls()" />
+      </div>
       <div
         v-if="state.isLoading"
         class="spinner-border text-secondary"
@@ -34,10 +53,13 @@
 <script lang="ts">
 import PollCardComponent from '/@/components/PollCard.vue'
 import apis, { PollSummary } from '../lib/apis'
-import { reactive, onMounted } from 'vue'
+import { reactive, onMounted, watch } from 'vue'
 interface State {
   PollSummaries: PollSummary[]
   isLoading: boolean
+  searchLimit: number
+  searchOffset: number
+  searchTitle: string
 }
 export default {
   name: 'HomePage',
@@ -45,18 +67,32 @@ export default {
   setup() {
     const state = reactive<State>({
       PollSummaries: [],
-      isLoading: true
+      isLoading: true,
+      searchLimit: 100,
+      searchOffset: 0,
+      searchTitle: ''
     })
     onMounted(async () => {
+      await getPolls()
+    })
+    const getPolls = async () => {
+      //state.isLoading = true
       try {
-        state.PollSummaries = (await apis.getPolls()).data
+        state.PollSummaries = (
+          await apis.getPolls(
+            state.searchLimit,
+            state.searchOffset,
+            state.searchTitle
+          )
+        ).data
       } catch {
         state.PollSummaries = []
       }
       state.isLoading = false
-    })
+    }
     return {
       state,
+      getPolls,
       PollCardComponent
     }
   }
