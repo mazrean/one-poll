@@ -37,7 +37,7 @@ func (c *Comment) GetComments(ctx context.Context, pollID values.PollID, user *d
 		return nil, fmt.Errorf("failed to get polls: %w", err)
 	}
 
-	canRead, err := c.pollAuthority.CanRead(ctx, user, pollInfo.Poll)
+	canRead, err := c.pollAuthority.CanRead(ctx, user, pollInfo.Owner, pollInfo.Poll)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get response: %w", err)
 	}

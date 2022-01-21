@@ -62,7 +62,7 @@ func (r *Response) CreateResponse(
 		}
 		poll = pollInfo.Poll
 
-		canResponse, err := r.pollAuthority.CanResponse(ctx, user, poll)
+		canResponse, err := r.pollAuthority.CanResponse(ctx, user, pollInfo.Owner, poll)
 		if err != nil {
 			return fmt.Errorf("failed to check can response: %w", err)
 		}
@@ -149,7 +149,7 @@ func (r *Response) GetResult(ctx context.Context, user *domain.User, pollID valu
 		return nil, fmt.Errorf("failed to get poll: %w", err)
 	}
 
-	canResponse, err := r.pollAuthority.CanResponse(ctx, user, pollInfo.Poll)
+	canResponse, err := r.pollAuthority.CanRead(ctx, user, pollInfo.Owner, pollInfo.Poll)
 	if err != nil {
 		return nil, fmt.Errorf("failed to check can response: %w", err)
 	}
