@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container position-relative top-50 start-50 translate-middle">
     <certification-form
       class="m-auto"
       sign="サインイン"
@@ -9,7 +9,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import CertificationForm from '../components/CertificationForm.vue'
+import CertificationForm from '/@/components/CertificationForm.vue'
 import api, { PostUser } from '/@/lib/apis'
 import { useMainStore } from '/@/store/index'
 import { useRouter } from 'vue-router'

@@ -46,7 +46,7 @@ export default defineComponent({
     const percentage: number[] = []
     watchEffect(() =>
       props.result.forEach(rslt => {
-        if (rslt.count == 0 || props.count == 0) {
+        if (rslt.count === 0 || props.count === 0) {
           bg_width.push(1)
           percentage.push(0)
         } else {

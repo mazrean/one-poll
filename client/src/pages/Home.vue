@@ -37,6 +37,11 @@
             :title="PollSummary.title"
             :type="PollSummary.type"
             :deadline="PollSummary.deadline"
+            :tags="
+              typeof PollSummary.tags !== 'undefined'
+                ? PollSummary.tags
+                : [{ id: '-1', name: '' }]
+            "
             :question="PollSummary.question"
             :created-at="PollSummary.createdAt"
             :q-status="PollSummary.qStatus"
@@ -52,8 +57,9 @@
 
 <script lang="ts">
 import PollCardComponent from '/@/components/PollCard.vue'
-import apis, { PollSummary } from '../lib/apis'
+import apis, { PollSummary } from '/@/lib/apis'
 import { reactive, onMounted } from 'vue'
+
 interface State {
   PollSummaries: PollSummary[]
   isLoading: boolean
@@ -61,6 +67,7 @@ interface State {
   searchOffset: number
   searchTitle: string
 }
+
 export default {
   name: 'HomePage',
   components: { PollCardComponent },

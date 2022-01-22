@@ -2,6 +2,11 @@
   <div class="card">
     <div class="card-header text-start">
       <h4 class="card-title">{{ title }}</h4>
+      <div class="card-tags bi bi-tags-fill text-muted d-flex flex-wrap">
+        <span v-for="tag in tags" :key="tag.id" class="ms-1">
+          {{ tag.name }},
+        </span>
+      </div>
     </div>
     <div class="card-body">
       <div v-if="state.only_browsable">
@@ -16,16 +21,16 @@
       </div>
       <div v-if="state.can_answer">
         <button
-          v-for="(q, index) in question"
+          v-for="(q, i) in question"
           :key="q.id"
           type="button"
           class="vote-button btn btn-outline-secondary mb-1"
-          @click="submitPollID(index)">
+          @click="submitPollID(i)">
           {{ q.choice }}
         </button>
         <textarea
           :v-model="state.comment"
-          placeholder="コメント"
+          placeholder="コメント(任意)"
           rows="3"
           cols="50"
           maxlength="2000"
@@ -50,13 +55,7 @@
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  onMounted,
-  PropType,
-  reactive,
-  watchEffect
-} from 'vue'
+import { defineComponent, onMounted, PropType, reactive, watch } from 'vue'
 import PollResultComponent from '/@/components/PollResult.vue'
 import apis, {
   Choice,
@@ -65,13 +64,15 @@ import apis, {
   UserStatusAccessModeEnum,
   PostPollId,
   PollResults,
-  PollType
-} from '../lib/apis'
+  PollType,
+  PollTag
+} from '/@/lib/apis'
 
 interface State {
   only_browsable: boolean
   can_answer: boolean
   can_access_details: boolean
+  now: Date
   day: number
   hour: number
   minute: number
@@ -97,6 +98,10 @@ export default defineComponent({
     },
     deadline: {
       type: String,
+      required: true
+    },
+    tags: {
+      type: Array as PropType<PollTag[]>,
       required: true
     },
     question: {
@@ -125,6 +130,7 @@ export default defineComponent({
       only_browsable: false,
       can_answer: false,
       can_access_details: false,
+      now: new Date(),
       day: 0,
       hour: 0,
       minute: 0,
@@ -137,16 +143,39 @@ export default defineComponent({
         result: []
       }
     })
-    onMounted(async () => {
-      if (state.can_access_details)
-        state.PollResult = (await apis.getPollsPollIDResults(props.pollId)).data
-    })
     state.only_browsable =
       props.userStatus.accessMode == UserStatusAccessModeEnum.OnlyBrowsable
     state.can_answer =
       props.userStatus.accessMode == UserStatusAccessModeEnum.CanAnswer
     state.can_access_details =
       props.userStatus.accessMode == UserStatusAccessModeEnum.CanAccessDetails
+    onMounted(async () => {
+      if (state.can_access_details)
+        state.PollResult = (await apis.getPollsPollIDResults(props.pollId)).data
+    })
+    const deadline = new Date(props.deadline)
+    const comp_remain = (now: Date) => {
+      let dif = Math.floor((deadline.getTime() - now.getTime()) / (60 * 1000))
+      state.day = Math.floor(dif / 1440)
+      dif %= 1440
+      state.hour = Math.floor(dif / 60)
+      dif %= 60
+      state.minute = dif
+      state.remain =
+        state.day > 0
+          ? state.day.toString() + '日'
+          : state.hour > 0
+          ? state.hour.toString() + '時間' + state.minute.toString() + '分'
+          : state.minute.toString() + '分'
+    }
+    comp_remain(state.now)
+    setInterval(() => {
+      state.now = new Date()
+    }, 5000)
+    watch(
+      () => state.now,
+      now => comp_remain(now)
+    )
     const submitPollID = async (index: number) => {
       const pollID: PostPollId = {
         answer: [props.question[index].id],
@@ -167,29 +196,10 @@ export default defineComponent({
       state.can_answer = false
       state.can_access_details = true
     }
-    let now = new Date()
-    const deadline = new Date(props.deadline)
-    setInterval(() => {
-      now = new Date()
-    }, 5000)
-    watchEffect(() => {
-      let dif = Math.floor((deadline.getTime() - now.getTime()) / (60 * 1000))
-      state.day = Math.floor(dif / 1440)
-      dif %= 1440
-      state.hour = Math.floor(dif / 60)
-      dif %= 60
-      state.minute = dif
-      state.remain =
-        state.day > 0
-          ? state.day.toString() + '日'
-          : state.hour > 0
-          ? state.hour.toString() + '時間' + state.minute.toString() + '分'
-          : state.minute.toString() + '分'
-    })
     return {
-      PollResultComponent,
       state,
-      submitPollID
+      submitPollID,
+      PollResultComponent
     }
   }
 })

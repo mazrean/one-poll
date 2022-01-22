@@ -125,13 +125,14 @@
 import { defineComponent, computed, reactive, onMounted } from 'vue'
 import { useMainStore } from '/@/store/index'
 import PollCardComponent from '/@/components/PollCard.vue'
-import apis, { PollSummary } from '../lib/apis'
+import apis, { PollSummary } from '/@/lib/apis'
 
 interface State {
   PollOwners: PollSummary[]
   PollAnswers: PollSummary[]
   isLoading: boolean[]
 }
+
 export default defineComponent({
   name: 'ProfilePage',
   components: {},
