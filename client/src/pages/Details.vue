@@ -1,7 +1,6 @@
 <template>
   <div class="container">
-    <Routes />
-    <PollCardComponent />
+    <PollCardComponent></PollCardComponent>
   </div>
 </template>
 

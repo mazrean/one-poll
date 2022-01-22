@@ -10,9 +10,9 @@
 </template>
 
 <script lang="ts">
-import SideMenu from './components/SideMenu.vue'
-import SideMenuNarrow from './components/SideMenuNarrow.vue'
-import NewPoll from './components/NewPoll.vue'
+import SideMenu from '/@/components/SideMenu.vue'
+import SideMenuNarrow from '/@/components/SideMenuNarrow.vue'
+import NewPoll from '/@/components/NewPoll.vue'
 import { defineComponent, ref, onMounted, onBeforeUnmount } from 'vue'
 import { useMainStore } from '/@/store/index'
 
@@ -22,7 +22,6 @@ export default defineComponent({
   setup() {
     const store = useMainStore()
     const width = ref(window.innerWidth)
-
     const handleResize = () => {
       width.value = window.innerWidth
     }
@@ -32,11 +31,9 @@ export default defineComponent({
     onMounted(() => {
       window.addEventListener('resize', handleResize)
     })
-
     onBeforeUnmount(() => {
       window.removeEventListener('resize', handleResize)
     })
-
     return { width, handleResize }
   }
 })

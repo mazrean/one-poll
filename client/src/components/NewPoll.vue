@@ -171,6 +171,7 @@ interface State {
   autocompletes: string[]
   validated: boolean
 }
+
 export default defineComponent({
   name: 'NewPollComponent',
   setup() {
@@ -199,7 +200,6 @@ export default defineComponent({
       autocompletes: [],
       validated: false
     })
-
     const insertTag = () => {
       if (state.newTag.length === 0) return
       state.newTags.add(state.newTag)
@@ -267,7 +267,6 @@ export default defineComponent({
       state.deadline = '0'
       location.href = '/'
     }
-
     return {
       state,
       insertTag,
