@@ -62,7 +62,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, PropType, reactive, watch } from 'vue'
+import { defineComponent, PropType, reactive, watch } from 'vue'
 import PollResultComponent from '/@/components/PollResult.vue'
 import apis, {
   Choice,
@@ -80,9 +80,6 @@ interface State {
   can_answer: boolean
   can_access_details: boolean
   now: Date
-  day: number
-  hour: number
-  minute: number
   remain: string
   comment: string
   PollResult: PollResults
@@ -138,9 +135,6 @@ export default defineComponent({
       can_answer: false,
       can_access_details: false,
       now: new Date(),
-      day: 0,
-      hour: 0,
-      minute: 0,
       remain: '',
       comment: '',
       PollResult: {
@@ -158,44 +152,32 @@ export default defineComponent({
     state.can_access_details =
       props.userStatus.accessMode == UserStatusAccessModeEnum.CanAccessDetails
 
-    onMounted(async () => {
-      if (state.can_access_details) getResult()
-    })
-
-    const comp_remain = (now: Date, deadline: Date) => {
-      let dif = Math.floor((deadline.getTime() - now.getTime()) / (60 * 1000))
-      state.day = Math.floor(dif / 1440)
-      dif %= 1440
-      state.hour = Math.floor(dif / 60)
-      dif %= 60
-      state.minute = dif
-      state.remain =
-        state.day > 0
-          ? state.day.toString() + '日'
-          : state.hour > 0
-          ? state.hour.toString() + '時間' + state.minute.toString() + '分'
-          : state.minute.toString() + '分'
-    }
     const deadline = new Date(props.deadline)
-    comp_remain(state.now, deadline)
+    const comp_remain = () => {
+      let dif = Math.floor(
+        (deadline.getTime() - state.now.getTime()) / (60 * 1000)
+      )
+      const day = Math.floor(dif / 1440)
+      dif %= 1440
+      const hour = Math.floor(dif / 60)
+      dif %= 60
+      const minute = dif
+      state.remain =
+        day > 0
+          ? day.toString() + '日'
+          : hour > 0
+          ? hour.toString() + '時間' + minute.toString() + '分'
+          : minute.toString() + '分'
+    }
+    comp_remain()
     setInterval(() => {
       state.now = new Date()
     }, 5000)
     watch(
       () => state.now,
-      now => comp_remain(now, deadline)
+      () => comp_remain()
     )
 
-    const submitPollID = async (i: number) => {
-      const pollID: PostPollId = {
-        answer: [props.question[i].id],
-        comment: state.comment
-      }
-      await postPoll(pollID)
-      await getResult()
-      state.can_answer = false
-      state.can_access_details = true
-    }
     const postPoll = async (pollID: PostPollId) => {
       try {
         await apis.postPollsPollID(props.pollId, pollID)
@@ -212,6 +194,18 @@ export default defineComponent({
         return
       }
     }
+    const submitPollID = async (i: number) => {
+      const pollID: PostPollId = {
+        answer: [props.question[i].id],
+        comment: state.comment
+      }
+      await postPoll(pollID)
+      await getResult()
+      state.can_answer = false
+      state.can_access_details = true
+    }
+
+    if (state.can_access_details) getResult()
 
     return {
       state,
