@@ -14,9 +14,6 @@ import (
 )
 
 type unimplemented interface {
-	// (GET /tags)
-	GetTags(ctx echo.Context) error
-
 	// (POST /tags)
 	PostTags(ctx echo.Context) error
 
@@ -31,6 +28,7 @@ type API struct {
 	*Checker
 	*User
 	*Poll
+	*Tag
 	*Comment
 	*Response
 	unimplemented
@@ -40,6 +38,7 @@ func NewAPI(
 	checker *Checker,
 	user *User,
 	poll *Poll,
+	tag *Tag,
 	comment *Comment,
 	response *Response,
 ) *API {
@@ -47,6 +46,7 @@ func NewAPI(
 		Checker:  checker,
 		User:     user,
 		Poll:     poll,
+		Tag:      tag,
 		Comment:  comment,
 		Response: response,
 	}
