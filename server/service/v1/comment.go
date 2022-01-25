@@ -63,14 +63,13 @@ func (c *Comment) GetComments(ctx context.Context, pollID values.PollID, user *d
 	commentInfos := make([]service.CommentInfo, 0, len(responseInfos))
 	for _, responseInfo := range responseInfos {
 		comment, exists := dbComments[responseInfo.Response.GetID()]
-		commentInfo := service.CommentInfo{
-			Response:    *responseInfo.Response,
-			CommentUser: *responseInfo.Respondent}
 		if exists {
-			commentInfo.Comment = *comment
+			commentInfo := service.CommentInfo{
+				Response:    *responseInfo.Response,
+				Comment:     *comment,
+				CommentUser: *responseInfo.Respondent}
+			commentInfos = append(commentInfos, commentInfo)
 		}
-
-		commentInfos = append(commentInfos, commentInfo)
 	}
 
 	return commentInfos, nil
