@@ -147,9 +147,11 @@ func (p *Poll) GetPolls(ctx context.Context, params *repository.PollSearchParams
 			return nil, repository.ErrInvalidParameterValue("Offset", "be positive")
 		}
 
-		// if params.Owner != nil {
-		// 	// TODO Implemention
-		// }
+		if params.Owner != nil {
+			id := uuid.UUID(params.Owner.GetID()).String()
+			query = query.Where("polls.owner_id = ?", id)
+		}
+
 		// if params.Answer != nil {
 		// 	// TODO Implemention
 		// 	// Answersに対応するにはおそらくResponseTableもJoinすることが必要
