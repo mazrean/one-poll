@@ -22,8 +22,8 @@
       <li v-if="userID !== ''">
         <h4>
           <router-link class="nav-link link" :to="{ name: 'profile' }">
-            <em class="bi bi-person-fill" /> プロフィール</router-link
-          >
+            <em class="bi bi-person-fill" /> プロフィール
+          </router-link>
         </h4>
       </li>
       <li>
@@ -40,9 +40,9 @@
             <router-link
               v-else
               class="btn btn-lg btn-primary"
-              :to="{ name: 'signin' }"
-              ><strong>サインインする</strong></router-link
-            >
+              :to="{ name: 'signin' }">
+              <strong>サインインする</strong>
+            </router-link>
           </div>
         </a>
       </li>

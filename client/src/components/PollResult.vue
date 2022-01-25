@@ -12,10 +12,7 @@
       </div>
     </div>
   </div>
-  <div class="d-flex justify-content-around">
-    <div>{{ count }} 票</div>
-    <div class="card-link"><a href="#">詳細を見る</a></div>
-  </div>
+  <div>{{ count }} 票</div>
 </template>
 
 <script lang="ts">
