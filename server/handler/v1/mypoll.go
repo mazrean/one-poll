@@ -30,7 +30,7 @@ func (p *Poll) GetUsersMeOwners(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get owner polls")
 	}
 
-	apiPolls := make([]*openapi.PollSummary, 0, 0)
+	apiPolls := make([]*openapi.PollSummary, 0, len(pollInfos))
 
 	for _, pollInfo := range pollInfos {
 		apiPoll, err := p.pollInfoToPollSummary(user, pollInfo)
