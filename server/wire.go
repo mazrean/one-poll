@@ -36,6 +36,7 @@ var (
 
 	authorizationServiceBind = wire.Bind(new(service.Authorization), new(*v1Service.Authorization))
 	pollServiceBind          = wire.Bind(new(service.Poll), new(*v1Service.Poll))
+	tagServiceBind           = wire.Bind(new(service.Tag), new(*v1Service.Tag))
 	commentServiceBind       = wire.Bind(new(service.Comment), new(*v1Service.Comment))
 	responseServiceBind      = wire.Bind(new(service.Response), new(*v1Service.Response))
 )
@@ -73,10 +74,12 @@ func InjectService(config *Config) (*Service, error) {
 
 		authorizationServiceBind,
 		pollServiceBind,
+		tagServiceBind,
 		commentServiceBind,
 		responseServiceBind,
 		v1Service.NewAuthorization,
 		v1Service.NewPoll,
+		v1Service.NewTag,
 		v1Service.NewComment,
 		v1Service.NewResponse,
 		v1Service.NewPollAuthority,
@@ -87,6 +90,7 @@ func InjectService(config *Config) (*Service, error) {
 		v1Handler.NewChecker,
 		v1Handler.NewUser,
 		v1Handler.NewPoll,
+		v1Handler.NewTag,
 		v1Handler.NewComment,
 		v1Handler.NewResponse,
 
