@@ -54,7 +54,7 @@
 
 <script lang="ts">
 import PollResultComponent from '/@/components/PollResult.vue'
-import { defineComponent, onMounted, reactive } from 'vue'
+import { defineComponent, reactive } from 'vue'
 import apis, {
   PollComment,
   PollResults,
@@ -108,14 +108,8 @@ export default defineComponent({
     })
     state.createdAt = new Date(state.PollSummary.createdAt)
 
-    const route = useRoute()
-    const { pollId } = route.params
+    const { pollId } = useRoute().params
     state.pollId = pollId.toString()
-    onMounted(() => {
-      getPoll()
-      getResult()
-      getComments()
-    })
     const getPoll = async () => {
       try {
         state.PollSummary = (await apis.getPollsPollID(state.pollId)).data
@@ -142,6 +136,10 @@ export default defineComponent({
         return
       }
     }
+    getPoll()
+    getResult()
+    getComments()
+
     return {
       state,
       PollResultComponent
