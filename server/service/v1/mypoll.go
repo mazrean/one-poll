@@ -11,11 +11,12 @@ import (
 )
 
 func (p *Poll) GetOwnerPolls(ctx context.Context, owner *domain.User) ([]*service.PollInfo, error) {
-	var repositoryParams *repository.PollSearchParams
 	if owner != nil {
-		repositoryParams = &repository.PollSearchParams{
-			Owner: owner,
-		}
+		return nil, fmt.Errorf("owner parameter is required")
+	}
+
+	repositoryParams := &repository.PollSearchParams{
+		Owner: owner,
 	}
 
 	polls, err := p.pollRepository.GetPolls(ctx, repositoryParams)

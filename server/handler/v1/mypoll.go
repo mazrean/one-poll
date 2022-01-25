@@ -17,7 +17,7 @@ func (p *Poll) GetUsersMeOwners(ctx echo.Context) error {
 
 	user, err := p.Session.getUser(session)
 	if errors.Is(err, ErrNoValue) {
-		user = nil
+		return echo.NewHTTPError(http.StatusUnauthorized, "login required")
 	}
 	if err != nil && !errors.Is(err, ErrNoValue) {
 		log.Printf("failed to get user: %v", err)
