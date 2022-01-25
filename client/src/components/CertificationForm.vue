@@ -8,7 +8,7 @@
         novalidate
         @submit="validation">
         <div>
-          <label for="user_name" class="card-text">ユーザー</label><br />
+          <label for="user_name" class="card-text">ユーザー名</label><br />
           <input
             id="name"
             v-model="name"
@@ -59,7 +59,7 @@ export default defineComponent({
     }
   },
   emits: ['on-submit-event'],
-  setup(propsm, context) {
+  setup(_, context) {
     const name = ref<string>('')
     const password = ref<string>('')
     const validated = ref<boolean>(false)

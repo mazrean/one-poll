@@ -35,13 +35,13 @@
               class="btn btn-lg btn-primary"
               data-bs-toggle="modal"
               data-bs-target="#newPollModal">
-              新しい質問を作る
+              <strong>新しい質問を作る</strong>
             </button>
             <router-link
               v-else
               class="btn btn-lg btn-primary"
               :to="{ name: 'signin' }"
-              >サインインする</router-link
+              ><strong>サインインする</strong></router-link
             >
           </div>
         </a>
@@ -85,7 +85,6 @@
 <script lang="ts">
 import { defineComponent, computed } from 'vue'
 import { useMainStore } from '/@/store/index'
-import { useRouter } from 'vue-router'
 import api from '/@/lib/apis'
 
 export default defineComponent({
@@ -93,17 +92,16 @@ export default defineComponent({
   components: {},
   setup() {
     const store = useMainStore()
-    const router = useRouter()
     const userID = computed(() => store.userID)
     const onSignOut = async () => {
       await api.postUsersSignout()
       store.setUserID()
-      router.push('/')
+      location.href = '/'
     }
     const onDeleteUser = async () => {
       await api.deleteUsersMe()
       await store.setUserID()
-      router.push('/')
+      location.href = '/'
     }
     return {
       userID,

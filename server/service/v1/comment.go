@@ -32,20 +32,18 @@ func NewComment(
 }
 
 func (c *Comment) GetComments(ctx context.Context, pollID values.PollID, user *domain.User, params service.CommentGetParams) ([]service.CommentInfo, error) {
-
 	pollInfo, err := c.pollRepository.GetPoll(ctx, pollID, repository.LockTypeNone)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get polls: %w", err)
 	}
 
-	tf, err := c.pollAuthority.CanRead(ctx, user, pollInfo.Poll)
-
+	canRead, err := c.pollAuthority.CanRead(ctx, user, pollInfo.Owner, pollInfo.Poll)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get response: %w", err)
 	}
 
-	if tf {
-		return nil, fmt.Errorf("poll is expired or poll is not found: %w", err)
+	if !canRead {
+		return nil, service.ErrForbidden
 	}
 
 	responseInfos, err := c.responseRepository.GetResponsesByPollID(ctx, pollID)

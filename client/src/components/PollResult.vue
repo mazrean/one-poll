@@ -1,10 +1,15 @@
 <template>
-  <div v-for="(choice, i) in result" :key="choice.id" class="poll-choice mb-1">
-    <div
-      class="poll-bar position-absolute bg-secondary bg-opacity-25"
-      :style="{ width: w[i] + 'rem' }"></div>
-    <div class="position-relative top-50 start-50 translate-middle">
-      {{ choice.choice }}
+  <div v-for="(choice, i) in result" :key="choice.id" class="poll-result mb-1">
+    <div class="poll-choice position-relative">
+      <div
+        class="poll-bar position-absolute top-50 start-0 translate-middle-y bg-secondary bg-opacity-25"
+        :style="{ width: bg_width[i] + '%' }"></div>
+      <div class="position-absolute top-50 start-50 translate-middle">
+        {{ choice.choice }}
+      </div>
+      <div class="position-absolute top-50 start-100 translate-middle-y">
+        {{ percentage[i] + '%' }}
+      </div>
     </div>
   </div>
   <div class="d-flex justify-content-around">
@@ -14,8 +19,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue'
-import { Choice } from '../lib/apis'
+import { defineComponent, PropType, watchEffect } from 'vue'
+import { Result } from '/@/lib/apis'
 
 export default defineComponent({
   props: {
@@ -32,25 +37,41 @@ export default defineComponent({
       required: true
     },
     result: {
-      type: Array as PropType<Choice[]>,
+      type: Array as PropType<Result[]>,
       required: true
     }
   },
-  setup() {
-    const w = [4, 8, 12, 6]
+  setup(props) {
+    const bg_width: number[] = []
+    const percentage: number[] = []
+    watchEffect(() =>
+      props.result.forEach(rslt => {
+        if (rslt.count === 0 || props.count === 0) {
+          bg_width.push(1)
+          percentage.push(0)
+        } else {
+          bg_width.push((rslt.count * 96) / props.count)
+          percentage.push(Math.round((rslt.count * 100) / props.count))
+        }
+      })
+    )
     return {
-      w
+      bg_width,
+      percentage
     }
   }
 })
 </script>
 
 <style>
+.poll-result {
+  width: 420px;
+}
 .poll-choice {
-  width: 100%;
-  height: 2.7rem;
+  width: 420px;
+  height: 30px;
 }
 .poll-bar {
-  height: 2.7rem;
+  height: 30px;
 }
 </style>

@@ -1,10 +1,15 @@
 <template>
   <div class="card">
     <div class="card-header text-start">
-      <h2 class="card-title">{{ title }}</h2>
+      <h4 class="card-title">{{ title }}</h4>
+      <div class="card-tags bi bi-tags-fill text-muted d-flex flex-wrap">
+        <span v-for="tag in tags" :key="tag.id" class="ms-1">
+          {{ tag.name }},
+        </span>
+      </div>
     </div>
     <div class="card-body">
-      <div v-if="only_browsable">
+      <div v-if="state.only_browsable">
         <button
           v-for="q in question"
           :key="q.id"
@@ -14,40 +19,67 @@
           {{ q.choice }}
         </button>
       </div>
-      <div v-if="can_answer">
+      <div v-if="state.can_answer">
         <button
-          v-for="q in question"
+          v-for="(q, i) in question"
           :key="q.id"
           type="button"
           class="vote-button btn btn-outline-secondary mb-1"
-          @click="vote()">
+          @click="submitPollID(i)">
           {{ q.choice }}
         </button>
+        <textarea
+          :v-model="state.comment"
+          placeholder="コメント(任意)"
+          rows="3"
+          cols="50"
+          maxlength="2000"
+          class="m-2"></textarea>
       </div>
-      <div v-if="can_access_details">
+      <div v-if="state.can_access_details">
         <PollResultComponent
-          :poll-id="PollResults.pollId"
-          :type="PollResults.type"
-          :count="PollResults.count"
-          :result="PollResults.result">
+          :poll-id="state.PollResult.pollId"
+          :type="state.PollResult.type"
+          :count="state.PollResult.count"
+          :result="state.PollResult.result">
         </PollResultComponent>
       </div>
     </div>
     <div class="footer d-flex justify-content-around">
-      <div>締切 : {{ deadline }}</div>
+      <div>残り: {{ state.remain }}</div>
       <div>
         <a href="#">@{{ owner.name }}</a>
       </div>
-      <div>作成日 : {{ createdAt }}</div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue'
+import { defineComponent, onMounted, PropType, reactive, watch } from 'vue'
 import PollResultComponent from '/@/components/PollResult.vue'
-import PollResults from '/@/assets/poll_results.json'
-import { Choice, User, UserStatus, UserStatusAccessModeEnum } from '../lib/apis'
+import apis, {
+  Choice,
+  User,
+  UserStatus,
+  UserStatusAccessModeEnum,
+  PostPollId,
+  PollResults,
+  PollType,
+  PollTag
+} from '/@/lib/apis'
+
+interface State {
+  only_browsable: boolean
+  can_answer: boolean
+  can_access_details: boolean
+  now: Date
+  day: number
+  hour: number
+  minute: number
+  remain: string
+  comment: string
+  PollResult: PollResults
+}
 
 export default defineComponent({
   components: { PollResultComponent },
@@ -66,6 +98,10 @@ export default defineComponent({
     },
     deadline: {
       type: String,
+      required: true
+    },
+    tags: {
+      type: Array as PropType<PollTag[]>,
       required: true
     },
     question: {
@@ -90,21 +126,79 @@ export default defineComponent({
     }
   },
   setup(props) {
-    const only_browsable =
-      props.userStatus.access_mode == UserStatusAccessModeEnum.OnlyBrowsable
-    const can_answer =
-      props.userStatus.access_mode == UserStatusAccessModeEnum.CanAnswer
-    const can_access_details =
-      props.userStatus.access_mode == UserStatusAccessModeEnum.CanAccessDetails
-    const vote = () => {
-      return
+    const state = reactive<State>({
+      only_browsable: false,
+      can_answer: false,
+      can_access_details: false,
+      now: new Date(),
+      day: 0,
+      hour: 0,
+      minute: 0,
+      remain: '',
+      comment: '',
+      PollResult: {
+        pollId: '',
+        type: PollType.Radio,
+        count: 0,
+        result: []
+      }
+    })
+    state.only_browsable =
+      props.userStatus.accessMode == UserStatusAccessModeEnum.OnlyBrowsable
+    state.can_answer =
+      props.userStatus.accessMode == UserStatusAccessModeEnum.CanAnswer
+    state.can_access_details =
+      props.userStatus.accessMode == UserStatusAccessModeEnum.CanAccessDetails
+    onMounted(async () => {
+      if (state.can_access_details)
+        state.PollResult = (await apis.getPollsPollIDResults(props.pollId)).data
+    })
+    const deadline = new Date(props.deadline)
+    const comp_remain = (now: Date) => {
+      let dif = Math.floor((deadline.getTime() - now.getTime()) / (60 * 1000))
+      state.day = Math.floor(dif / 1440)
+      dif %= 1440
+      state.hour = Math.floor(dif / 60)
+      dif %= 60
+      state.minute = dif
+      state.remain =
+        state.day > 0
+          ? state.day.toString() + '日'
+          : state.hour > 0
+          ? state.hour.toString() + '時間' + state.minute.toString() + '分'
+          : state.minute.toString() + '分'
+    }
+    comp_remain(state.now)
+    setInterval(() => {
+      state.now = new Date()
+    }, 5000)
+    watch(
+      () => state.now,
+      now => comp_remain(now)
+    )
+    const submitPollID = async (index: number) => {
+      const pollID: PostPollId = {
+        answer: [props.question[index].id],
+        comment: state.comment
+      }
+      try {
+        await apis.postPollsPollID(props.pollId, pollID)
+      } catch {
+        alert('投票できませんでした。時間を空けてもう一度お試しください。')
+        return
+      }
+      try {
+        state.PollResult = (await apis.getPollsPollIDResults(props.pollId)).data
+      } catch {
+        alert('投票結果を取得できませんでした。')
+        return
+      }
+      state.can_answer = false
+      state.can_access_details = true
     }
     return {
-      only_browsable,
-      can_answer,
-      can_access_details,
-      vote,
-      PollResults,
+      state,
+      submitPollID,
       PollResultComponent
     }
   }
@@ -113,10 +207,10 @@ export default defineComponent({
 
 <style>
 .card {
-  width: 500px;
+  width: 490px;
 }
 .vote-button {
-  width: 90%;
-  height: 2.7rem;
+  width: 420px;
+  height: 30px;
 }
 </style>

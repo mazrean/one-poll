@@ -14,15 +14,6 @@ import (
 )
 
 type unimplemented interface {
-	// (POST /polls/{pollID})
-	PostPollsPollID(ctx echo.Context, pollID string) error
-
-	// (GET /polls/{pollID}/results)
-	GetPollsPollIDResults(ctx echo.Context, pollID string) error
-
-	// (GET /tags)
-	GetTags(ctx echo.Context) error
-
 	// (POST /tags)
 	PostTags(ctx echo.Context) error
 
@@ -34,7 +25,9 @@ type API struct {
 	*Checker
 	*User
 	*Poll
+	*Tag
 	*Comment
+	*Response
 	unimplemented
 }
 
@@ -42,13 +35,17 @@ func NewAPI(
 	checker *Checker,
 	user *User,
 	poll *Poll,
+	tag *Tag,
 	comment *Comment,
+	response *Response,
 ) *API {
 	return &API{
-		Checker: checker,
-		User:    user,
-		Poll:    poll,
-		Comment: comment,
+		Checker:  checker,
+		User:     user,
+		Poll:     poll,
+		Tag:      tag,
+		Comment:  comment,
+		Response: response,
 	}
 }
 

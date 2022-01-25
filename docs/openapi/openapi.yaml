@@ -190,6 +190,9 @@ components:
           $ref: '#/components/schemas/Answer'
         comment:
           type: string
+      required:
+        - answer
+        - comment
     PollID:
       type: string
       title: PollID
@@ -276,32 +279,31 @@ components:
       x-examples: {}
       items:
         $ref: '#/components/schemas/Choice'
-    Results:
-      title: Results
+    Result:
+      title: Result
       description: 結果
       x-examples:
         example-1:
-          - id: 0
-            choice: string
-            count: 0
-      type: array
-      items:
-        allOf:
-          - $ref: '#/components/schemas/Choice'
-          - type: object
-            properties:
-              count:
-                type: integer
-                description: その選択肢に回答をした人数
-            required:
-              - count
+          id: 0
+          choice: string
+          count: 0
+      allOf:
+        - $ref: '#/components/schemas/Choice'
+        - type: object
+          properties:
+            count:
+              type: integer
+              description: その選択肢に回答をした人数
+          required:
+            - count
     Answer:
       type: array
       title: Answer
       description: 選択したボタンid配列
       minItems: 1
       items:
-        type: integer
+        type: string
+        format: uuid
     PollResults:
       title: PollResults
       type: object
@@ -314,10 +316,32 @@ components:
           type: integer
           description: 回答総数
         result:
-          $ref: '#/components/schemas/Results'
+          type: array
+          items:
+            $ref: '#/components/schemas/Result'
+      required:
+        - pollId
+        - type
+        - count
+        - result
     PostTag:
       title: PostTag
       type: string
+    Response:
+      type: object
+      properties:
+        answer:
+          $ref: '#/components/schemas/Answer'
+        comment:
+          type: string
+          description: コメント本文
+          minLength: 0
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - answer
+        - createdAt
   parameters: {}
   requestBodies: {}
   responses: {}
@@ -504,24 +528,14 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                description: このレスポンスは検討中
-                properties:
-                  answer:
-                    $ref: '#/components/schemas/Answer'
-                  comment:
-                    $ref: '#/components/schemas/PollComment'
+                $ref: '#/components/schemas/Response'
               examples:
                 example-1:
                   value:
                     answer:
-                      - 0
-                    comment:
-                      user:
-                        uuid: 095be615-a8ad-4c33-8e9c-c7612fbf6c9f
-                        name: string
-                      createdAt: '2019-08-24T14:15:22Z'
-                      content: string
+                      - 095be615-a8ad-4c33-8e9c-c7612fbf6c9f
+                    comment: string
+                    createdAt: '2019-08-24T14:15:22Z'
         '401':
           description: Unauthorized
         '404':

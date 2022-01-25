@@ -62,7 +62,7 @@ func (r *Response) CreateResponse(
 		}
 		poll = pollInfo.Poll
 
-		canResponse, err := r.pollAuthority.CanResponse(ctx, user, poll)
+		canResponse, err := r.pollAuthority.CanResponse(ctx, user, pollInfo.Owner, poll)
 		if err != nil {
 			return fmt.Errorf("failed to check can response: %w", err)
 		}
@@ -79,6 +79,13 @@ func (r *Response) CreateResponse(
 		pollChoiceMap := make(map[values.ChoiceID]*domain.Choice, len(pollChoices))
 		for _, pollChoice := range pollChoices {
 			pollChoiceMap[pollChoice.GetID()] = pollChoice
+		}
+
+		switch poll.GetPollType() {
+		case values.PollTypeRadio:
+			if len(choiceIDs) != 1 {
+				return service.ErrTooManyChoice
+			}
 		}
 
 		choices = make([]*domain.Choice, 0, len(choiceIDs))
@@ -107,14 +114,16 @@ func (r *Response) CreateResponse(
 			return fmt.Errorf("failed to create response: %w", err)
 		}
 
-		comment = domain.NewComment(
-			values.NewCommentID(),
-			commentContent,
-		)
+		if commentContent != "" {
+			comment = domain.NewComment(
+				values.NewCommentID(),
+				commentContent,
+			)
 
-		err = r.commentRepository.CreateComment(ctx, response.GetID(), comment)
-		if err != nil {
-			return fmt.Errorf("failed to create comment: %w", err)
+			err = r.commentRepository.CreateComment(ctx, response.GetID(), comment)
+			if err != nil {
+				return fmt.Errorf("failed to create comment: %w", err)
+			}
 		}
 
 		return nil
@@ -140,7 +149,7 @@ func (r *Response) GetResult(ctx context.Context, user *domain.User, pollID valu
 		return nil, fmt.Errorf("failed to get poll: %w", err)
 	}
 
-	canResponse, err := r.pollAuthority.CanResponse(ctx, user, pollInfo.Poll)
+	canResponse, err := r.pollAuthority.CanRead(ctx, user, pollInfo.Owner, pollInfo.Poll)
 	if err != nil {
 		return nil, fmt.Errorf("failed to check can response: %w", err)
 	}

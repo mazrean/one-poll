@@ -15,12 +15,14 @@ type Response interface {
 		choices []values.ChoiceID,
 		comment values.CommentContent,
 	) (*ResponseInfo, error)
+	// GetResult userがnullableであることに注意
 	GetResult(ctx context.Context, user *domain.User, pollID values.PollID) (*Result, error)
 }
 
 type ResponseInfo struct {
 	*domain.Poll
 	*domain.Response
+	// Comment nullableなことに注意
 	*domain.Comment
 	Choices []*domain.Choice
 }

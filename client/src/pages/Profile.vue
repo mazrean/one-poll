@@ -1,7 +1,6 @@
 <template>
   <div class="container">
-    <h1>プロフィール</h1>
-    <p>ここはプロフィール画面</p>
+    <h1><em class="bi bi-person-fill" /> プロフィール</h1>
     <ul id="myTab" class="nav nav-tabs" role="tablist">
       <li class="nav-item" role="presentation">
         <button
@@ -57,33 +56,114 @@
         class="tab-pane fade"
         role="tabpanel"
         aria-labelledby="profile-tab">
-        ここは作成した質問一覧画面
+        <div class="m-auto">
+          <div
+            v-if="state.isLoading[0]"
+            class="spinner-border text-secondary"
+            role="status"></div>
+          <div v-else-if="state.PollOwners.length === 0">
+            <p>表示可能な質問がありません。</p>
+          </div>
+          <div v-else class="d-flex flex-wrap justify-content-center">
+            <div
+              v-for="PollSummary in state.PollOwners"
+              :key="PollSummary.pollId">
+              <PollCardComponent
+                :poll-id="PollSummary.pollId"
+                :title="PollSummary.title"
+                :type="PollSummary.type"
+                :deadline="PollSummary.deadline"
+                :question="PollSummary.question"
+                :created-at="PollSummary.createdAt"
+                :q-status="PollSummary.qStatus"
+                :owner="PollSummary.owner"
+                :user-status="PollSummary.userStatus"
+                class="m-3">
+              </PollCardComponent>
+            </div>
+          </div>
+        </div>
       </div>
       <div
         id="contact"
         class="tab-pane fade"
         role="tabpanel"
         aria-labelledby="contact-tab">
-        ここは回答した質問一覧画面
+        <div class="m-auto">
+          <div
+            v-if="state.isLoading[1]"
+            class="spinner-border text-secondary"
+            role="status"></div>
+          <div v-else-if="state.PollAnswers.length === 0">
+            <p>表示可能な質問がありません。</p>
+          </div>
+          <div v-else class="d-flex flex-wrap justify-content-center">
+            <div
+              v-for="PollSummary in state.PollAnswers"
+              :key="PollSummary.pollId">
+              <PollCardComponent
+                :poll-id="PollSummary.pollId"
+                :title="PollSummary.title"
+                :type="PollSummary.type"
+                :deadline="PollSummary.deadline"
+                :question="PollSummary.question"
+                :created-at="PollSummary.createdAt"
+                :q-status="PollSummary.qStatus"
+                :owner="PollSummary.owner"
+                :user-status="PollSummary.userStatus"
+                class="m-3">
+              </PollCardComponent>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from 'vue'
+import { defineComponent, computed, reactive, onMounted } from 'vue'
 import { useMainStore } from '/@/store/index'
+import PollCardComponent from '/@/components/PollCard.vue'
+import apis, { PollSummary } from '/@/lib/apis'
+
+interface State {
+  PollOwners: PollSummary[]
+  PollAnswers: PollSummary[]
+  isLoading: boolean[]
+}
 
 export default defineComponent({
   name: 'ProfilePage',
   components: {},
   setup() {
+    const state = reactive<State>({
+      PollOwners: [],
+      PollAnswers: [],
+      isLoading: [true, true]
+    })
     const store = useMainStore()
     const userID = computed(() => store.userID)
+    onMounted(async () => {
+      try {
+        state.PollOwners = (await apis.getUsersMeOwners()).data
+      } catch {
+        state.PollOwners = []
+      }
+      state.isLoading[0] = false
+    })
+    onMounted(async () => {
+      try {
+        state.PollAnswers = (await apis.getUsersMeAnswers()).data
+      } catch {
+        state.PollAnswers = []
+      }
+      state.isLoading[1] = false
+    })
     return {
-      userID,
-      getUserID: store.getUserID,
-      serUserID: store.setUserID
+      state,
+      PollCardComponent,
+      userID
     }
   }
 })

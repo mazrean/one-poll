@@ -8,6 +8,7 @@ import (
 )
 
 type Comment interface {
+	// GetComment userがnullableであることに注意
 	GetComments(ctx context.Context, pollID values.PollID, user *domain.User, params CommentGetParams) ([]CommentInfo, error)
 }
 
