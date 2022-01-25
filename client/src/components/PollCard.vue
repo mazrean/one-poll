@@ -29,12 +29,13 @@
           {{ q.choice }}
         </button>
         <textarea
-          :v-model="state.comment"
+          v-model="state.comment"
           placeholder="コメント(任意)"
           rows="3"
           cols="50"
           maxlength="2000"
-          class="m-2"></textarea>
+          class="m-2">
+        </textarea>
       </div>
       <div v-if="state.can_access_details">
         <PollResultComponent
@@ -47,6 +48,12 @@
     </div>
     <div class="footer d-flex justify-content-around">
       <div>残り: {{ state.remain }}</div>
+      <div v-if="state.can_access_details">
+        <router-link :to="{ name: 'details', params: { pollId: pollId } }">
+          詳細を見る
+        </router-link>
+      </div>
+      <div v-else>詳細を見る</div>
       <div>
         <a href="#">@{{ owner.name }}</a>
       </div>
@@ -143,18 +150,19 @@ export default defineComponent({
         result: []
       }
     })
+
     state.only_browsable =
       props.userStatus.accessMode == UserStatusAccessModeEnum.OnlyBrowsable
     state.can_answer =
       props.userStatus.accessMode == UserStatusAccessModeEnum.CanAnswer
     state.can_access_details =
       props.userStatus.accessMode == UserStatusAccessModeEnum.CanAccessDetails
+
     onMounted(async () => {
-      if (state.can_access_details)
-        state.PollResult = (await apis.getPollsPollIDResults(props.pollId)).data
+      if (state.can_access_details) getResult()
     })
-    const deadline = new Date(props.deadline)
-    const comp_remain = (now: Date) => {
+
+    const comp_remain = (now: Date, deadline: Date) => {
       let dif = Math.floor((deadline.getTime() - now.getTime()) / (60 * 1000))
       state.day = Math.floor(dif / 1440)
       dif %= 1440
@@ -168,34 +176,43 @@ export default defineComponent({
           ? state.hour.toString() + '時間' + state.minute.toString() + '分'
           : state.minute.toString() + '分'
     }
-    comp_remain(state.now)
+    const deadline = new Date(props.deadline)
+    comp_remain(state.now, deadline)
     setInterval(() => {
       state.now = new Date()
     }, 5000)
     watch(
       () => state.now,
-      now => comp_remain(now)
+      now => comp_remain(now, deadline)
     )
-    const submitPollID = async (index: number) => {
+
+    const submitPollID = async (i: number) => {
       const pollID: PostPollId = {
-        answer: [props.question[index].id],
+        answer: [props.question[i].id],
         comment: state.comment
       }
+      await postPoll(pollID)
+      await getResult()
+      state.can_answer = false
+      state.can_access_details = true
+    }
+    const postPoll = async (pollID: PostPollId) => {
       try {
         await apis.postPollsPollID(props.pollId, pollID)
       } catch {
         alert('投票できませんでした。時間を空けてもう一度お試しください。')
         return
       }
+    }
+    const getResult = async () => {
       try {
         state.PollResult = (await apis.getPollsPollIDResults(props.pollId)).data
       } catch {
         alert('投票結果を取得できませんでした。')
         return
       }
-      state.can_answer = false
-      state.can_access_details = true
     }
+
     return {
       state,
       submitPollID,
