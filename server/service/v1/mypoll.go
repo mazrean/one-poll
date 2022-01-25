@@ -11,7 +11,7 @@ import (
 )
 
 func (p *Poll) GetOwnerPolls(ctx context.Context, owner *domain.User) ([]*service.PollInfo, error) {
-	if owner != nil {
+	if owner == nil {
 		return nil, fmt.Errorf("owner parameter is required")
 	}
 
