@@ -58,27 +58,32 @@
         aria-labelledby="profile-tab">
         <div class="m-auto">
           <div
-            v-if="state.isLoading[0]"
+            v-if="state.isLoading"
             class="spinner-border text-secondary"
             role="status"></div>
-          <div v-else-if="state.PollOwners.length === 0">
+          <div v-else-if="state.PollSummaries.length === 0">
             <p>表示可能な質問がありません。</p>
           </div>
           <div v-else class="d-flex flex-wrap justify-content-center">
             <div
-              v-for="PollSummary in state.PollOwners"
+              v-for="PollSummary in state.PollSummaries"
               :key="PollSummary.pollId">
               <PollCardComponent
                 :poll-id="PollSummary.pollId"
                 :title="PollSummary.title"
                 :type="PollSummary.type"
                 :deadline="PollSummary.deadline"
+                :tags="
+                  typeof PollSummary.tags !== 'undefined'
+                    ? PollSummary.tags
+                    : [{ id: '-1', name: '' }]
+                "
                 :question="PollSummary.question"
                 :created-at="PollSummary.createdAt"
                 :q-status="PollSummary.qStatus"
                 :owner="PollSummary.owner"
                 :user-status="PollSummary.userStatus"
-                class="m-3">
+                class="m-4">
               </PollCardComponent>
             </div>
           </div>
@@ -91,27 +96,32 @@
         aria-labelledby="contact-tab">
         <div class="m-auto">
           <div
-            v-if="state.isLoading[1]"
+            v-if="state.isLoading"
             class="spinner-border text-secondary"
             role="status"></div>
-          <div v-else-if="state.PollAnswers.length === 0">
+          <div v-else-if="state.PollSummaries.length === 0">
             <p>表示可能な質問がありません。</p>
           </div>
           <div v-else class="d-flex flex-wrap justify-content-center">
             <div
-              v-for="PollSummary in state.PollAnswers"
+              v-for="PollSummary in state.PollSummaries"
               :key="PollSummary.pollId">
               <PollCardComponent
                 :poll-id="PollSummary.pollId"
                 :title="PollSummary.title"
                 :type="PollSummary.type"
                 :deadline="PollSummary.deadline"
+                :tags="
+                  typeof PollSummary.tags !== 'undefined'
+                    ? PollSummary.tags
+                    : [{ id: '-1', name: '' }]
+                "
                 :question="PollSummary.question"
                 :created-at="PollSummary.createdAt"
                 :q-status="PollSummary.qStatus"
                 :owner="PollSummary.owner"
                 :user-status="PollSummary.userStatus"
-                class="m-3">
+                class="m-4">
               </PollCardComponent>
             </div>
           </div>

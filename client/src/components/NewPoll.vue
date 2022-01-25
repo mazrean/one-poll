@@ -78,7 +78,7 @@
                 <li class="nav-item d-flex">
                   <span
                     class="rounded-3 px-3 py-1 bg-light text-dark d-flex mx-1 my-1 fw-normal"
-                    ><em class="bi bi-tags-fill" /> {{ v.name
+                    ><em class="bi bi-tags-fill" /> {{ v
                     }}<button
                       type="button"
                       class="btn btn-sm btn-close"
@@ -102,8 +102,8 @@
               <button
                 class="list-group-item list-group-item-action p-1"
                 type="button"
-                @click="onAutocomplete(v)">
-                <em class="bi bi-tags-fill" /> {{ v }}
+                @click="onAutocomplete(v.name)">
+                <em class="bi bi-tags-fill" /> {{ v.name }}
               </button>
             </ul>
             <label for="deadline" class="col-sm-2 col-form-label">締切</label>

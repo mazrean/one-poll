@@ -4,6 +4,7 @@
     <div class="m-auto">
       <div class="d-flex flex-wrap justify-content-center m-auto">
         <svg
+          v-show="false"
           xmlns="http://www.w3.org/2000/svg"
           width="24"
           height="24"
@@ -16,17 +17,26 @@
         <input
           v-model="state.searchTitle"
           type="searchTitle"
-          class="form-control d-flex mx-1 my-1 w-25"
+          class="form-control d-flex mx-3 my-1"
           name="searchTitle"
           placeholder="キーワードで検索"
-          @Input=";(state.searchTitle = $event.target.value), getPolls()" />
+          @Input="state.searchTitle = $event.target.value"
+          @keydown.enter="getPolls()" />
         <input
           v-model="state.searchTag"
           type="searchTag"
-          class="form-control d-flex mx-1 my-1 w-25"
+          class="form-control d-flex mx-3 my-1"
           name="searchTag"
           placeholder="タグで検索"
-          @Input=";(state.searchTag = $event.target.value), getPolls()" />
+          @Input="calculateFilter()" />
+        <ul v-for="v in state.autocompletes" :key="v" class="list-group">
+          <button
+            class="list-group-item list-group-item-action p-1"
+            type="button"
+            @click="onAutocomplete(v.name)">
+            <em class="bi bi-tags-fill" /> {{ v.name }}
+          </button>
+        </ul>
       </div>
       <div
         v-if="state.isLoading"
@@ -64,16 +74,19 @@
 
 <script lang="ts">
 import PollCardComponent from '/@/components/PollCard.vue'
-import apis, { PollSummary } from '/@/lib/apis'
+import apis, { PollSummary, PollTag } from '/@/lib/apis'
 import { reactive, onMounted } from 'vue'
 
 interface State {
   PollSummaries: PollSummary[]
+  PollSummaries_origin: PollSummary[]
   isLoading: boolean
   searchLimit: number
   searchOffset: number
   searchTitle: string
   searchTag: string
+  tags: PollTag[]
+  autocompletes: PollTag[]
 }
 
 export default {
@@ -82,15 +95,38 @@ export default {
   setup() {
     const state = reactive<State>({
       PollSummaries: [],
+      PollSummaries_origin: [],
       isLoading: true,
       searchLimit: 100,
       searchOffset: 0,
       searchTitle: '',
-      searchTag: ''
+      searchTag: '',
+      tags: [],
+      autocompletes: []
     })
     onMounted(async () => {
       await getPolls()
     })
+    onMounted(async () => {
+      state.tags = (await apis.getTags()).data
+    })
+    const calculateFilter = async () => {
+      if (state.searchTag.length === 0) {
+        state.autocompletes = []
+      } else {
+        state.autocompletes = state.tags
+          .filter((v: PollTag) => {
+            return v.name.indexOf(state.searchTag) === 0
+          })
+          .slice(0, 5)
+      }
+      state.PollSummaries = state.PollSummaries_origin
+    }
+    const onAutocomplete = (str: string) => {
+      if (str.length === 0) return
+      state.searchTag = str
+      getPolls()
+    }
     const getPolls = async () => {
       //state.isLoading = true
       try {
@@ -104,6 +140,7 @@ export default {
       } catch {
         state.PollSummaries = []
       }
+      state.PollSummaries_origin = state.PollSummaries
       if (state.searchTag !== '') {
         state.PollSummaries = state.PollSummaries.filter(v => {
           return typeof v.tags !== 'undefined'
@@ -116,6 +153,8 @@ export default {
     return {
       state,
       getPolls,
+      calculateFilter,
+      onAutocomplete,
       PollCardComponent
     }
   }
