@@ -16,10 +16,17 @@
         <input
           v-model="state.searchTitle"
           type="searchTitle"
-          class="form-control d-flex my-1 w-50"
+          class="form-control d-flex mx-1 my-1 w-25"
           name="searchTitle"
           placeholder="キーワードで検索"
           @Input=";(state.searchTitle = $event.target.value), getPolls()" />
+        <input
+          v-model="state.searchTag"
+          type="searchTag"
+          class="form-control d-flex mx-1 my-1 w-25"
+          name="searchTag"
+          placeholder="タグで検索"
+          @Input=";(state.searchTag = $event.target.value), getPolls()" />
       </div>
       <div
         v-if="state.isLoading"
@@ -66,6 +73,7 @@ interface State {
   searchLimit: number
   searchOffset: number
   searchTitle: string
+  searchTag: string
 }
 
 export default {
@@ -77,7 +85,8 @@ export default {
       isLoading: true,
       searchLimit: 100,
       searchOffset: 0,
-      searchTitle: ''
+      searchTitle: '',
+      searchTag: ''
     })
     onMounted(async () => {
       await getPolls()
@@ -94,6 +103,13 @@ export default {
         ).data
       } catch {
         state.PollSummaries = []
+      }
+      if (state.searchTag !== '') {
+        state.PollSummaries = state.PollSummaries.filter(v => {
+          return typeof v.tags !== 'undefined'
+            ? v.tags.some(e => e.name === state.searchTag)
+            : false
+        })
       }
       state.isLoading = false
     }

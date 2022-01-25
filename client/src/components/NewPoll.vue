@@ -78,7 +78,7 @@
                 <li class="nav-item d-flex">
                   <span
                     class="rounded-3 px-3 py-1 bg-light text-dark d-flex mx-1 my-1 fw-normal"
-                    ><em class="bi bi-tags-fill" /> {{ v
+                    ><em class="bi bi-tags-fill" /> {{ v.name
                     }}<button
                       type="button"
                       class="btn btn-sm btn-close"
@@ -155,8 +155,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive } from 'vue'
-import api, { NewPoll, PollType } from '/@/lib/apis'
+import { defineComponent, reactive, onMounted } from 'vue'
+import api, { NewPoll, PollType, PollTag } from '/@/lib/apis'
 
 interface State {
   title: string
@@ -167,8 +167,8 @@ interface State {
   options: string[]
   newTags: Set<string>
   newTag: string
-  tags: string[]
-  autocompletes: string[]
+  tags: PollTag[]
+  autocompletes: PollTag[]
   validated: boolean
 }
 
@@ -184,21 +184,12 @@ export default defineComponent({
       options: ['', ''],
       newTags: new Set(),
       newTag: '',
-      tags: [
-        'ウマ娘',
-        'ウマ娘プリティダービー',
-        'スペシャルウィーク',
-        'メジロマックイーン',
-        'メジロアルダン',
-        'メジロライアン',
-        'メジロドーベル',
-        'ファインモーション',
-        'カレンチャン',
-        'スマートファルコン',
-        'ウマ娘mad'
-      ],
+      tags: [],
       autocompletes: [],
       validated: false
+    })
+    onMounted(async () => {
+      state.tags = (await api.getTags()).data
     })
     const insertTag = () => {
       if (state.newTag.length === 0) return
@@ -219,8 +210,8 @@ export default defineComponent({
         state.autocompletes = []
       } else {
         state.autocompletes = state.tags
-          .filter((v: string) => {
-            return v.indexOf(state.newTag) === 0
+          .filter((v: PollTag) => {
+            return v.name.indexOf(state.newTag) === 0
           })
           .slice(0, 5)
       }
