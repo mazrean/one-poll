@@ -39,6 +39,31 @@ func (t *Tag) CreateTag(ctx context.Context, tag *domain.Tag) error {
 	return nil
 }
 
+func (t *Tag) GetTags(ctx context.Context) ([]*domain.Tag, error) {
+	db, err := t.db.getDB(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get db: %w", err)
+	}
+
+	var tagTables []TagTable
+	err = db.
+		Select("id", "name").
+		Find(&tagTables).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get tags: %w", err)
+	}
+
+	tags := make([]*domain.Tag, 0, len(tagTables))
+	for _, tagTable := range tagTables {
+		tags = append(tags, domain.NewTag(
+			values.NewTagIDFromUUID(tagTable.ID),
+			values.NewTagName(tagTable.Name),
+		))
+	}
+
+	return tags, nil
+}
+
 func (t *Tag) GetTagsByName(ctx context.Context, names []values.TagName, lockType repository.LockType) ([]*domain.Tag, error) {
 	db, err := t.db.getDB(ctx)
 	if err != nil {
