@@ -40,9 +40,9 @@
       </div>
       <div
         v-if="state.isLoading"
-        class="spinner-border text-secondary"
+        class="spinner-border text-secondary m-3"
         role="status"></div>
-      <div v-else-if="state.PollSummaries.length === 0">
+      <div v-else-if="state.PollSummaries.length === 0" class="m-3">
         <p>表示可能な質問がありません。</p>
       </div>
       <div v-else class="d-flex flex-wrap justify-content-center">
@@ -67,8 +67,7 @@
             :created-at="PollSummary.createdAt"
             :q-status="PollSummary.qStatus"
             :owner="PollSummary.owner"
-            :user-status="PollSummary.userStatus"
-            class="m-4">
+            :user-status="PollSummary.userStatus">
           </PollCardComponent>
         </div>
       </div>

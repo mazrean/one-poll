@@ -33,6 +33,12 @@ body {
 .link:visited {
   color: #2c3e50;
 }
+.link-detail {
+  color: dodgerblue !important;
+}
+.link-detail:hover {
+  text-decoration: underline;
+}
 .router-link-active {
   font-weight: bold;
 }

@@ -37,12 +37,11 @@
         </div>
         <button type="submit" class="btn btn-primary mt-3">{{ sign }}</button>
       </form>
-      <router-link
-        v-if="sign === 'サインイン'"
-        class="mt-1"
-        :to="{ name: 'signup' }"
-        >新しくアカウントを作成する</router-link
-      >
+      <div v-if="sign === 'サインイン'" class="mt-2">
+        <router-link class="link link-detail" :to="{ name: 'signup' }"
+          >新しくアカウントを作成する</router-link
+        >
+      </div>
     </div>
   </div>
 </template>
