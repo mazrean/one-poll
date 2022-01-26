@@ -162,8 +162,6 @@ components:
       type: object
       description: ''
       properties:
-        user:
-          $ref: '#/components/schemas/User'
         createdAt:
           type: string
           format: date-time
@@ -172,14 +170,10 @@ components:
           description: コメント本文
           minLength: 0
       required:
-        - user
         - createdAt
         - content
       x-examples:
         example-1:
-          user:
-            uuid: 095be615-a8ad-4c33-8e9c-c7612fbf6c9f
-            name: string
           createdAt: '2019-08-24T14:15:22Z'
           content: やっぱvimっしょ
     PostPollId:
