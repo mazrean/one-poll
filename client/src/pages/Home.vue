@@ -75,7 +75,7 @@
 <script lang="ts">
 import PollCardComponent from '/@/components/PollCard.vue'
 import apis, { PollSummary, PollTag } from '/@/lib/apis'
-import { reactive, onMounted } from 'vue'
+import { reactive } from 'vue'
 
 interface State {
   PollSummaries: PollSummary[]
