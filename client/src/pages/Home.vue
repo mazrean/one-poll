@@ -126,6 +126,7 @@ export default {
       if (str.length === 0) return
       state.searchTag = str
       getPolls()
+      state.autocompletes = []
     }
     const getPolls = async () => {
       //state.isLoading = true
