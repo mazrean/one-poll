@@ -61,7 +61,7 @@
             v-if="state.isLoading_1"
             class="spinner-border text-secondary m-3"
             role="status"></div>
-          <div v-else-if="state.PollOwners.length === 0">
+          <div v-else-if="state.PollOwners.length === 0" class="m-3">
             <p>表示可能な質問がありません。</p>
           </div>
           <div v-else class="d-flex flex-wrap justify-content-center">
@@ -102,7 +102,7 @@
             v-if="state.isLoading_2"
             class="spinner-border text-secondary m-3"
             role="status"></div>
-          <div v-else-if="state.PollAnswers.length === 0">
+          <div v-else-if="state.PollAnswers.length === 0" class="m-3">
             <p>表示可能な質問がありません。</p>
           </div>
           <div v-else class="d-flex flex-wrap justify-content-center">
