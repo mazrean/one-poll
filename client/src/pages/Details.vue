@@ -31,13 +31,16 @@
           <div class="owner_name my-auto">
             @{{ state.PollSummary.owner.name }}
           </div>
-          <button
+          <router-link
             v-if="state.PollSummary.userStatus.isOwner && !state.outdated"
-            type="button"
-            class="close-poll btn btn-warning"
-            @click="postPollsClose()">
-            締め切る
-          </button>
+            :to="{ name: 'home' }">
+            <button
+              type="button"
+              class="close-poll btn btn-warning"
+              @click="postPollsClose()">
+              締め切る
+            </button>
+          </router-link>
           <router-link
             v-if="state.PollSummary.userStatus.isOwner"
             :to="{ name: 'home' }">
@@ -87,11 +90,11 @@ import { useRoute } from 'vue-router'
 
 interface State {
   pollId: string
+  createdAt: string
   outdated: boolean
   PollSummary: PollSummary
   PollResult: PollResults
   PollComments: PollComment[]
-  createdAt: Date
 }
 
 export default defineComponent({
@@ -100,6 +103,7 @@ export default defineComponent({
   setup() {
     const state = reactive<State>({
       pollId: '',
+      createdAt: '',
       outdated: true,
       PollSummary: {
         pollId: '',
@@ -125,10 +129,8 @@ export default defineComponent({
         count: 0,
         result: []
       },
-      PollComments: [],
-      createdAt: new Date()
+      PollComments: []
     })
-    state.createdAt = new Date(state.PollSummary.createdAt)
 
     const { pollId } = useRoute().params
     state.pollId = pollId.toString()
@@ -138,6 +140,18 @@ export default defineComponent({
       } catch {
         alert('投票を取得できませんでした。')
       }
+      const date = new Date(state.PollSummary.createdAt)
+      state.createdAt =
+        date.getFullYear().toString() +
+        '/' +
+        (date.getMonth() + 1).toString() +
+        '/' +
+        date.getDate().toString() +
+        ' ' +
+        date.getHours().toString() +
+        ':' +
+        date.getMinutes().toString()
+
       state.outdated = state.PollSummary.qStatus === PollStatus.Outdated
     }
     const getResult = async () => {
