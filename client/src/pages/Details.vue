@@ -1,8 +1,8 @@
 <template>
   <div class="container">
     <h1><em class="bi bi-clipboard-data" /> ディテール</h1>
-    <div class="card">
-      <div class="card-header">
+    <div class="card mx-auto my-3 p-2" style="border-radius: 1em">
+      <div class="card-header bg-white">
         <div class="poll-title">{{ state.PollSummary.title }}</div>
         <div class="poll-tags bi bi-tags-fill text-muted d-flex flex-wrap">
           <span
@@ -24,9 +24,13 @@
         </div>
       </div>
       <div class="footer">
-        <div class="created-at">作成日 : {{ state.PollSummary.createdAt }}</div>
-        <div class="d-flex flex-wrap justify-content-around">
-          <div class="owner_name">@{{ state.PollSummary.owner.name }}</div>
+        <div class="created-at mb-3">
+          作成日 : {{ state.PollSummary.createdAt }}
+        </div>
+        <div class="d-flex flex-wrap justify-content-around mx-auto my-1">
+          <div class="owner_name my-auto">
+            @{{ state.PollSummary.owner.name }}
+          </div>
           <button
             v-if="state.PollSummary.userStatus.isOwner && !state.outdated"
             type="button"
@@ -34,9 +38,10 @@
             @click="postPollsClose()">
             締め切る
           </button>
-          <router-link :to="{ name: 'home' }">
+          <router-link
+            v-if="state.PollSummary.userStatus.isOwner"
+            :to="{ name: 'home' }">
             <button
-              v-if="state.PollSummary.userStatus.isOwner"
               type="button"
               class="delete-poll btn btn-danger"
               @click="deletePolls()">
@@ -46,10 +51,9 @@
         </div>
       </div>
     </div>
-    <table class="table table-sm table-striped table-bordered caption-top mt-4">
-      <caption>
-        コメント一覧
-      </caption>
+    <h3 class="mt-4"><em class="bi bi-chat-left-text-fill" /> コメント一覧</h3>
+    <table class="table table-sm table-striped table-bordered caption-top">
+      <caption />
       <thead>
         <tr>
           <th scope="col">#</th>

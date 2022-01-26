@@ -1,6 +1,6 @@
 <template>
-  <div class="card">
-    <div class="card-header text-start">
+  <div class="card m-3 p-2" style="border-radius: 1em">
+    <div class="card-header text-start bg-white">
       <h4 class="card-title">{{ title }}</h4>
       <div class="card-tags bi bi-tags-fill text-muted d-flex flex-wrap">
         <span v-for="tag in tags" :key="tag.id" class="ms-1">
@@ -28,14 +28,14 @@
           @click="submitPollID(i)">
           {{ q.choice }}
         </button>
-        <textarea
-          v-model="state.comment"
-          placeholder="コメント(任意)"
-          rows="3"
-          cols="50"
-          maxlength="2000"
-          class="m-2">
-        </textarea>
+        <div class="m-2">
+          <textarea
+            v-model="state.comment"
+            placeholder="コメント(任意)"
+            maxlength="2000"
+            class="form-control border-secondary">
+          </textarea>
+        </div>
       </div>
       <div v-if="state.can_access_details">
         <PollResultComponent
@@ -46,14 +46,14 @@
         </PollResultComponent>
       </div>
     </div>
-    <div class="footer d-flex justify-content-around">
+    <div class="footer d-flex justify-content-around mb-1">
       <div>{{ state.remain }}</div>
-      <div v-if="state.can_access_details">
-        <router-link :to="{ name: 'details', params: { pollId: pollId } }">
-          詳細を見る
-        </router-link>
-      </div>
-      <div v-else>詳細を見る</div>
+      <router-link
+        v-if="state.can_access_details"
+        class="link link-detail"
+        :to="{ name: 'details', params: { pollId: pollId } }">
+        詳細を見る
+      </router-link>
       <div>@{{ owner.name }}</div>
     </div>
   </div>

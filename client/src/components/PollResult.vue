@@ -1,8 +1,8 @@
 <template>
   <div v-for="(choice, i) in result" :key="choice.id" class="poll-result mb-1">
-    <div class="poll-choice position-relative">
+    <div class="poll-choice position-relative" style="width: 400px">
       <div
-        class="poll-bar position-absolute top-50 start-0 translate-middle-y bg-secondary bg-opacity-25"
+        class="poll-bar position-absolute top-50 start-0 translate-middle-y bg-secondary bg-opacity-25 rounded-3"
         :style="{ width: bg_width[i] + '%' }"></div>
       <div class="position-absolute top-50 start-50 translate-middle">
         {{ choice.choice }}

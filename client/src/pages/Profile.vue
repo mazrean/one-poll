@@ -45,7 +45,7 @@
     <div id="myTabContent" class="tab-content">
       <div
         id="home"
-        class="tab-pane fade show active"
+        class="tab-pane fade show active m-3"
         role="tabpanel"
         aria-labelledby="home-tab">
         ログイン中のアカウントID<br />
@@ -59,7 +59,7 @@
         <div class="m-auto">
           <div
             v-if="state.isLoading_1"
-            class="spinner-border text-secondary"
+            class="spinner-border text-secondary m-3"
             role="status"></div>
           <div v-else-if="state.PollOwners.length === 0">
             <p>表示可能な質問がありません。</p>
@@ -72,7 +72,11 @@
                 :poll-id="PollSummary.pollId"
                 :title="PollSummary.title"
                 :type="PollSummary.type"
-                :deadline="PollSummary.deadline"
+                :deadline="
+                  typeof PollSummary.deadline !== 'undefined'
+                    ? PollSummary.deadline
+                    : '-1'
+                "
                 :tags="
                   typeof PollSummary.tags !== 'undefined'
                     ? PollSummary.tags
@@ -82,8 +86,7 @@
                 :created-at="PollSummary.createdAt"
                 :q-status="PollSummary.qStatus"
                 :owner="PollSummary.owner"
-                :user-status="PollSummary.userStatus"
-                class="m-4">
+                :user-status="PollSummary.userStatus">
               </PollCardComponent>
             </div>
           </div>
@@ -97,7 +100,7 @@
         <div class="m-auto">
           <div
             v-if="state.isLoading_2"
-            class="spinner-border text-secondary"
+            class="spinner-border text-secondary m-3"
             role="status"></div>
           <div v-else-if="state.PollAnswers.length === 0">
             <p>表示可能な質問がありません。</p>
@@ -110,7 +113,11 @@
                 :poll-id="PollSummary.pollId"
                 :title="PollSummary.title"
                 :type="PollSummary.type"
-                :deadline="PollSummary.deadline"
+                :deadline="
+                  typeof PollSummary.deadline !== 'undefined'
+                    ? PollSummary.deadline
+                    : '-1'
+                "
                 :tags="
                   typeof PollSummary.tags !== 'undefined'
                     ? PollSummary.tags
@@ -120,8 +127,7 @@
                 :created-at="PollSummary.createdAt"
                 :q-status="PollSummary.qStatus"
                 :owner="PollSummary.owner"
-                :user-status="PollSummary.userStatus"
-                class="m-4">
+                :user-status="PollSummary.userStatus">
               </PollCardComponent>
             </div>
           </div>

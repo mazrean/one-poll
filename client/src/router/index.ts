@@ -34,7 +34,8 @@ const router = createRouter({
     {
       path: '/details/:pollId',
       name: 'details',
-      component: Details
+      component: Details,
+      meta: { requiresAuth: true }
     }
   ]
 })
