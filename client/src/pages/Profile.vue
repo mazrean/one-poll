@@ -58,15 +58,15 @@
         aria-labelledby="profile-tab">
         <div class="m-auto">
           <div
-            v-if="state.isLoading"
+            v-if="state.isLoading_1"
             class="spinner-border text-secondary"
             role="status"></div>
-          <div v-else-if="state.PollSummaries.length === 0">
+          <div v-else-if="state.PollOwners.length === 0">
             <p>表示可能な質問がありません。</p>
           </div>
           <div v-else class="d-flex flex-wrap justify-content-center">
             <div
-              v-for="PollSummary in state.PollSummaries"
+              v-for="PollSummary in state.PollOwners"
               :key="PollSummary.pollId">
               <PollCardComponent
                 :poll-id="PollSummary.pollId"
@@ -96,15 +96,15 @@
         aria-labelledby="contact-tab">
         <div class="m-auto">
           <div
-            v-if="state.isLoading"
+            v-if="state.isLoading_2"
             class="spinner-border text-secondary"
             role="status"></div>
-          <div v-else-if="state.PollSummaries.length === 0">
+          <div v-else-if="state.PollAnswers.length === 0">
             <p>表示可能な質問がありません。</p>
           </div>
           <div v-else class="d-flex flex-wrap justify-content-center">
             <div
-              v-for="PollSummary in state.PollSummaries"
+              v-for="PollSummary in state.PollAnswers"
               :key="PollSummary.pollId">
               <PollCardComponent
                 :poll-id="PollSummary.pollId"
@@ -140,17 +140,19 @@ import apis, { PollSummary } from '/@/lib/apis'
 interface State {
   PollOwners: PollSummary[]
   PollAnswers: PollSummary[]
-  isLoading: boolean[]
+  isLoading_1: boolean
+  isLoading_2: boolean
 }
 
 export default defineComponent({
   name: 'ProfilePage',
-  components: {},
+  components: { PollCardComponent },
   setup() {
     const state = reactive<State>({
       PollOwners: [],
       PollAnswers: [],
-      isLoading: [true, true]
+      isLoading_1: true,
+      isLoading_2: true
     })
     const store = useMainStore()
     const userID = computed(() => store.userID)
@@ -160,7 +162,7 @@ export default defineComponent({
       } catch {
         state.PollOwners = []
       }
-      state.isLoading[0] = false
+      state.isLoading_1 = false
     })
     onMounted(async () => {
       try {
@@ -168,7 +170,7 @@ export default defineComponent({
       } catch {
         state.PollAnswers = []
       }
-      state.isLoading[1] = false
+      state.isLoading_2 = false
     })
     return {
       state,

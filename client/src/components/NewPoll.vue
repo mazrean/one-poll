@@ -95,7 +95,7 @@
               class="form-control mt-2"
               name="tag"
               maxlength="16"
-              placeholder="新しく追加するタグ名を入力"
+              placeholder="新しく追加するタグ名を入力 (Enterで追加)"
               @Input="calculateFilter()"
               @keydown.enter="insertTag()" />
             <ul v-for="v in state.autocompletes" :key="v" class="list-group">
@@ -106,11 +106,14 @@
                 <em class="bi bi-tags-fill" /> {{ v.name }}
               </button>
             </ul>
-            <label for="deadline" class="col-sm-2 col-form-label">締切</label>
+            <label for="deadline" class="col-sm-2 col-form-label mt-3"
+              >締切
+            </label>
             <div class="d-flex flex-wrap justify-content-center m-auto">
               <select
                 id="day"
                 v-model="state.day"
+                :disabled="state.infinity"
                 name="day"
                 class="form-select form-select-lg mb-3 w-25">
                 <template v-for="n of 8" :key="n">
@@ -121,6 +124,7 @@
               <select
                 id="hour"
                 v-model="state.hour"
+                :disabled="state.infinity"
                 name="hour"
                 class="form-select form-select-lg mb-3 w-25">
                 <template v-for="n of 24" :key="n">
@@ -131,6 +135,7 @@
               <select
                 id="minute"
                 v-model="state.minute"
+                :disabled="state.infinity"
                 name="minute"
                 class="form-select form-select-lg mb-3 w-25">
                 <template v-for="n of 60" :key="n">
@@ -138,6 +143,13 @@
                 </template>
               </select>
               <span class="m-auto">分後</span>
+            </div>
+            <div
+              class="form-check form-check-lg form-switch form-switch-lg d-flex justify-content-end mb-3">
+              <input
+                v-model="state.infinity"
+                class="form-check-input"
+                type="checkbox" /><span class="mx-3">締切を設定しない</span>
             </div>
             <button
               type="button"
@@ -161,6 +173,7 @@ import api, { NewPoll, PollType, PollTag } from '/@/lib/apis'
 interface State {
   title: string
   deadline: string
+  infinity: boolean
   day: number
   hour: number
   minute: number
@@ -178,6 +191,7 @@ export default defineComponent({
     const state = reactive<State>({
       title: '',
       deadline: '0',
+      infinity: false,
       day: 1,
       hour: 0,
       minute: 0,
@@ -235,12 +249,15 @@ export default defineComponent({
       time.setDate(time.getDate() + state.day)
       time.setHours(time.getHours() + state.hour)
       time.setMinutes(time.getMinutes() + state.minute)
-      const poll: NewPoll = {
+      let poll: NewPoll = {
         title: state.title,
         type: PollType.Radio,
         deadline: time.toISOString(),
         tags: Array.from(state.newTags),
         question: state.options
+      }
+      if (state.infinity) {
+        poll.deadline = undefined
       }
       try {
         await api.postPolls(poll)

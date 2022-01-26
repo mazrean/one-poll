@@ -19,7 +19,7 @@
           type="searchTitle"
           class="form-control d-flex mx-3 my-1"
           name="searchTitle"
-          placeholder="キーワードで検索"
+          placeholder="キーワードで検索 (Enterで更新)"
           @Input="state.searchTitle = $event.target.value"
           @keydown.enter="getPolls()" />
         <input
@@ -27,7 +27,7 @@
           type="searchTag"
           class="form-control d-flex mx-3 my-1"
           name="searchTag"
-          placeholder="タグで検索"
+          placeholder="タグで検索 (タグ候補選択で更新)"
           @Input="calculateFilter()" />
         <ul v-for="v in state.autocompletes" :key="v" class="list-group">
           <button

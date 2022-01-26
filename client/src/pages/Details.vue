@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <h1>ディテール</h1>
+    <h1><em class="bi bi-clipboard-data" /> ディテール</h1>
     <div class="card">
       <div class="card-header">
         <div class="poll-title">{{ state.PollSummary.title }}</div>
