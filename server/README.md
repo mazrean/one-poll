@@ -13,6 +13,8 @@ VSCodeから設定できる環境が立ち上がる。
 2. プロジェクトルートで`docker compose -f dev/compose.yml up`
 3. debuggerを使用する場合はVSCodeでRemote Docker Debugを実行
 
+localhost:8000にアクセスするとphpmyadminが使用できます。
+
 ## ディレクトリ構成
 
 ```bash

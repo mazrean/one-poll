@@ -104,30 +104,7 @@ export default {
       tags: [],
       autocompletes: []
     })
-    onMounted(async () => {
-      await getPolls()
-    })
-    onMounted(async () => {
-      state.tags = (await apis.getTags()).data
-    })
-    const calculateFilter = async () => {
-      if (state.searchTag.length === 0) {
-        state.autocompletes = []
-      } else {
-        state.autocompletes = state.tags
-          .filter((v: PollTag) => {
-            return v.name.indexOf(state.searchTag) === 0
-          })
-          .slice(0, 5)
-      }
-      state.PollSummaries = state.PollSummaries_origin
-    }
-    const onAutocomplete = (str: string) => {
-      if (str.length === 0) return
-      state.searchTag = str
-      getPolls()
-      state.autocompletes = []
-    }
+
     const getPolls = async () => {
       //state.isLoading = true
       try {
@@ -151,6 +128,34 @@ export default {
       }
       state.isLoading = false
     }
+    const getTags = async () => {
+      try {
+        state.tags = (await apis.getTags()).data
+      } catch {
+        state.tags = []
+      }
+    }
+    getPolls()
+    getTags()
+
+    const calculateFilter = async () => {
+      if (state.searchTag.length === 0) {
+        state.autocompletes = []
+      } else {
+        state.autocompletes = state.tags
+          .filter((v: PollTag) => {
+            return v.name.indexOf(state.searchTag) === 0
+          })
+          .slice(0, 5)
+      }
+      state.PollSummaries = state.PollSummaries_origin
+    }
+    const onAutocomplete = (str: string) => {
+      if (str.length === 0) return
+      state.searchTag = str
+      getPolls()
+    }
+
     return {
       state,
       getPolls,

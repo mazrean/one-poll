@@ -54,6 +54,7 @@ func (c *Comment) GetComments(ctx context.Context, pollID values.PollID, user *d
 	for _, responseInfo := range responseInfos {
 		responseIDs = append(responseIDs, responseInfo.Response.GetID())
 	}
+	// コメントの存在するResponseIDに対してのみキーとしたマップを作成する。
 	dbComments, err := c.commentRepository.GetCommentsByResponseIDs(ctx, responseIDs, (repository.CommentGetParams)(params))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get comments: %w", err)
@@ -61,11 +62,14 @@ func (c *Comment) GetComments(ctx context.Context, pollID values.PollID, user *d
 
 	commentInfos := make([]service.CommentInfo, 0, len(responseInfos))
 	for _, responseInfo := range responseInfos {
-		commentInfo := service.CommentInfo{
-			Response:    *responseInfo.Response,
-			Comment:     *dbComments[responseInfo.Response.GetID()],
-			CommentUser: *responseInfo.Respondent}
-		commentInfos = append(commentInfos, commentInfo)
+		comment, exists := dbComments[responseInfo.Response.GetID()]
+		if exists {
+			commentInfo := service.CommentInfo{
+				Response:    *responseInfo.Response,
+				Comment:     *comment,
+				CommentUser: *responseInfo.Respondent}
+			commentInfos = append(commentInfos, commentInfo)
+		}
 	}
 
 	return commentInfos, nil

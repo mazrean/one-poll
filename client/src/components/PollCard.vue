@@ -29,12 +29,13 @@
           {{ q.choice }}
         </button>
         <textarea
-          :v-model="state.comment"
+          v-model="state.comment"
           placeholder="コメント(任意)"
           rows="3"
           cols="50"
           maxlength="2000"
-          class="m-2"></textarea>
+          class="m-2">
+        </textarea>
       </div>
       <div v-if="state.can_access_details">
         <PollResultComponent
@@ -47,6 +48,12 @@
     </div>
     <div class="footer d-flex justify-content-around">
       <div>残り: {{ state.remain }}</div>
+      <div v-if="state.can_access_details">
+        <router-link :to="{ name: 'details', params: { pollId: pollId } }">
+          詳細を見る
+        </router-link>
+      </div>
+      <div v-else>詳細を見る</div>
       <div>
         <a href="#">@{{ owner.name }}</a>
       </div>
@@ -55,7 +62,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, PropType, reactive, watch } from 'vue'
+import { defineComponent, PropType, reactive, watch } from 'vue'
 import PollResultComponent from '/@/components/PollResult.vue'
 import apis, {
   Choice,
@@ -73,9 +80,6 @@ interface State {
   can_answer: boolean
   can_access_details: boolean
   now: Date
-  day: number
-  hour: number
-  minute: number
   remain: string
   comment: string
   PollResult: PollResults
@@ -131,9 +135,6 @@ export default defineComponent({
       can_answer: false,
       can_access_details: false,
       now: new Date(),
-      day: 0,
-      hour: 0,
-      minute: 0,
       remain: '',
       comment: '',
       PollResult: {
@@ -143,59 +144,69 @@ export default defineComponent({
         result: []
       }
     })
+
     state.only_browsable =
       props.userStatus.accessMode == UserStatusAccessModeEnum.OnlyBrowsable
     state.can_answer =
       props.userStatus.accessMode == UserStatusAccessModeEnum.CanAnswer
     state.can_access_details =
       props.userStatus.accessMode == UserStatusAccessModeEnum.CanAccessDetails
-    onMounted(async () => {
-      if (state.can_access_details)
-        state.PollResult = (await apis.getPollsPollIDResults(props.pollId)).data
-    })
+
     const deadline = new Date(props.deadline)
-    const comp_remain = (now: Date) => {
-      let dif = Math.floor((deadline.getTime() - now.getTime()) / (60 * 1000))
-      state.day = Math.floor(dif / 1440)
+    const comp_remain = () => {
+      let dif = Math.floor(
+        (deadline.getTime() - state.now.getTime()) / (60 * 1000)
+      )
+      const day = Math.floor(dif / 1440)
       dif %= 1440
-      state.hour = Math.floor(dif / 60)
+      const hour = Math.floor(dif / 60)
       dif %= 60
-      state.minute = dif
+      const minute = dif
       state.remain =
-        state.day > 0
-          ? state.day.toString() + '日'
-          : state.hour > 0
-          ? state.hour.toString() + '時間' + state.minute.toString() + '分'
-          : state.minute.toString() + '分'
+        day > 0
+          ? day.toString() + '日'
+          : hour > 0
+          ? hour.toString() + '時間' + minute.toString() + '分'
+          : minute.toString() + '分'
     }
-    comp_remain(state.now)
+    comp_remain()
     setInterval(() => {
       state.now = new Date()
     }, 5000)
     watch(
       () => state.now,
-      now => comp_remain(now)
+      () => comp_remain()
     )
-    const submitPollID = async (index: number) => {
-      const pollID: PostPollId = {
-        answer: [props.question[index].id],
-        comment: state.comment
-      }
+
+    const postPoll = async (pollID: PostPollId) => {
       try {
         await apis.postPollsPollID(props.pollId, pollID)
       } catch {
         alert('投票できませんでした。時間を空けてもう一度お試しください。')
         return
       }
+    }
+    const getResult = async () => {
       try {
         state.PollResult = (await apis.getPollsPollIDResults(props.pollId)).data
       } catch {
         alert('投票結果を取得できませんでした。')
         return
       }
+    }
+    const submitPollID = async (i: number) => {
+      const pollID: PostPollId = {
+        answer: [props.question[i].id],
+        comment: state.comment
+      }
+      await postPoll(pollID)
+      await getResult()
       state.can_answer = false
       state.can_access_details = true
     }
+
+    if (state.can_access_details) getResult()
+
     return {
       state,
       submitPollID,

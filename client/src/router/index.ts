@@ -32,7 +32,7 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
-      path: '/details',
+      path: '/details/:pollId',
       name: 'details',
       component: Details
     }
@@ -41,7 +41,7 @@ const router = createRouter({
 
 import { useMainStore } from '/@/store/index'
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _, next) => {
   const store = useMainStore()
   if (to.matched.some(record => record.meta.requiresAuth)) {
     // requiresAuthがtrueなら評価

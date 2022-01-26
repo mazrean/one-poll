@@ -32,3 +32,17 @@ services:
     command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
     volumes:
       - ../mysql/data:/var/lib/mysql
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=mariadb
+      - PMA_USER=root
+      - PMA_PASSWORD=pass
+    links:
+      - mariadb
+    ports:
+      - 8000:80
+    volumes:
+      - ./phpmyadmin/sessions:/sessions
+

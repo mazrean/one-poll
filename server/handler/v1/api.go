@@ -19,9 +19,6 @@ type unimplemented interface {
 
 	// (GET /users/me/answers)
 	GetUsersMeAnswers(ctx echo.Context) error
-
-	// (GET /users/me/owners)
-	GetUsersMeOwners(ctx echo.Context) error
 }
 
 type API struct {
