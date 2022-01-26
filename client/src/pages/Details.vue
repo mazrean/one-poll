@@ -27,12 +27,19 @@
         <div class="created-at">作成日 : {{ state.PollSummary.createdAt }}</div>
         <div class="d-flex flex-wrap justify-content-around">
           <div class="owner_name">@{{ state.PollSummary.owner.name }}</div>
+          <button
+            v-if="state.PollSummary.userStatus.isOwner && !state.outdated"
+            type="button"
+            class="close-poll btn btn-warning"
+            @click="postPollsClose()">
+            締め切る
+          </button>
           <router-link :to="{ name: 'home' }">
             <button
               v-if="state.PollSummary.userStatus.isOwner"
               type="button"
               class="delete-poll btn btn-danger"
-              @click="deletePoll()">
+              @click="deletePolls()">
               削除
             </button>
           </router-link>
@@ -76,6 +83,7 @@ import { useRoute } from 'vue-router'
 
 interface State {
   pollId: string
+  outdated: boolean
   PollSummary: PollSummary
   PollResult: PollResults
   PollComments: PollComment[]
@@ -88,6 +96,7 @@ export default defineComponent({
   setup() {
     const state = reactive<State>({
       pollId: '',
+      outdated: true,
       PollSummary: {
         pollId: '',
         title: '',
@@ -119,20 +128,19 @@ export default defineComponent({
 
     const { pollId } = useRoute().params
     state.pollId = pollId.toString()
-    const getPoll = async () => {
+    const getPolls = async () => {
       try {
         state.PollSummary = (await apis.getPollsPollID(state.pollId)).data
       } catch {
         alert('投票を取得できませんでした。')
-        return
       }
+      state.outdated = state.PollSummary.qStatus === PollStatus.Outdated
     }
     const getResult = async () => {
       try {
         state.PollResult = (await apis.getPollsPollIDResults(state.pollId)).data
       } catch {
         alert('投票結果を取得できませんでした。')
-        return
       }
     }
     const getComments = async () => {
@@ -142,25 +150,34 @@ export default defineComponent({
         ).data
       } catch {
         alert('コメントを取得できませんでした。')
-        return
       }
     }
-    const deletePoll = async () => {
+    const postPollsClose = async () => {
+      try {
+        apis.postPollsClose(state.pollId)
+        state.outdated = true
+        alert('投票を締め切りました。')
+      } catch {
+        alert('投票を締め切ることができませんでした。')
+      }
+    }
+    const deletePolls = async () => {
       try {
         apis.deletePollsPollID(state.pollId)
+        alert('投票を削除しました。')
       } catch {
         alert('投票を削除できませんでした。')
-        return
       }
     }
-    getPoll()
+    getPolls()
     getResult()
     getComments()
 
     return {
       state,
       PollResultComponent,
-      deletePoll
+      postPollsClose,
+      deletePolls
     }
   }
 })
