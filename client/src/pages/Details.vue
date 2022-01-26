@@ -24,25 +24,29 @@
         </div>
       </div>
       <div class="footer">
-        <div class="created-at">作成日 : {{ state.PollSummary.createdAt }}</div>
-        <div class="d-flex flex-wrap justify-content-around">
+        <div class="d-flex flex-wrap justify-content-around mb-2">
+          <div class="created-at">作成日 : {{ state.createdAt }}</div>
           <div class="owner_name">@{{ state.PollSummary.owner.name }}</div>
-          <button
-            v-if="state.PollSummary.userStatus.isOwner && !state.outdated"
-            type="button"
-            class="close-poll btn btn-warning"
-            @click="postPollsClose()">
-            締め切る
-          </button>
-          <router-link :to="{ name: 'home' }">
+          <div
+            class="btn-group btn-group-sm d-flex flex-wrap justify-content-around"
+            role="group">
             <button
-              v-if="state.PollSummary.userStatus.isOwner"
+              v-if="state.PollSummary.userStatus.isOwner && !state.outdated"
               type="button"
-              class="delete-poll btn btn-danger"
-              @click="deletePolls()">
-              削除
+              class="close-poll btn btn-warning"
+              @click="postPollsClose()">
+              締め切る
             </button>
-          </router-link>
+            <router-link :to="{ name: 'home' }">
+              <button
+                v-if="state.PollSummary.userStatus.isOwner"
+                type="button"
+                class="delete-poll btn btn-danger"
+                @click="deletePolls()">
+                削除
+              </button>
+            </router-link>
+          </div>
         </div>
       </div>
     </div>
@@ -83,11 +87,11 @@ import { useRoute } from 'vue-router'
 
 interface State {
   pollId: string
+  createdAt: string
   outdated: boolean
   PollSummary: PollSummary
   PollResult: PollResults
   PollComments: PollComment[]
-  createdAt: Date
 }
 
 export default defineComponent({
@@ -96,6 +100,7 @@ export default defineComponent({
   setup() {
     const state = reactive<State>({
       pollId: '',
+      createdAt: '',
       outdated: true,
       PollSummary: {
         pollId: '',
@@ -121,10 +126,8 @@ export default defineComponent({
         count: 0,
         result: []
       },
-      PollComments: [],
-      createdAt: new Date()
+      PollComments: []
     })
-    state.createdAt = new Date(state.PollSummary.createdAt)
 
     const { pollId } = useRoute().params
     state.pollId = pollId.toString()
@@ -134,6 +137,18 @@ export default defineComponent({
       } catch {
         alert('投票を取得できませんでした。')
       }
+      const date = new Date(state.PollSummary.createdAt)
+      state.createdAt =
+        date.getFullYear().toString() +
+        '/' +
+        (date.getMonth() + 1).toString() +
+        '/' +
+        date.getDate().toString() +
+        ' ' +
+        date.getHours().toString() +
+        ':' +
+        date.getMinutes().toString()
+
       state.outdated = state.PollSummary.qStatus === PollStatus.Outdated
     }
     const getResult = async () => {
