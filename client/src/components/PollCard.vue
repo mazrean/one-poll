@@ -47,7 +47,7 @@
       </div>
     </div>
     <div class="footer d-flex justify-content-around">
-      <div>残り: {{ state.remain }}</div>
+      <div>{{ state.remain }}</div>
       <div v-if="state.can_access_details">
         <router-link :to="{ name: 'details', params: { pollId: pollId } }">
           詳細を見る
@@ -150,8 +150,18 @@ export default defineComponent({
     state.can_access_details =
       props.userStatus.accessMode == UserStatusAccessModeEnum.CanAccessDetails
 
-    const deadline = new Date(props.deadline)
     const comp_remain = () => {
+      if (props.deadline === '-1') {
+        state.remain = '期限なし'
+        return
+      }
+      const deadline = new Date(props.deadline)
+      if (deadline.getTime() - state.now.getTime() <= 0) {
+        state.remain = '公開済み'
+        state.can_answer = false
+        state.can_access_details = true
+        return
+      }
       let dif = Math.floor(
         (deadline.getTime() - state.now.getTime()) / (60 * 1000)
       )
@@ -162,10 +172,10 @@ export default defineComponent({
       const minute = dif
       state.remain =
         day > 0
-          ? day.toString() + '日'
+          ? '残り : ' + day.toString() + '日'
           : hour > 0
-          ? hour.toString() + '時間' + minute.toString() + '分'
-          : minute.toString() + '分'
+          ? '残り : ' + hour.toString() + '時間' + minute.toString() + '分'
+          : '残り : ' + minute.toString() + '分'
     }
     comp_remain()
     setInterval(() => {
