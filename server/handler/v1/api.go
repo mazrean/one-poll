@@ -16,9 +16,6 @@ import (
 type unimplemented interface {
 	// (POST /tags)
 	PostTags(ctx echo.Context) error
-
-	// (GET /users/me/answers)
-	GetUsersMeAnswers(ctx echo.Context) error
 }
 
 type API struct {

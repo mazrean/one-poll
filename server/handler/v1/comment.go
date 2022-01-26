@@ -64,10 +64,6 @@ func (c Comment) GetPollsPollIDComments(ctx echo.Context, pollID string, params 
 		comment := openapi.PollComment{
 			Content:   string(commentInfo.GetContent()),
 			CreatedAt: commentInfo.GetCreatedAt(),
-			User: openapi.User{
-				Name: openapi.UserName(commentInfo.CommentUser.GetName()),
-				Uuid: uuid.UUID(commentInfo.CommentUser.GetID()).String(),
-			},
 		}
 		comments = append(comments, comment)
 	}

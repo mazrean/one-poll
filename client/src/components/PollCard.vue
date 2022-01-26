@@ -54,9 +54,7 @@
         </router-link>
       </div>
       <div v-else>詳細を見る</div>
-      <div>
-        <a href="#">@{{ owner.name }}</a>
-      </div>
+      <div>@{{ owner.name }}</div>
     </div>
   </div>
 </template>

@@ -35,16 +35,14 @@
       <thead>
         <tr>
           <th scope="col">#</th>
-          <th scope="col">回答者</th>
           <th scope="col" class="text-start">コメント</th>
         </tr>
       </thead>
       <tbody>
         <tr
           v-for="(PollComment, i) in state.PollComments"
-          :key="PollComment.user.uuid">
+          :key="PollComment.createdAt">
           <th scope="row">{{ i + 1 }}</th>
-          <td>@{{ PollComment.user.name }}</td>
           <td class="text-start">{{ PollComment.content }}</td>
         </tr>
       </tbody>

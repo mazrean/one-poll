@@ -152,10 +152,19 @@ func (p *Poll) GetPolls(ctx context.Context, params *repository.PollSearchParams
 			query = query.Where("polls.owner_id = ?", id)
 		}
 
-		// if params.Answer != nil {
-		// 	// TODO Implemention
-		// 	// Answersに対応するにはおそらくResponseTableもJoinすることが必要
-		// }
+		if params.Answer != nil {
+			var responseTable []ResponseTable
+			id := uuid.UUID(params.Answer.GetID())
+			err = db.Where("respondent_id", id).Select("poll_id").Find(&responseTable).Error
+			if err != nil {
+				return nil, fmt.Errorf("failed to get responses: %w", err)
+			}
+			uuidPollIDs := make([]uuid.UUID, 0, len(responseTable))
+			for _, responseTable := range responseTable {
+				uuidPollIDs = append(uuidPollIDs, responseTable.PollID)
+			}
+			query = query.Where("polls.id IN ?", uuidPollIDs)
+		}
 	}
 
 	err = query.Find(&pollTables).Error
