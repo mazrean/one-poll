@@ -151,6 +151,7 @@ export default {
       state.PollSummaries = state.PollSummaries_origin
     }
     const onAutocomplete = (str: string) => {
+      state.autocompletes = []
       if (str.length === 0) return
       state.searchTag = str
       getPolls()
