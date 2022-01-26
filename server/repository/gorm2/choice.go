@@ -27,11 +27,12 @@ func (c *Choice) CreateChoices(ctx context.Context, pollID values.PollID, choice
 	}
 
 	choiceTables := make([]ChoiceTable, 0, len(choices))
-	for _, choice := range choices {
+	for i, choice := range choices {
 		choiceTables = append(choiceTables, ChoiceTable{
 			ID:     uuid.UUID(choice.GetID()),
 			PollID: uuid.UUID(pollID),
 			Name:   string(choice.GetLabel()),
+			Order:  uint8(i),
 		})
 	}
 
@@ -57,6 +58,7 @@ func (c *Choice) GetChoices(ctx context.Context, ids []values.ChoiceID, lockType
 	var choiceTables []ChoiceTable
 	err = db.
 		Where("id IN ?", uuidChoiceIDs).
+		Order("`order`").
 		Select("id", "name").
 		Find(&choiceTables).Error
 	if err != nil {
@@ -93,6 +95,7 @@ func (c *Choice) GetChoicesByPollIDs(ctx context.Context, pollIDs []values.PollI
 	var choiceTables []ChoiceTable
 	err = db.
 		Where("poll_id IN ?", uuidPollIDs).
+		Order("`order`").
 		Select("id", "name", "poll_id").
 		Find(&choiceTables).Error
 	if err != nil {
@@ -124,6 +127,7 @@ func (c *Choice) GetChoicesByPollID(ctx context.Context, pollID values.PollID, l
 	var choiceTables []ChoiceTable
 	err = db.
 		Where("poll_id = ?", uuid.UUID(pollID)).
+		Order("`order`").
 		Select("id", "name").
 		Find(&choiceTables).Error
 	if err != nil {
