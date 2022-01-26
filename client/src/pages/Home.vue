@@ -53,7 +53,11 @@
             :poll-id="PollSummary.pollId"
             :title="PollSummary.title"
             :type="PollSummary.type"
-            :deadline="PollSummary.deadline"
+            :deadline="
+              typeof PollSummary.deadline !== 'undefined'
+                ? PollSummary.deadline
+                : '-1'
+            "
             :tags="
               typeof PollSummary.tags !== 'undefined'
                 ? PollSummary.tags

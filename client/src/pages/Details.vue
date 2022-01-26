@@ -156,7 +156,6 @@ export default defineComponent({
       try {
         apis.postPollsClose(state.pollId)
         state.outdated = true
-        alert('投票を締め切りました。')
       } catch {
         alert('投票を締め切ることができませんでした。')
       }
@@ -164,7 +163,6 @@ export default defineComponent({
     const deletePolls = async () => {
       try {
         apis.deletePollsPollID(state.pollId)
-        alert('投票を削除しました。')
       } catch {
         alert('投票を削除できませんでした。')
       }
