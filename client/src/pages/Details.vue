@@ -25,7 +25,18 @@
       </div>
       <div class="footer">
         <div class="created-at">作成日 : {{ state.PollSummary.createdAt }}</div>
-        <div class="owner_name">@{{ state.PollSummary.owner.name }}</div>
+        <div class="d-flex flex-wrap justify-content-around">
+          <div class="owner_name">@{{ state.PollSummary.owner.name }}</div>
+          <router-link :to="{ name: 'home' }">
+            <button
+              v-if="state.PollSummary.userStatus.isOwner"
+              type="button"
+              class="delete-poll btn btn-danger"
+              @click="deletePoll()">
+              削除
+            </button>
+          </router-link>
+        </div>
       </div>
     </div>
     <table class="table table-sm table-striped table-bordered caption-top mt-4">
@@ -134,13 +145,22 @@ export default defineComponent({
         return
       }
     }
+    const deletePoll = async () => {
+      try {
+        apis.deletePollsPollID(state.pollId)
+      } catch {
+        alert('投票を削除できませんでした。')
+        return
+      }
+    }
     getPoll()
     getResult()
     getComments()
 
     return {
       state,
-      PollResultComponent
+      PollResultComponent,
+      deletePoll
     }
   }
 })
