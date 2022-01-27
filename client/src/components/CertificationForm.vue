@@ -17,9 +17,7 @@
             placeholder="ユーザー名を入力"
             required
             pattern="[0-9a-zA-Z_]{4,16}" />
-          <div class="invalid-feedback">
-            ユーザー名は4~16文字の英数字・アンダーバーにしてください
-          </div>
+          <div class="invalid-feedback">{{ userNameErrorMessage }}</div>
         </div>
         <div>
           <label for="password" class="card-text">パスワード</label><br />
@@ -31,9 +29,7 @@
             placeholder="パスワードを入力"
             required
             pattern="[0-9a-zA-Z_]{8,50}" />
-          <div class="invalid-feedback">
-            パスワードは8~50文字の英数字・アンダーバーにしてください
-          </div>
+          <div class="invalid-feedback">{{ passwordErrorMessage }}</div>
         </div>
         <button type="submit" class="btn btn-primary mt-3">{{ sign }}</button>
       </form>
@@ -47,7 +43,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch } from 'vue'
+import {
+  defineComponent,
+  ref,
+  toRefs,
+  watch,
+  watchEffect,
+  defineExpose
+} from 'vue'
 
 export default defineComponent({
   name: 'CertificationFormComponent',
@@ -55,12 +58,26 @@ export default defineComponent({
     sign: {
       type: String,
       default: ''
+    },
+    userNameErrorMessage: {
+      type: String,
+      default: 'ユーザー名は4~16文字の英数字・アンダーバーにしてください'
+    },
+    passwordErrorMessage: {
+      type: String,
+      default: 'パスワードは8~50文字の英数字・アンダーバーにしてください'
+    },
+    errorMessage: {
+      type: String,
+      default: 'ユーザー名またはパスワードが間違っています'
     }
   },
   emits: ['on-submit-event'],
-  setup(_, context) {
+  setup(props, context) {
     const name = ref<string>('')
     const password = ref<string>('')
+    const userNameErrorMessage = ref<string>(props.userNameErrorMessage)
+    const passwordErrorMessage = ref<string>(props.passwordErrorMessage)
     const validated = ref<boolean>(false)
     const onSubmitForm = () => {
       context.emit('on-submit-event', name.value, password.value)
@@ -95,7 +112,23 @@ export default defineComponent({
         onSubmitForm()
       }
     }
-    return { name, password, validated, onSubmitForm, validation }
+    const resetForm = () => {
+      console.log('resetForm dao')
+      name.value = ''
+      password.value = ''
+      userNameErrorMessage.value = props.errorMessage
+      passwordErrorMessage.value = props.errorMessage
+    }
+    return {
+      name,
+      password,
+      userNameErrorMessage,
+      passwordErrorMessage,
+      validated,
+      onSubmitForm,
+      validation,
+      resetForm
+    }
   }
 })
 </script>
