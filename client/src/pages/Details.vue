@@ -32,16 +32,13 @@
           <div class="owner_name my-auto">
             @{{ state.PollSummary.owner.name }}
           </div>
-          <router-link
+          <button
             v-if="state.PollSummary.userStatus.isOwner && !state.outdated"
-            :to="{ name: 'home' }">
-            <button
-              type="button"
-              class="close-poll btn btn-warning"
-              @click="postPollsClose()">
-              締め切る
-            </button>
-          </router-link>
+            type="button"
+            class="close-poll btn btn-warning"
+            @click="postPollsClose()">
+            締め切る
+          </button>
           <router-link
             v-if="state.PollSummary.userStatus.isOwner"
             :to="{ name: 'home' }">
@@ -145,7 +142,7 @@ export default defineComponent({
         return
       }
       const deadline = new Date(state.deadline)
-      if (deadline.getTime() - state.now.getTime() <= 0) {
+      if (deadline.getTime() - state.now.getTime() <= 0 || state.outdated) {
         state.remain = '公開済み'
         return
       }
@@ -169,7 +166,7 @@ export default defineComponent({
       state.now = new Date()
     }, 5000)
     watchEffect(() => {
-      state.now, comp_remain()
+      state.now, state.outdated, comp_remain()
     })
 
     const { pollId } = useRoute().params
