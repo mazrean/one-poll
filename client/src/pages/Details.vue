@@ -14,7 +14,7 @@
         </div>
       </div>
       <div class="card-body">
-        <div class="">
+        <div>
           <PollResultComponent
             :poll-id="state.PollResult.pollId"
             :type="state.PollResult.type"
@@ -24,14 +24,12 @@
         </div>
       </div>
       <div class="footer">
-        <div class="d-flex flex-wrap justify-content-around mx-auto my-1">
+        <div class="d-flex flex-wrap justify-content-around mx-auto mb-1">
           <div class="remain">{{ state.remain }}</div>
           <div class="created-at">作成日 : {{ state.createdAt }}</div>
         </div>
-        <div class="d-flex flex-wrap justify-content-around mx-auto my-1">
-          <div class="owner_name my-auto">
-            @{{ state.PollSummary.owner.name }}
-          </div>
+        <div class="d-flex flex-wrap justify-content-around mx-auto mb-1">
+          <div class="my-auto">@{{ state.PollSummary.owner.name }}</div>
           <button
             v-if="state.PollSummary.userStatus.isOwner && !state.outdated"
             type="button"
@@ -164,7 +162,7 @@ export default defineComponent({
     comp_remain()
     setInterval(() => {
       state.now = new Date()
-    }, 5000)
+    }, 1000)
     watchEffect(() => {
       state.now, state.outdated, comp_remain()
     })
@@ -177,11 +175,11 @@ export default defineComponent({
       } catch {
         alert('投票を取得できませんでした。')
       }
-      const date = new Date(state.PollSummary.createdAt)
       state.deadline =
         typeof state.PollSummary.deadline !== 'undefined'
           ? state.PollSummary.deadline
           : '-1'
+      const date = new Date(state.PollSummary.createdAt)
       state.createdAt =
         date.getFullYear().toString() +
         '/' +
