@@ -102,7 +102,7 @@ export default {
       autocompletes: []
     })
 
-    let limit = 10
+    let limit = 5
     let offset = 0
     let isLoading = false
     let isEnd = false
