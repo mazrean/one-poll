@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import path from 'path'
 import vue from '@vitejs/plugin-vue'
+import brotli from "rollup-plugin-brotli";
 
 export default defineConfig({
   resolve: {
@@ -17,5 +18,14 @@ export default defineConfig({
       }
     }
   },
-  plugins: [vue()]
+  plugins: [vue()],
+  build: {
+    rollupOptions: {
+      plugins: [
+        brotli({
+          test: /\.(js|css|html|svg)$/
+        })
+      ]
+    }
+  }
 })
