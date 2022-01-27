@@ -47,20 +47,20 @@
       </div>
     </div>
     <div class="footer d-flex justify-content-around mb-1">
-      <div class="remain">{{ state.remain }}</div>
+      <div>{{ state.remain }}</div>
       <router-link
         v-if="state.can_access_details"
         class="link link-detail"
         :to="{ name: 'details', params: { pollId: pollId } }">
         詳細を見る
       </router-link>
-      <div class="owner-name">@{{ owner.name }}</div>
+      <div>@{{ owner.name }}</div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, reactive, watch } from 'vue'
+import { defineComponent, PropType, reactive, watchEffect } from 'vue'
 import PollResultComponent from '/@/components/PollResult.vue'
 import apis, {
   Choice,
@@ -180,11 +180,10 @@ export default defineComponent({
     comp_remain()
     setInterval(() => {
       state.now = new Date()
-    }, 5000)
-    watch(
-      () => state.now,
-      () => comp_remain()
-    )
+    }, 1000)
+    watchEffect(() => {
+      state.now, comp_remain()
+    })
 
     const postPoll = async (pollID: PostPollId) => {
       try {
@@ -212,7 +211,6 @@ export default defineComponent({
       state.can_answer = false
       state.can_access_details = true
     }
-
     if (state.can_access_details) getResult()
 
     return {
