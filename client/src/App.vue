@@ -25,9 +25,6 @@ export default defineComponent({
     const handleResize = () => {
       width.value = window.innerWidth
     }
-    onMounted(async () => {
-      await store.setUserID()
-    })
     onMounted(() => {
       window.addEventListener('resize', handleResize)
     })

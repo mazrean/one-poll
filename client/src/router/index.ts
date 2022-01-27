@@ -42,8 +42,9 @@ const router = createRouter({
 
 import { useMainStore } from '/@/store/index'
 
-router.beforeEach((to, _, next) => {
+router.beforeEach(async (to, _, next) => {
   const store = useMainStore()
+  await store.setUserID()
   if (to.matched.some(record => record.meta.requiresAuth)) {
     // requiresAuthがtrueなら評価
     if (store.getUserID() === '') {
