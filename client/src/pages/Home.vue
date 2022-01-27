@@ -21,7 +21,7 @@
           name="searchTitle"
           placeholder="キーワードで検索 (Enterで更新)"
           @Input="state.searchTitle = $event.target.value"
-          @keydown.enter="getPolls()" />
+          @keydown.enter="onKeyword()" />
         <input
           v-model="state.searchTag"
           type="searchTag"
@@ -78,14 +78,11 @@
 <script lang="ts">
 import PollCardComponent from '/@/components/PollCard.vue'
 import apis, { PollSummary, PollTag } from '/@/lib/apis'
-import { reactive } from 'vue'
+import { reactive, onMounted, onUnmounted } from 'vue'
 
 interface State {
   PollSummaries: PollSummary[]
   PollSummaries_origin: PollSummary[]
-  isLoading: boolean
-  searchLimit: number
-  searchOffset: number
   searchTitle: string
   searchTag: string
   tags: PollTag[]
@@ -99,37 +96,52 @@ export default {
     const state = reactive<State>({
       PollSummaries: [],
       PollSummaries_origin: [],
-      isLoading: true,
-      searchLimit: 100,
-      searchOffset: 0,
       searchTitle: '',
       searchTag: '',
       tags: [],
       autocompletes: []
     })
 
+    let limit = 10
+    let offset = 0
+    let isLoading = false
+    let isEnd = false
+
     const getPolls = async () => {
-      //state.isLoading = true
+      if (isLoading || isEnd) return []
+
+      isLoading = true
+      let newPollSummaries: PollSummary[]
       try {
-        state.PollSummaries = (
-          await apis.getPolls(
-            state.searchLimit,
-            state.searchOffset,
-            state.searchTitle
-          )
+        newPollSummaries = (
+          await apis.getPolls(limit, offset, state.searchTitle)
         ).data
       } catch {
-        state.PollSummaries = []
+        newPollSummaries = []
       }
-      state.PollSummaries_origin = state.PollSummaries
+
+      if (newPollSummaries.length < limit) {
+        isEnd = true
+      }
+      offset += newPollSummaries.length
+
+      state.PollSummaries_origin = [
+        ...state.PollSummaries_origin,
+        ...newPollSummaries
+      ]
       if (state.searchTag !== '') {
-        state.PollSummaries = state.PollSummaries.filter(v => {
-          return typeof v.tags !== 'undefined'
-            ? v.tags.some(e => e.name === state.searchTag)
-            : false
-        })
+        state.PollSummaries = [
+          ...state.PollSummaries,
+          ...newPollSummaries.filter(v => {
+            return typeof v.tags !== 'undefined'
+              ? v.tags.some(e => e.name === state.searchTag)
+              : false
+          })
+        ]
+      } else {
+        state.PollSummaries = [...state.PollSummaries, ...newPollSummaries]
       }
-      state.isLoading = false
+      isLoading = false
     }
     const getTags = async () => {
       try {
@@ -153,18 +165,46 @@ export default {
       }
       state.PollSummaries = state.PollSummaries_origin
     }
-    const onAutocomplete = (str: string) => {
+    const onAutocomplete = async (str: string) => {
       state.autocompletes = []
       if (str.length === 0) return
       state.searchTag = str
-      getPolls()
+      state.PollSummaries = []
+      state.PollSummaries_origin = []
+      offset = 0
+      isEnd = false
+      await getPolls()
     }
+    const onKeyword = async () => {
+      state.PollSummaries = []
+      state.PollSummaries_origin = []
+      offset = 0
+      isEnd = false
+      await getPolls()
+    }
+
+    const scrollHandler = async () => {
+      const hasReached =
+        window.innerHeight + window.scrollY >= document.body.offsetHeight
+      if (hasReached) {
+        await getPolls()
+      }
+    }
+
+    onMounted(() => {
+      window.addEventListener('scroll', scrollHandler)
+    })
+
+    onUnmounted(() => {
+      window.removeEventListener('scroll', scrollHandler)
+    })
 
     return {
       state,
       getPolls,
       calculateFilter,
       onAutocomplete,
+      onKeyword,
       PollCardComponent
     }
   }
