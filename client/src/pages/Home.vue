@@ -173,7 +173,9 @@ export default {
       state.PollSummaries_origin = []
       offset = 0
       isEnd = false
-      await getPolls()
+      while (!isEnd && state.PollSummaries.length < limit) {
+        await getPolls()
+      }
     }
     const onKeyword = async () => {
       state.PollSummaries = []
@@ -192,10 +194,14 @@ export default {
     }
 
     onMounted(() => {
+      window.addEventListener('wheel', scrollHandler)
+      window.addEventListener('touchmove', scrollHandler)
       window.addEventListener('scroll', scrollHandler)
     })
 
     onUnmounted(() => {
+      window.removeEventListener('wheel', scrollHandler)
+      window.removeEventListener('touchmove', scrollHandler)
       window.removeEventListener('scroll', scrollHandler)
     })
 
