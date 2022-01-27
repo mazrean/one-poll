@@ -101,20 +101,6 @@ export default defineComponent({
         passError = true
       }
     })
-    // watch(
-    //   () => props.formError,
-    //   () => {
-    //     if (formError) {
-    //       name.value = ''
-    //       password.value = ''
-    //       userNameErrorMessage.value = props.errorMessage
-    //       passwordErrorMessage.value = props.errorMessage
-    //       formError.value = false
-    //       console.log(props.formError)
-    //       console.log(formError.value)
-    //     }
-    //   }
-    // )
     //method
     const validation = (event: Event): void => {
       validated.value = true
