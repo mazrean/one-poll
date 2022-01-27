@@ -128,6 +128,7 @@ export default defineComponent({
       }
     }
     const resetForm = () => {
+      console.log('resetForm dao')
       name.value = ''
       password.value = ''
       userNameErrorMessage.value = props.errorMessage

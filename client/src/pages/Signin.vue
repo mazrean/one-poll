@@ -38,7 +38,7 @@ export default defineComponent({
       await store.setUserID()
       router.push('/')
     }
-    return { errorMessage, formError, onSubmitForm }
+    return { form, errorMessage, formError, onSubmitForm }
   }
 })
 </script>
