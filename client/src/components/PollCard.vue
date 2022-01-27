@@ -47,14 +47,14 @@
       </div>
     </div>
     <div class="footer d-flex justify-content-around mb-1">
-      <div>{{ state.remain }}</div>
+      <div class="remain">{{ state.remain }}</div>
       <router-link
         v-if="state.can_access_details"
         class="link link-detail"
         :to="{ name: 'details', params: { pollId: pollId } }">
         詳細を見る
       </router-link>
-      <div>@{{ owner.name }}</div>
+      <div class="owner-name">@{{ owner.name }}</div>
     </div>
   </div>
 </template>

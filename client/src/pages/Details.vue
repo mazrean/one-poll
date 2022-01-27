@@ -24,8 +24,9 @@
         </div>
       </div>
       <div class="footer">
-        <div class="created-at mb-3">
-          作成日 : {{ state.PollSummary.createdAt }}
+        <div class="d-flex flex-wrap justify-content-around mx-auto my-1">
+          <div class="remain">{{ state.remain }}</div>
+          <div class="created-at">作成日 : {{ state.createdAt }}</div>
         </div>
         <div class="d-flex flex-wrap justify-content-around mx-auto my-1">
           <div class="owner_name my-auto">
@@ -77,7 +78,7 @@
 
 <script lang="ts">
 import PollResultComponent from '/@/components/PollResult.vue'
-import { defineComponent, reactive } from 'vue'
+import { defineComponent, reactive, watchEffect } from 'vue'
 import apis, {
   PollComment,
   PollResults,
@@ -90,6 +91,9 @@ import { useRoute } from 'vue-router'
 
 interface State {
   pollId: string
+  now: Date
+  deadline: string
+  remain: string
   createdAt: string
   outdated: boolean
   PollSummary: PollSummary
@@ -103,6 +107,9 @@ export default defineComponent({
   setup() {
     const state = reactive<State>({
       pollId: '',
+      now: new Date(),
+      deadline: '',
+      remain: '',
       createdAt: '',
       outdated: true,
       PollSummary: {
@@ -132,6 +139,39 @@ export default defineComponent({
       PollComments: []
     })
 
+    const comp_remain = () => {
+      if (state.deadline === '-1') {
+        state.remain = '期限なし'
+        return
+      }
+      const deadline = new Date(state.deadline)
+      if (deadline.getTime() - state.now.getTime() <= 0) {
+        state.remain = '公開済み'
+        return
+      }
+      let dif = Math.floor(
+        (deadline.getTime() - state.now.getTime()) / (60 * 1000)
+      )
+      const day = Math.floor(dif / 1440)
+      dif %= 1440
+      const hour = Math.floor(dif / 60)
+      dif %= 60
+      const minute = dif
+      state.remain =
+        day > 0
+          ? '残り : ' + day.toString() + '日'
+          : hour > 0
+          ? '残り : ' + hour.toString() + '時間' + minute.toString() + '分'
+          : '残り : ' + minute.toString() + '分'
+    }
+    comp_remain()
+    setInterval(() => {
+      state.now = new Date()
+    }, 5000)
+    watchEffect(() => {
+      state.now, comp_remain()
+    })
+
     const { pollId } = useRoute().params
     state.pollId = pollId.toString()
     const getPolls = async () => {
@@ -141,6 +181,10 @@ export default defineComponent({
         alert('投票を取得できませんでした。')
       }
       const date = new Date(state.PollSummary.createdAt)
+      state.deadline =
+        typeof state.PollSummary.deadline !== 'undefined'
+          ? state.PollSummary.deadline
+          : '-1'
       state.createdAt =
         date.getFullYear().toString() +
         '/' +
@@ -151,7 +195,6 @@ export default defineComponent({
         date.getHours().toString() +
         ':' +
         date.getMinutes().toString()
-
       state.outdated = state.PollSummary.qStatus === PollStatus.Outdated
     }
     const getResult = async () => {
