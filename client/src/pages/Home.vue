@@ -187,7 +187,8 @@ export default {
 
     const scrollHandler = async () => {
       const hasReached =
-        window.innerHeight + window.scrollY >= document.body.offsetHeight
+        window.innerHeight + Math.ceil(window.scrollY) >=
+        document.body.offsetHeight
       if (hasReached) {
         await getPolls()
       }
