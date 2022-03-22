@@ -3,6 +3,8 @@ services:
     image: ghcr.io/mazrean/one-poll-client:latest
     container_name: one-poll-client
     restart: always
+    expose:
+      - "8080"
     networks:
       - default
       - caddy-network
