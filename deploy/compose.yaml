@@ -31,5 +31,4 @@ services:
       - /etc/one-poll/mariadb/data:/var/lib/mysql
 networks:
   caddy-network:
-    external:
-      name: caddy-network
+    name: caddy-network
