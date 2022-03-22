@@ -14,6 +14,13 @@ updates:
     day: saturday
     time: "09:00"
     timezone: Asia/Tokyo
+- package-ecosystem: docker
+  directory: "/deploy"
+  schedule:
+    interval: weekly
+    day: saturday
+    time: "09:00"
+    timezone: Asia/Tokyo
 - package-ecosystem: github-actions
   directory: "/"
   schedule:
