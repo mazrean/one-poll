@@ -4,13 +4,13 @@
       ref="form"
       class="m-auto"
       sign="サインイン"
-      :formError="formError"
+      :form-error="formError"
       @on-submit-event="onSubmitForm" />
   </div>
 </template>
 
 <script lang="ts">
-import { Component, defineComponent, ref } from 'vue'
+import { defineComponent, ref } from 'vue'
 import CertificationForm from '/@/components/CertificationForm.vue'
 import api, { PostUser } from '/@/lib/apis'
 import { useMainStore } from '/@/store/index'
@@ -22,9 +22,9 @@ export default defineComponent({
   setup() {
     const store = useMainStore()
     const router = useRouter()
-    const errorMessage = 'ユーザー名またはパスワードが間違っています'
-    const formError = ref<Boolean>(false)
+    const formError = ref<boolean>(false)
     const form = ref<InstanceType<typeof CertificationForm>>()
+
     const onSubmitForm = async (name: string, password: string) => {
       const user: PostUser = { name: name, password: password }
       try {
@@ -32,13 +32,13 @@ export default defineComponent({
       } catch (err) {
         //formの入力を消す
         form.value?.resetForm()
-        console.log('postに失敗したよ')
         return
       }
       await store.setUserID()
       router.push('/')
     }
-    return { form, errorMessage, formError, onSubmitForm }
+
+    return { form, formError, onSubmitForm }
   }
 })
 </script>

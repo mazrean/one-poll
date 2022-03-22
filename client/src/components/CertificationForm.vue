@@ -43,14 +43,7 @@
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  ref,
-  toRefs,
-  watch,
-  watchEffect,
-  defineExpose
-} from 'vue'
+import { defineComponent, ref, watch } from 'vue'
 
 export default defineComponent({
   name: 'CertificationFormComponent',
@@ -66,24 +59,19 @@ export default defineComponent({
     passwordErrorMessage: {
       type: String,
       default: 'パスワードは8~50文字の英数字・アンダーバーにしてください'
-    },
-    errorMessage: {
-      type: String,
-      default: 'ユーザー名またはパスワードが間違っています'
     }
   },
   emits: ['on-submit-event'],
   setup(props, context) {
     const name = ref<string>('')
     const password = ref<string>('')
-    const userNameErrorMessage = ref<string>(props.userNameErrorMessage)
-    const passwordErrorMessage = ref<string>(props.passwordErrorMessage)
     const validated = ref<boolean>(false)
+
     const onSubmitForm = () => {
       context.emit('on-submit-event', name.value, password.value)
     }
+
     let nameError = true
-    let passError = true
     watch(name, () => {
       let re = new RegExp('[0-9a-zA-Z_]{4,16}')
       if (re.test(name.value)) {
@@ -92,6 +80,8 @@ export default defineComponent({
         nameError = true
       }
     })
+
+    let passError = true
     watch(password, () => {
       let re = new RegExp('[0-9a-zA-Z_]{8,50}')
       if (re.test(password.value)) {
@@ -100,6 +90,7 @@ export default defineComponent({
         passError = true
       }
     })
+
     //method
     const validation = (event: Event): void => {
       validated.value = true
@@ -112,18 +103,15 @@ export default defineComponent({
         onSubmitForm()
       }
     }
+
     const resetForm = () => {
-      console.log('resetForm dao')
       name.value = ''
       password.value = ''
-      userNameErrorMessage.value = props.errorMessage
-      passwordErrorMessage.value = props.errorMessage
     }
+
     return {
       name,
       password,
-      userNameErrorMessage,
-      passwordErrorMessage,
       validated,
       onSubmitForm,
       validation,
