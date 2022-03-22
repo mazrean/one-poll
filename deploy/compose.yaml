@@ -8,18 +8,20 @@ services:
       - caddy-network
   one-poll-server:
     image: ghcr.io/mazrean/one-poll-server:latest
+    container_name: one-poll-server
     restart: always
     environment:
       APP_ENV: production
       DB_USERNAME: one_poll
       DB_PASSWORD:
-      DB_HOSTNAME: mariadb
+      DB_HOSTNAME: one-poll-mariadb
       DB_PORT: 3306
       DB_DATABASE: one_poll
       SESSION_SECRET:
       ADDR: :3000
   one-poll-mariadb:
     image: mariadb:10.5.2
+    container_name: one-poll-mariadb
     environment:
       MYSQL_ROOT_PASSWORD:
       MYSQL_PASSWORD:
