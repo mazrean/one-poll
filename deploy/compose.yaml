@@ -1,6 +1,7 @@
 services:
   one-poll-client:
     image: ghcr.io/mazrean/one-poll-client:latest
+    container_name: one-poll-client
     restart: always
     networks:
       - default
