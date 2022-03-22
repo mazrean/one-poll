@@ -14,7 +14,7 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: 1.17
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/cache@v3
         with:
           path: ~/go/pkg/mod
@@ -31,7 +31,7 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: 1.17
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Add PATH
         run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
       - run: go generate ./...
@@ -109,7 +109,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [generate]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/download-artifact@v2.1.0
         with:
           name: mockGenerated
