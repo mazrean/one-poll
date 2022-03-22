@@ -6,7 +6,7 @@ services:
       dockerfile: ../dev/server.Dockerfile
     restart: always
     volumes:
-      - ../server:/go/src/github.com/cs-sysimpl/suzukake
+      - ../server:/go/src/github.com/mazrean/one-poll
     environment:
       APP_ENV: development
       DB_USERNAME: root

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/cs-sysimpl/suzukake/pkg/common"
+	"github.com/mazrean/one-poll/pkg/common"
 )
 
 func main() {

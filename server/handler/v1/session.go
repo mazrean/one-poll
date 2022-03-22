@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cs-sysimpl/suzukake/domain"
-	"github.com/cs-sysimpl/suzukake/domain/values"
-	"github.com/cs-sysimpl/suzukake/pkg/common"
 	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
+	"github.com/mazrean/one-poll/domain"
+	"github.com/mazrean/one-poll/domain/values"
+	"github.com/mazrean/one-poll/pkg/common"
 )
 
 type Session struct {

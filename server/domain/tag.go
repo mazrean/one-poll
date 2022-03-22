@@ -1,6 +1,6 @@
 package domain
 
-import "github.com/cs-sysimpl/suzukake/domain/values"
+import "github.com/mazrean/one-poll/domain/values"
 
 type Tag struct {
 	id   values.TagID

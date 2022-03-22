@@ -9,7 +9,7 @@
       "type": "go",
       "request": "attach",
       "mode": "remote",
-      "remotePath": "/go/src/github.com/cs-sysimpl/suzukake",
+      "remotePath": "/go/src/github.com/mazrean/one-poll",
       "port": 2345,
       "host": "localhost"
     }

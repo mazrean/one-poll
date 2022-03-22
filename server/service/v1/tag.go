@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/cs-sysimpl/suzukake/domain"
-	"github.com/cs-sysimpl/suzukake/repository"
+	"github.com/mazrean/one-poll/domain"
+	"github.com/mazrean/one-poll/repository"
 )
 
 type Tag struct {

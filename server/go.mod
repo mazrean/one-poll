@@ -1,4 +1,4 @@
-module github.com/cs-sysimpl/suzukake
+module github.com/mazrean/one-poll
 
 go 1.17
 

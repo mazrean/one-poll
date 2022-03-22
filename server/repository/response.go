@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 
-	"github.com/cs-sysimpl/suzukake/domain"
-	"github.com/cs-sysimpl/suzukake/domain/values"
+	"github.com/mazrean/one-poll/domain"
+	"github.com/mazrean/one-poll/domain/values"
 )
 
 type Response interface {

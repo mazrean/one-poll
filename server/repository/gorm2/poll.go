@@ -6,10 +6,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/cs-sysimpl/suzukake/domain"
-	"github.com/cs-sysimpl/suzukake/domain/values"
-	"github.com/cs-sysimpl/suzukake/repository"
 	"github.com/google/uuid"
+	"github.com/mazrean/one-poll/domain"
+	"github.com/mazrean/one-poll/domain/values"
+	"github.com/mazrean/one-poll/repository"
 	"gorm.io/gorm"
 )
 

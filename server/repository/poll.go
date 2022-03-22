@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/cs-sysimpl/suzukake/domain"
-	"github.com/cs-sysimpl/suzukake/domain/values"
+	"github.com/mazrean/one-poll/domain"
+	"github.com/mazrean/one-poll/domain/values"
 )
 
 type Poll interface {

@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	openapi "github.com/cs-sysimpl/suzukake/handler/v1/openapi"
 	"github.com/labstack/echo/v4"
+	openapi "github.com/mazrean/one-poll/handler/v1/openapi"
 )
 
 func (p *Poll) GetUsersMeOwners(ctx echo.Context) error {
