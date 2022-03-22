@@ -79,6 +79,7 @@ jobs:
   deploy-staging:
     name: Deploy staging
     runs-on: ubuntu-latest
+    environment: production
     needs: [client-image, server-image]
     steps:
       - name: Install SSH key
