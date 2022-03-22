@@ -6,12 +6,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/cs-sysimpl/suzukake/domain"
-	"github.com/cs-sysimpl/suzukake/domain/values"
-	openapi "github.com/cs-sysimpl/suzukake/handler/v1/openapi"
-	"github.com/cs-sysimpl/suzukake/service"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+	"github.com/mazrean/one-poll/domain"
+	"github.com/mazrean/one-poll/domain/values"
+	openapi "github.com/mazrean/one-poll/handler/v1/openapi"
+	"github.com/mazrean/one-poll/service"
 )
 
 type Poll struct {

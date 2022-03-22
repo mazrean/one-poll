@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/cs-sysimpl/suzukake/pkg/common"
-	pkgContext "github.com/cs-sysimpl/suzukake/pkg/context"
-	"github.com/cs-sysimpl/suzukake/repository"
+	"github.com/mazrean/one-poll/pkg/common"
+	pkgContext "github.com/mazrean/one-poll/pkg/context"
+	"github.com/mazrean/one-poll/repository"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"

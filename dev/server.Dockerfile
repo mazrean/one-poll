@@ -20,7 +20,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
 RUN --mount=type=cache,target=/root/.cache/go-build \
   go install github.com/go-delve/delve/cmd/dlv@v1.7.2
 
-WORKDIR /go/src/github.com/cs-sysimpl/suzukake
+WORKDIR /go/src/github.com/mazrean/one-poll
 
 COPY go.mod go.sum ./
 RUN --mount=type=cache,target=/go/pkg/mod/cache \

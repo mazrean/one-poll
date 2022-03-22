@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/cs-sysimpl/suzukake/domain/values"
+	"github.com/mazrean/one-poll/domain/values"
 )
 
 type Poll struct {

@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 
-	"github.com/cs-sysimpl/suzukake/domain"
+	"github.com/mazrean/one-poll/domain"
 )
 
 type Tag interface {
