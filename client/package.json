@@ -17,7 +17,7 @@
     "chart.js": "^3.7.1",
     "pinia": "^2.0.12",
     "vue": "^3.2.31",
-    "vue-chartjs": "^3.5.1",
+    "vue-chartjs": "^4.0.1",
     "vue-router": "^4.0.14",
     "vue-simple-suggest": "^1.11.2",
     "vuex": "^4.0.2"
