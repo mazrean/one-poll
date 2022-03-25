@@ -7,13 +7,13 @@
 package main
 
 import (
-	"github.com/cs-sysimpl/suzukake/handler/v1"
-	"github.com/cs-sysimpl/suzukake/pkg/common"
-	"github.com/cs-sysimpl/suzukake/repository"
-	"github.com/cs-sysimpl/suzukake/repository/gorm2"
-	"github.com/cs-sysimpl/suzukake/service"
-	v1_2 "github.com/cs-sysimpl/suzukake/service/v1"
 	"github.com/google/wire"
+	"github.com/mazrean/one-poll/handler/v1"
+	"github.com/mazrean/one-poll/pkg/common"
+	"github.com/mazrean/one-poll/repository"
+	"github.com/mazrean/one-poll/repository/gorm2"
+	"github.com/mazrean/one-poll/service"
+	v1_2 "github.com/mazrean/one-poll/service/v1"
 )
 
 // Injectors from wire.go:
