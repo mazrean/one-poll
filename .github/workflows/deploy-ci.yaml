@@ -99,7 +99,8 @@ jobs:
       - name: Pull Images
         env:
           DOCKER_HOST: ssh://${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}
-        run: docker compose pull
+        # V2ではupでエラーが出るので、V1を使う ref:https://github.com/docker/compose/issues/8544
+        run: docker-compose pull
         working-directory: ./deploy
       - name: Deploy
         env:
@@ -108,5 +109,6 @@ jobs:
           MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
           MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
           SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+        # V2ではupでエラーが出るので、V1を使う ref:https://github.com/docker/compose/issues/8544
         run: docker compose up -d
         working-directory: ./deploy

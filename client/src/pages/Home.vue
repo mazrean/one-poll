@@ -114,11 +114,7 @@ export default {
       let newPollSummaries: PollSummary[]
       try {
         newPollSummaries = (
-          await apis.getPolls(
-            limit,
-            offset,
-            state.searchTitle.length === 0 ? undefined : state.searchTitle
-          )
+          await apis.getPolls(limit, offset, state.searchTitle || undefined)
         ).data
       } catch {
         newPollSummaries = []
