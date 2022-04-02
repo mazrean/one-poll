@@ -110,5 +110,5 @@ jobs:
           MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
           SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
         # V2ではupでエラーが出るので、V1を使う ref:https://github.com/docker/compose/issues/8544
-        run: docker compose up -d
+        run: docker-compose up -d
         working-directory: ./deploy
