@@ -50,7 +50,7 @@ jobs:
           cache-dependency-path: ./client/package-lock.json
       - run: npm ci
         working-directory: ./client
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: apis
           path: ./client/src/lib/apis/generated
@@ -71,7 +71,7 @@ jobs:
           cache-dependency-path: ./client/package-lock.json
       - run: npm ci
         working-directory: ./client
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: apis
           path: ./client/src/lib/apis/generated
@@ -90,7 +90,7 @@ jobs:
           cache-dependency-path: ./client/package-lock.json
       - run: npm ci
         working-directory: ./client
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: apis
           path: ./client/src/lib/apis/generated
