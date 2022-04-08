@@ -32,7 +32,7 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-vue": "^8.5.0",
-    "prettier": "^2.6.1",
+    "prettier": "^2.6.2",
     "rollup-plugin-brotli": "^3.1.0",
     "sass": "^1.49.10",
     "ts-morph": "^14.0.0",
