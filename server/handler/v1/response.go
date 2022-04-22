@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/deepmap/oapi-codegen/pkg/types"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/mazrean/one-poll/domain/values"
@@ -45,7 +46,7 @@ func (r *Response) PostPollsPollID(c echo.Context, pollID string) error {
 
 	choiceIDs := make([]values.ChoiceID, 0, len(req.Answer))
 	for _, answer := range req.Answer {
-		uuidChoiceID, err := uuid.Parse(answer)
+		uuidChoiceID, err := uuid.Parse(string(answer))
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, "invalid choice id")
 		}
@@ -85,9 +86,9 @@ func (r *Response) PostPollsPollID(c echo.Context, pollID string) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to post response")
 	}
 
-	choices := make([]string, 0, len(response.Choices))
+	choices := make([]types.UUID, 0, len(response.Choices))
 	for _, choice := range response.Choices {
-		choices = append(choices, uuid.UUID(choice.GetID()).String())
+		choices = append(choices, types.UUID(uuid.UUID(choice.GetID()).String()))
 	}
 
 	var comment *string
@@ -149,7 +150,7 @@ func (r *Response) GetPollsPollIDResults(c echo.Context, pollID string) error {
 	for _, item := range result.Items {
 		results = append(results, openapi.Result{
 			Choice: openapi.Choice{
-				Id:     uuid.UUID(item.Choice.GetID()).String(),
+				Id:     types.UUID(uuid.UUID(item.Choice.GetID()).String()),
 				Choice: string(item.GetLabel()),
 			},
 			Count: item.Count,

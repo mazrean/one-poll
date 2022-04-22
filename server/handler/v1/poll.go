@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/deepmap/oapi-codegen/pkg/types"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/mazrean/one-poll/domain"
@@ -287,7 +288,7 @@ func (p *Poll) pollInfoToPollSummary(user *domain.User, pollInfo *service.PollIn
 		apiTags := make([]openapi.PollTag, 0, len(pollInfo.Tags))
 		for _, tag := range pollInfo.Tags {
 			apiTags = append(apiTags, openapi.PollTag{
-				Id:   uuid.UUID(tag.GetID()).String(),
+				Id:   types.UUID(uuid.UUID(tag.GetID()).String()),
 				Name: string(tag.GetName()),
 			})
 		}
@@ -298,7 +299,7 @@ func (p *Poll) pollInfoToPollSummary(user *domain.User, pollInfo *service.PollIn
 	apiChoices := make(openapi.Questions, 0, len(pollInfo.Choices))
 	for _, choice := range pollInfo.Choices {
 		apiChoices = append(apiChoices, openapi.Choice{
-			Id:     uuid.UUID(choice.GetID()).String(),
+			Id:     types.UUID(uuid.UUID(choice.GetID()).String()),
 			Choice: string(choice.GetLabel()),
 		})
 	}
@@ -359,7 +360,7 @@ func (p *Poll) pollInfoToPollSummary(user *domain.User, pollInfo *service.PollIn
 		},
 		CreatedAt: pollInfo.GetCreatedAt(),
 		Owner: openapi.User{
-			Uuid: uuid.UUID(pollInfo.Owner.GetID()).String(),
+			Uuid: types.UUID(uuid.UUID(pollInfo.Owner.GetID()).String()),
 			Name: openapi.UserName(pollInfo.Owner.GetName()),
 		},
 		QStatus:    apiPollStatus,
