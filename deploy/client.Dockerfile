@@ -18,7 +18,7 @@ RUN npm run gen-api
 COPY ./client/ ./
 RUN npm run build
 
-FROM caddy:2.4.6-alpine
+FROM caddy:2.5.0-alpine
 
 COPY --from=build /app/client/dist/ /usr/share/caddy/
 COPY ./deploy/Caddyfile /etc/caddy/Caddyfile
