@@ -1,6 +1,6 @@
 # syntax = docker/dockerfile:1.3.0
 
-FROM node:18.1.0-alpine AS build
+FROM node:18.2.0-alpine AS build
 
 WORKDIR /app/client
 
