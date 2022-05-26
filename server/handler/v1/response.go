@@ -45,12 +45,7 @@ func (r *Response) PostPollsPollID(c echo.Context, pollID string) error {
 	}
 
 	choiceIDs := make([]values.ChoiceID, 0, len(req.Answer))
-	for _, answer := range req.Answer {
-		uuidChoiceID, err := uuid.Parse(string(answer))
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "invalid choice id")
-		}
-
+	for _, uuidChoiceID := range req.Answer {
 		choiceIDs = append(choiceIDs, values.NewChoiceIDFromUUID(uuidChoiceID))
 	}
 
@@ -88,7 +83,7 @@ func (r *Response) PostPollsPollID(c echo.Context, pollID string) error {
 
 	choices := make([]types.UUID, 0, len(response.Choices))
 	for _, choice := range response.Choices {
-		choices = append(choices, types.UUID(uuid.UUID(choice.GetID()).String()))
+		choices = append(choices, types.UUID(choice.GetID()))
 	}
 
 	var comment *string
@@ -141,7 +136,7 @@ func (r *Response) GetPollsPollIDResults(c echo.Context, pollID string) error {
 	var polltype openapi.PollType
 	switch result.Poll.GetPollType() {
 	case values.PollTypeRadio:
-		polltype = openapi.PollTypeRadio
+		polltype = openapi.Radio
 	default:
 		return echo.NewHTTPError(http.StatusInternalServerError, "invalid poll type")
 	}
@@ -149,16 +144,14 @@ func (r *Response) GetPollsPollIDResults(c echo.Context, pollID string) error {
 	results := make([]openapi.Result, 0, len(result.Items))
 	for _, item := range result.Items {
 		results = append(results, openapi.Result{
-			Choice: openapi.Choice{
-				Id:     types.UUID(uuid.UUID(item.Choice.GetID()).String()),
-				Choice: string(item.GetLabel()),
-			},
-			Count: item.Count,
+			Id:     types.UUID(item.Choice.GetID()),
+			Choice: string(item.GetLabel()),
+			Count:  item.Count,
 		})
 	}
 
 	return c.JSON(http.StatusOK, openapi.PollResults{
-		PollId: openapi.PollID(uuid.UUID(result.GetID()).String()),
+		PollId: openapi.PollID(result.GetID()),
 		Type:   polltype,
 		Count:  result.Count,
 		Result: results,
