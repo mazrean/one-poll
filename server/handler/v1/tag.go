@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/deepmap/oapi-codegen/pkg/types"
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	openapi "github.com/mazrean/one-poll/handler/v1/openapi"
 	"github.com/mazrean/one-poll/service"
@@ -31,7 +30,7 @@ func (t *Tag) GetTags(c echo.Context) error {
 	apiTags := make([]openapi.PollTag, 0, len(tags))
 	for _, tag := range tags {
 		apiTags = append(apiTags, openapi.PollTag{
-			Id:   types.UUID(uuid.UUID(tag.GetID()).String()),
+			Id:   types.UUID(tag.GetID()),
 			Name: string(tag.GetName()),
 		})
 	}

@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/deepmap/oapi-codegen/pkg/types"
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/mazrean/one-poll/domain/values"
 	openapi "github.com/mazrean/one-poll/handler/v1/openapi"
@@ -171,7 +170,7 @@ func (u *User) GetUsersMe(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, openapi.User{
 		Name: openapi.UserName(user.GetName()),
-		Uuid: types.UUID(uuid.UUID(user.GetID()).String()),
+		Uuid: types.UUID(user.GetID()),
 	})
 }
 

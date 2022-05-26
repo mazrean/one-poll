@@ -11,7 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mazrean/one-poll/domain"
 	"github.com/mazrean/one-poll/domain/values"
-	openapi "github.com/mazrean/one-poll/handler/v1/openapi"
+	"github.com/mazrean/one-poll/handler/v1/openapi"
 	"github.com/mazrean/one-poll/service"
 )
 
@@ -50,7 +50,7 @@ func (p *Poll) PostPolls(c echo.Context) error {
 	title := values.NewPollTitle(string(poll.Title))
 	var pollType values.PollType
 	switch poll.Type {
-	case openapi.PollTypeRadio:
+	case openapi.Radio:
 		pollType = values.PollTypeRadio
 	default:
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid poll type")
@@ -278,7 +278,7 @@ func (p *Poll) pollInfoToPollSummary(user *domain.User, pollInfo *service.PollIn
 	var apiPollType openapi.PollType
 	switch pollInfo.Poll.GetPollType() {
 	case values.PollTypeRadio:
-		apiPollType = openapi.PollTypeRadio
+		apiPollType = openapi.Radio
 	default:
 		return openapi.PollSummary{}, errors.New("invalid poll type")
 	}
@@ -288,7 +288,7 @@ func (p *Poll) pollInfoToPollSummary(user *domain.User, pollInfo *service.PollIn
 		apiTags := make([]openapi.PollTag, 0, len(pollInfo.Tags))
 		for _, tag := range pollInfo.Tags {
 			apiTags = append(apiTags, openapi.PollTag{
-				Id:   types.UUID(uuid.UUID(tag.GetID()).String()),
+				Id:   types.UUID(tag.GetID()),
 				Name: string(tag.GetName()),
 			})
 		}
@@ -299,7 +299,7 @@ func (p *Poll) pollInfoToPollSummary(user *domain.User, pollInfo *service.PollIn
 	apiChoices := make(openapi.Questions, 0, len(pollInfo.Choices))
 	for _, choice := range pollInfo.Choices {
 		apiChoices = append(apiChoices, openapi.Choice{
-			Id:     types.UUID(uuid.UUID(choice.GetID()).String()),
+			Id:     types.UUID(choice.GetID()),
 			Choice: string(choice.GetLabel()),
 		})
 	}
@@ -313,54 +313,52 @@ func (p *Poll) pollInfoToPollSummary(user *domain.User, pollInfo *service.PollIn
 	var apiPollStatus openapi.PollStatus
 	switch {
 	case pollInfo.Poll.IsExpired():
-		apiPollStatus = openapi.PollStatusOutdated
+		apiPollStatus = openapi.Outdated
 	case pollInfo.Poll.GetDeadline().Valid:
-		apiPollStatus = openapi.PollStatusLimited
+		apiPollStatus = openapi.Limited
 	default:
-		apiPollStatus = openapi.PollStatusOpened
+		apiPollStatus = openapi.Opened
 	}
 
 	var apiUserStatus openapi.UserStatus
 	switch {
 	case user != nil && pollInfo.Owner.GetID() == user.GetID():
 		apiUserStatus = openapi.UserStatus{
-			AccessMode: openapi.UserStatusAccessModeCanAccessDetails,
+			AccessMode: openapi.CanAccessDetails,
 			IsOwner:    true,
 		}
 	case pollInfo.Poll.IsExpired():
 		apiUserStatus = openapi.UserStatus{
-			AccessMode: openapi.UserStatusAccessModeCanAccessDetails,
+			AccessMode: openapi.CanAccessDetails,
 			IsOwner:    false,
 		}
 	case user == nil:
 		apiUserStatus = openapi.UserStatus{
-			AccessMode: openapi.UserStatusAccessModeOnlyBrowsable,
+			AccessMode: openapi.OnlyBrowsable,
 			IsOwner:    false,
 		}
 	case pollInfo.Response == nil:
 		apiUserStatus = openapi.UserStatus{
-			AccessMode: openapi.UserStatusAccessModeCanAnswer,
+			AccessMode: openapi.CanAnswer,
 			IsOwner:    false,
 		}
 	default:
 		apiUserStatus = openapi.UserStatus{
-			AccessMode: openapi.UserStatusAccessModeCanAccessDetails,
+			AccessMode: openapi.CanAccessDetails,
 			IsOwner:    false,
 		}
 	}
 
 	apiPollInfo := openapi.PollSummary{
-		PollId: openapi.PollID(uuid.UUID(pollInfo.Poll.GetID()).String()),
-		PollBase: openapi.PollBase{
-			Title:    string(pollInfo.Poll.GetTitle()),
-			Type:     apiPollType,
-			Tags:     pointerAPITags,
-			Question: apiChoices,
-			Deadline: apiDeadline,
-		},
+		PollId:    openapi.PollID(pollInfo.Poll.GetID()),
+		Title:     string(pollInfo.Poll.GetTitle()),
+		Type:      apiPollType,
+		Tags:      pointerAPITags,
+		Question:  apiChoices,
+		Deadline:  apiDeadline,
 		CreatedAt: pollInfo.GetCreatedAt(),
 		Owner: openapi.User{
-			Uuid: types.UUID(uuid.UUID(pollInfo.Owner.GetID()).String()),
+			Uuid: types.UUID(pollInfo.Owner.GetID()),
 			Name: openapi.UserName(pollInfo.Owner.GetName()),
 		},
 		QStatus:    apiPollStatus,
