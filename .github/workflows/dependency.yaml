@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - main
-      - dev/dependency_submission
+      - dev/go_dependency_submission
 
 permissions:
   contents: write
