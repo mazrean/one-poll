@@ -21,6 +21,9 @@ services:
       DB_DATABASE: one_poll
       SESSION_SECRET:
       ADDR: :3000
+    depends_on:
+      one-poll-mariadb:
+        condition: service_healthy
   one-poll-mariadb:
     image: mariadb:10.5.2
     container_name: one-poll-mariadb
@@ -33,6 +36,12 @@ services:
     command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
     volumes:
       - /etc/one-poll/mariadb/data:/var/lib/mysql
+    restart: always
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "127.0.0.1", "-ppass"]
+      timeout: 5m
+      interval: 1s
+      retries: 1000
 networks:
   caddy-network:
     name: caddy-network
