@@ -75,7 +75,6 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
-          cache-dependency-path: ./server/go.sum
       - run: go test ./... -v -coverprofile=../coverage.txt -race -vet=off
         env:
           COLLECTION_ENV: production
