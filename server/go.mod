@@ -3,7 +3,7 @@ module github.com/mazrean/one-poll
 go 1.19
 
 require (
-	github.com/deepmap/oapi-codegen v1.12.2
+	github.com/deepmap/oapi-codegen v1.12.3
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.3.0
 	github.com/google/wire v0.5.0
