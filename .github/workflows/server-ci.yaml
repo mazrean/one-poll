@@ -73,7 +73,7 @@ jobs:
           name: mockGenerated
       - uses: actions/setup-go@v3
         with:
-          go-version-file: go.mod
+          go_version_file: go.mod
           cache: true
       - run: go test ./... -v -coverprofile=../coverage.txt -race -vet=off
         env:
@@ -100,7 +100,7 @@ jobs:
       - name: golangci-lint
         uses: reviewdog/action-golangci-lint@v2.2
         with:
-          go-version-file: go.mod
+          go_version_file: go.mod
           reporter: github-pr-check
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workdir: ./server
