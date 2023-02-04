@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v3.3.0
       - uses: actions/setup-go@v3
         with:
-          go_version_file: ./server/go.mod
+          go-version-file: ./server/go.mod
           cache: true
           cache-dependency-path: ./server/go.sum
       - uses: actions/cache@v3
@@ -43,7 +43,7 @@ jobs:
       - uses: actions/checkout@v3.3.0
       - uses: actions/setup-go@v3
         with:
-          go_version_file: ./server/go.mod
+          go-version-file: ./server/go.mod
           cache: true
           cache-dependency-path: ./server/go.sum
       - uses: actions/cache@v3
@@ -73,7 +73,7 @@ jobs:
           name: mockGenerated
       - uses: actions/setup-go@v3
         with:
-          go_version_file: go.mod
+          go-version-file: go.mod
           cache: true
       - run: go test ./... -v -coverprofile=../coverage.txt -race -vet=off
         env:
