@@ -96,12 +96,11 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: mockGenerated
-          path: ./server
       - name: golangci-lint
         uses: reviewdog/action-golangci-lint@v2.2
         with:
           go_version_file: go.mod
           reporter: github-pr-check
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          workdir: ./server
+          workdir: ./
           fail_on_error: true
