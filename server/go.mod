@@ -1,6 +1,6 @@
 module github.com/mazrean/one-poll
 
-go 1.19
+go 1.
 
 require (
 	github.com/deepmap/oapi-codegen v1.12.4
