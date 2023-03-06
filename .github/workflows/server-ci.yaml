@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v3.3.0
       - uses: actions/setup-go@v3
         with:
-          go_version_file: ./server/go.mod
+          go-version-file: ./server/go.mod
           cache: true
           cache-dependency-path: ./server/go.sum
       - uses: actions/cache@v3
@@ -43,7 +43,7 @@ jobs:
       - uses: actions/checkout@v3.3.0
       - uses: actions/setup-go@v3
         with:
-          go_version_file: ./server/go.mod
+          go-version-file: ./server/go.mod
           cache: true
           cache-dependency-path: ./server/go.sum
       - uses: actions/cache@v3
@@ -96,12 +96,11 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: mockGenerated
-          path: ./server
       - name: golangci-lint
         uses: reviewdog/action-golangci-lint@v2.2
         with:
-          go-version-file: go.mod
+          go_version_file: go.mod
           reporter: github-pr-check
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          workdir: ./server
+          workdir: ./
           fail_on_error: true
