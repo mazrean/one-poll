@@ -75,7 +75,7 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
-      - run: go test ./... -v -coverprofile=../coverage.txt -race -vet=off
+      - run: go test ./... -v -coverprofile=./coverage.txt -race -vet=off
         env:
           COLLECTION_ENV: production
           DB_USERNAME: root
