@@ -75,7 +75,7 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
-      - run: go test ./... -v -coverprofile=../coverage.txt -race -vet=off
+      - run: go test ./... -v -coverprofile=./coverage.txt -race -vet=off
         env:
           COLLECTION_ENV: production
           DB_USERNAME: root
@@ -100,7 +100,7 @@ jobs:
         uses: reviewdog/action-golangci-lint@v2.2
         with:
           go_version_file: go.mod
-          reporter: github-pr-check
+          reporter: github-pr-review
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workdir: ./
           fail_on_error: true
