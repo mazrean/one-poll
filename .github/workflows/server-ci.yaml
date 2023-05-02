@@ -14,7 +14,7 @@ jobs:
       GOCACHE: "/tmp/go/cache"
     steps:
       - uses: actions/checkout@v3.5.0
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version-file: ./server/go.mod
           cache: true
@@ -41,7 +41,7 @@ jobs:
       GOCACHE: "/tmp/go/cache"
     steps:
       - uses: actions/checkout@v3.5.0
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version-file: ./server/go.mod
           cache: true
@@ -71,7 +71,7 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: mockGenerated
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
           cache: true
