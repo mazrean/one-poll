@@ -31,7 +31,7 @@ require (
 )
 
 require (
-	github.com/getkin/kin-openapi v0.116.0
+	github.com/getkin/kin-openapi v0.118.0
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/swag v0.21.1 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
