@@ -16,7 +16,7 @@ RUN go generate ./...
 RUN --mount=type=cache,target=/root/.cache/go-build \
   go build -o one-poll -ldflags "-s -w"
 
-FROM alpine:3.18.0
+FROM alpine:3.18.2
 
 WORKDIR /go/src/github.com/mazrean/one-poll
 
