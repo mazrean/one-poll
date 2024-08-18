@@ -30,7 +30,7 @@ jobs:
         run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
       - run: go generate ./...
         working-directory: ./server
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: mockGenerated
           path: ./server
@@ -83,7 +83,7 @@ jobs:
           DB_HOSTNAME: 127.0.0.1
           DB_PORT: 3306
           DB_DATABASE: quantainer
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: coverage.txt
           path: coverage.txt
