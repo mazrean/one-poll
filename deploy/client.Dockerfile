@@ -1,10 +1,10 @@
-# syntax = docker/dockerfile:1.3.0
+# syntax = docker/dockerfile:1
 
 FROM node:22.6.0-alpine AS build
 
 WORKDIR /app/client
 
-RUN apk add --update --no-cache openjdk8-jre-base
+RUN apk add --update --no-cache openjdk11-jre-headless
 
 COPY ./client/package.json ./client/package-lock.json ./
 RUN --mount=type=cache,target=/usr/src/app/.npm \
