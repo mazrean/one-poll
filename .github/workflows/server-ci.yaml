@@ -68,7 +68,7 @@ jobs:
           MYSQL_ROOT_PASSWORD: password
           MYSQL_DATABASE: quantainer
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: mockGenerated
       - uses: actions/setup-go@v4
@@ -93,7 +93,7 @@ jobs:
     needs: [generate]
     steps:
       - uses: actions/checkout@v3.5.3
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: mockGenerated
       - name: golangci-lint
