@@ -30,7 +30,7 @@ jobs:
         run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
       - run: go generate ./...
         working-directory: ./server
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: mockGenerated
           path: ./server
@@ -68,7 +68,7 @@ jobs:
           MYSQL_ROOT_PASSWORD: password
           MYSQL_DATABASE: quantainer
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: mockGenerated
       - uses: actions/setup-go@v4
@@ -83,7 +83,7 @@ jobs:
           DB_HOSTNAME: 127.0.0.1
           DB_PORT: 3306
           DB_DATABASE: quantainer
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: coverage.txt
           path: coverage.txt
@@ -93,7 +93,7 @@ jobs:
     needs: [generate]
     steps:
       - uses: actions/checkout@v4.1.7
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: mockGenerated
       - name: golangci-lint
