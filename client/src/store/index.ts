@@ -11,7 +11,7 @@ export const useMainStore = defineStore('main', () => {
     try {
       const user: User = (await api.getUsersMe()).data
       userID.value = user.name
-    } catch (err) {
+    } catch {
       userID.value = ''
     }
   }
