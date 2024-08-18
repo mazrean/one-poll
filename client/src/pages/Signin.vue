@@ -29,7 +29,7 @@ export default defineComponent({
       const user: PostUser = { name: name, password: password }
       try {
         await api.postUsersSignin(user)
-      } catch (err) {
+      } catch {
         //formの入力を消す
         form.value?.resetForm()
         return

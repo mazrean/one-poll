@@ -73,7 +73,7 @@
 
 <script lang="ts">
 import PollResultComponent from '/@/components/PollResult.vue'
-import { defineComponent, reactive, watchEffect } from 'vue'
+import { defineComponent, reactive, watch } from 'vue'
 import apis, {
   PollComment,
   PollResults,
@@ -156,15 +156,15 @@ export default defineComponent({
         day > 0
           ? '残り : ' + day.toString() + '日'
           : hour > 0
-          ? '残り : ' + hour.toString() + '時間' + minute.toString() + '分'
-          : '残り : ' + minute.toString() + '分'
+            ? '残り : ' + hour.toString() + '時間' + minute.toString() + '分'
+            : '残り : ' + minute.toString() + '分'
     }
     comp_remain()
     setInterval(() => {
       state.now = new Date()
     }, 1000)
-    watchEffect(() => {
-      state.now, state.outdated, comp_remain()
+    watch(state.now, () => {
+      comp_remain()
     })
 
     const { pollId } = useRoute().params
