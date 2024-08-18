@@ -99,8 +99,7 @@ jobs:
       - name: Pull Images
         env:
           DOCKER_HOST: ssh://${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}
-        # V2ではupでエラーが出るので、V1を使う ref:https://github.com/docker/compose/issues/8544
-        run: docker-compose pull
+        run: docker compose pull
         working-directory: ./deploy
       - name: Deploy
         env:
