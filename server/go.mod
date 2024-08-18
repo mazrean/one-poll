@@ -10,7 +10,7 @@ require (
 	github.com/oapi-codegen/oapi-codegen/v2 v2.3.0
 	github.com/oapi-codegen/runtime v1.1.1
 	gorm.io/driver/mysql v1.5.1
-	gorm.io/gorm v1.25.1
+	gorm.io/gorm v1.25.11
 )
 
 require (
