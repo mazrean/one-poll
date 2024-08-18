@@ -1,6 +1,6 @@
 package v1
 
-//go:generate sh -c "go run github.com/deepmap/oapi-codegen/cmd/oapi-codegen@latest --config ./openapi/config.yaml ../../../docs/openapi/openapi.yaml > openapi/openapi.gen.go"
+//go:generate go run github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen --config ./openapi/config.yaml ../../../docs/openapi/openapi.yaml
 //go:generate go fmt ./openapi/openapi.gen.go
 
 import (
