@@ -1,6 +1,6 @@
-# syntax = docker/dockerfile:1.3.0
+# syntax = docker/dockerfile:1
 
-FROM golang:1.21.0-alpine AS build
+FROM golang:1.23.0-alpine AS build
 
 RUN apk add --update --no-cache git alpine-sdk
 
@@ -16,7 +16,7 @@ RUN go generate ./...
 RUN --mount=type=cache,target=/root/.cache/go-build \
   go build -o one-poll -ldflags "-s -w"
 
-FROM alpine:3.18.3
+FROM alpine:3.20
 
 WORKDIR /go/src/github.com/mazrean/one-poll
 
