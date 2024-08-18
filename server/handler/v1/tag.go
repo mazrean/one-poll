@@ -4,10 +4,10 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/deepmap/oapi-codegen/pkg/types"
 	"github.com/labstack/echo/v4"
 	openapi "github.com/mazrean/one-poll/handler/v1/openapi"
 	"github.com/mazrean/one-poll/service"
+	"github.com/oapi-codegen/runtime/types"
 )
 
 type Tag struct {

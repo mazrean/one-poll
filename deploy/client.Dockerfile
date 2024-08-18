@@ -1,6 +1,6 @@
 # syntax = docker/dockerfile:1.3.0
 
-FROM node:20.5.1-alpine AS build
+FROM node:22.6.0-alpine AS build
 
 WORKDIR /app/client
 
@@ -18,7 +18,7 @@ RUN npm run gen-api
 COPY ./client/ ./
 RUN npm run build
 
-FROM caddy:2.7.2-alpine
+FROM caddy:2.8.4-alpine
 
 COPY --from=build /app/client/dist/ /usr/share/caddy/
 COPY ./deploy/Caddyfile /etc/caddy/Caddyfile

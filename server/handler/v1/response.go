@@ -5,12 +5,12 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/deepmap/oapi-codegen/pkg/types"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/mazrean/one-poll/domain/values"
 	openapi "github.com/mazrean/one-poll/handler/v1/openapi"
 	"github.com/mazrean/one-poll/service"
+	"github.com/oapi-codegen/runtime/types"
 )
 
 type Response struct {
