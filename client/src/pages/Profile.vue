@@ -2,21 +2,43 @@
   <div class="container">
     <h1><em class="bi bi-person-fill" /> プロフィール</h1>
     <ul id="myTab" class="nav nav-tabs" role="tablist">
-      <li
-        v-for="tab in tabs"
-        :key="tab.id"
-        class="nav-item"
-        role="presentation">
+      <li class="nav-item" role="presentation">
         <button
-          :id="`${tab.id}-tab`"
+          id="home-tab"
           class="nav-link active"
           data-bs-toggle="tab"
-          :data-bs-target="`#${tab.id}`"
+          data-bs-target="#home"
           type="button"
           role="tab"
-          :aria-controls="tab.id"
-          :aria-selected="tab.selected">
-          {{ tab.name }}
+          aria-controls="home"
+          aria-selected="true">
+          アカウント情報
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          id="profile-tab"
+          class="nav-link"
+          data-bs-toggle="tab"
+          data-bs-target="#profile"
+          type="button"
+          role="tab"
+          aria-controls="profile"
+          aria-selected="false">
+          作成した質問一覧
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          id="contact-tab"
+          class="nav-link"
+          data-bs-toggle="tab"
+          data-bs-target="#contact"
+          type="button"
+          role="tab"
+          aria-controls="contact"
+          aria-selected="false">
+          回答した質問一覧
         </button>
       </li>
     </ul>
@@ -114,16 +136,9 @@ export default defineComponent({
       }
     })
 
-    const tabs = [
-      { id: 'home', name: 'アカウント情報', selected: true },
-      { id: 'profile', name: '作成した質問一覧', selected: false },
-      { id: 'contact', name: '回答した質問一覧', selected: false }
-    ]
-
     return {
       state,
-      userID,
-      tabs
+      userID
     }
   }
 })
