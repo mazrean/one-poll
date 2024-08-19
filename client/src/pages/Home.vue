@@ -15,25 +15,25 @@
             d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
         </svg>
         <input
-          v-model="state.searchTitle"
+          v-model="state.inputSearchTitle"
           type="searchTitle"
           class="form-control d-flex mx-3 my-1"
           name="searchTitle"
           placeholder="キーワードで検索 (Enterで更新)"
-          @Input="state.searchTitle = $event.target.value"
-          @keydown.enter="onKeyword()" />
+          @Input="state.inputSearchTitle = $event.target.value"
+          @keydown.enter="state.searchTitle = state.inputSearchTitle" />
         <input
-          v-model="state.searchTag"
+          v-model="state.inputSearchTag"
           type="searchTag"
           class="form-control d-flex mx-3 my-1"
           name="searchTag"
           placeholder="タグで検索 (タグ候補選択で更新)"
-          @Input="calculateFilter()" />
-        <ul v-for="v in state.autocompletes" :key="v" class="list-group">
+          @Input="onInputTag()" />
+        <ul v-for="v in state.autocompletes" :key="v.id" class="list-group">
           <button
             class="list-group-item list-group-item-action p-1"
             type="button"
-            @click="onAutocomplete(v.name)">
+            @click="onSubmitTag(v.name)">
             <em class="bi bi-tags-fill" /> {{ v.name }}
           </button>
         </ul>
@@ -42,33 +42,14 @@
         v-if="state.isLoading"
         class="spinner-border text-secondary m-3"
         role="status"></div>
-      <div v-else-if="state.PollSummaries.length === 0" class="m-3">
+      <div v-else-if="state.pollSummaries.length === 0" class="m-3">
         <p>表示可能な質問がありません。</p>
       </div>
       <div v-else class="d-flex flex-wrap justify-content-center">
         <div
-          v-for="PollSummary in state.PollSummaries"
-          :key="PollSummary.pollId">
-          <PollCardComponent
-            :poll-id="PollSummary.pollId"
-            :title="PollSummary.title"
-            :type="PollSummary.type"
-            :deadline="
-              typeof PollSummary.deadline !== 'undefined'
-                ? PollSummary.deadline
-                : '-1'
-            "
-            :tags="
-              typeof PollSummary.tags !== 'undefined'
-                ? PollSummary.tags
-                : [{ id: '-1', name: '' }]
-            "
-            :question="PollSummary.question"
-            :created-at="PollSummary.createdAt"
-            :q-status="PollSummary.qStatus"
-            :owner="PollSummary.owner"
-            :user-status="PollSummary.userStatus">
-          </PollCardComponent>
+          v-for="pollSummary in state.pollSummaries"
+          :key="pollSummary.pollId">
+          <PollCardComponent :poll="pollSummary" />
         </div>
       </div>
     </div>
@@ -76,16 +57,18 @@
 </template>
 
 <script lang="ts">
+import { watchEffect } from 'vue'
 import PollCardComponent from '/@/components/PollCard.vue'
 import apis, { PollSummary, PollTag } from '/@/lib/apis'
 import { reactive, onMounted, onUnmounted } from 'vue'
 
 interface State {
-  PollSummaries: PollSummary[]
-  PollSummaries_origin: PollSummary[]
+  pollSummaries: PollSummary[]
+  isLoading: boolean
   searchTitle: string
+  inputSearchTitle: string
   searchTag: string
-  tags: PollTag[]
+  inputSearchTag: string
   autocompletes: PollTag[]
 }
 
@@ -94,95 +77,70 @@ export default {
   components: { PollCardComponent },
   setup() {
     const state = reactive<State>({
-      PollSummaries: [],
-      PollSummaries_origin: [],
+      pollSummaries: [],
+      isLoading: false,
       searchTitle: '',
+      inputSearchTitle: '',
       searchTag: '',
-      tags: [],
+      inputSearchTag: '',
       autocompletes: []
     })
 
-    let limit = 10
+    const tagsPromise = (async () => {
+      return (await apis.getTags()).data
+    })()
+    const onInputTag = async () => {
+      if (!state.inputSearchTag) {
+        state.autocompletes = []
+        return
+      }
+
+      state.autocompletes = (await tagsPromise)
+        .filter(v => v.name.startsWith(state.inputSearchTag))
+        .slice(0, 5)
+    }
+    const onSubmitTag = async (str: string) => {
+      state.autocompletes = []
+      state.inputSearchTag = str
+      state.searchTag = str
+    }
+
+    const limit = 10
     let offset = 0
-    let isLoading = false
     let isEnd = false
+    const getPolls = async (searchTag: string, searchTitle: string) => {
+      if (isEnd) return []
 
-    const getPolls = async () => {
-      if (isLoading || isEnd) return []
-
-      isLoading = true
       let newPollSummaries: PollSummary[]
       try {
         newPollSummaries = (
-          await apis.getPolls(limit, offset, state.searchTitle || undefined)
+          await apis.getPolls(
+            limit,
+            offset,
+            state.inputSearchTitle || undefined
+          )
         ).data
       } catch {
         newPollSummaries = []
       }
-
       if (newPollSummaries.length < limit) {
         isEnd = true
       }
       offset += newPollSummaries.length
 
-      state.PollSummaries_origin = [
-        ...state.PollSummaries_origin,
-        ...newPollSummaries
-      ]
-      if (state.searchTag !== '') {
-        state.PollSummaries = [
-          ...state.PollSummaries,
-          ...newPollSummaries.filter(v => {
-            return typeof v.tags !== 'undefined'
-              ? v.tags.some(e => e.name === state.searchTag)
-              : false
-          })
-        ]
-      } else {
-        state.PollSummaries = [...state.PollSummaries, ...newPollSummaries]
+      if (searchTag) {
+        newPollSummaries = newPollSummaries.filter(
+          v => v.tags && v.tags.some(e => e.name === state.inputSearchTag)
+        )
       }
-      isLoading = false
-    }
-    const getTags = async () => {
-      try {
-        state.tags = (await apis.getTags()).data
-      } catch {
-        state.tags = []
-      }
-    }
-    getPolls()
-    getTags()
 
-    const calculateFilter = async () => {
-      if (state.searchTag.length === 0) {
-        state.autocompletes = []
-      } else {
-        state.autocompletes = state.tags
-          .filter((v: PollTag) => {
-            return v.name.indexOf(state.searchTag) === 0
-          })
-          .slice(0, 5)
+      if (searchTitle) {
+        newPollSummaries = newPollSummaries.filter(v =>
+          v.title.includes(state.inputSearchTitle)
+        )
       }
-      state.PollSummaries = state.PollSummaries_origin
-    }
-    const onAutocomplete = async (str: string) => {
-      state.autocompletes = []
-      if (str.length === 0) return
-      state.searchTag = str
-      state.PollSummaries = []
-      state.PollSummaries_origin = []
-      offset = 0
-      isEnd = false
-      while (!isEnd && state.PollSummaries.length < limit) {
-        await getPolls()
-      }
-    }
-    const onKeyword = async () => {
-      state.PollSummaries = []
-      state.PollSummaries_origin = []
-      offset = 0
-      isEnd = false
-      await getPolls()
+
+      return newPollSummaries
     }
 
     const scrollHandler = async () => {
@@ -190,9 +148,23 @@ export default {
         window.innerHeight + Math.ceil(window.scrollY) >=
         document.body.offsetHeight
       if (hasReached) {
-        await getPolls()
+        state.isLoading = true
+        state.pollSummaries = [
+          ...state.pollSummaries,
+          ...(await getPolls(state.inputSearchTag, state.inputSearchTitle))
+        ]
+        state.isLoading = false
       }
     }
+
+    watchEffect(() => {
+      state.pollSummaries = state.pollSummaries
+        .filter(v => !state.searchTitle || v.title.includes(state.searchTitle))
+        .filter(
+          v => !state.searchTag || v.tags?.some(e => e.name === state.searchTag)
+        )
+      scrollHandler()
+    })
 
     onMounted(() => {
       window.addEventListener('wheel', scrollHandler)
@@ -209,9 +181,8 @@ export default {
     return {
       state,
       getPolls,
-      calculateFilter,
-      onAutocomplete,
-      onKeyword,
+      onInputTag,
+      onSubmitTag,
       PollCardComponent
     }
   }

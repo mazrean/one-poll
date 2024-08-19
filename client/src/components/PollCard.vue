@@ -1,17 +1,20 @@
 <template>
   <div class="card m-3 p-2" style="border-radius: 1em">
     <div class="card-header text-start bg-white">
-      <h4 class="card-title">{{ title }}</h4>
+      <h4 class="card-title">{{ poll.title }}</h4>
       <div class="card-tags bi bi-tags-fill text-muted d-flex flex-wrap">
-        <span v-for="tag in tags" :key="tag.id" class="ms-1">
+        <span
+          v-for="tag in poll.tags ?? [{ id: -1, name: '' }]"
+          :key="tag.id"
+          class="ms-1">
           {{ tag.name }},
         </span>
       </div>
     </div>
     <div class="card-body">
-      <div v-if="state.only_browsable">
+      <div v-if="state.onlyBrowsable">
         <button
-          v-for="q in question"
+          v-for="q in poll.question"
           :key="q.id"
           type="button"
           class="vote-button btn btn-outline-secondary mb-1"
@@ -19,9 +22,9 @@
           {{ q.choice }}
         </button>
       </div>
-      <div v-if="state.can_answer">
+      <div v-if="state.canAnswer">
         <button
-          v-for="(q, i) in question"
+          v-for="(q, i) in poll.question"
           :key="q.id"
           type="button"
           class="vote-button btn btn-outline-secondary mb-1"
@@ -37,105 +40,67 @@
           </textarea>
         </div>
       </div>
-      <div v-if="state.can_access_details">
+      <div v-if="state.canAccessDetails">
         <PollResultComponent
-          :poll-id="state.PollResult.pollId"
-          :type="state.PollResult.type"
-          :count="state.PollResult.count"
-          :result="state.PollResult.result">
+          :poll-id="state.pollResult.pollId"
+          :type="state.pollResult.type"
+          :count="state.pollResult.count"
+          :result="state.pollResult.result">
         </PollResultComponent>
       </div>
     </div>
     <div class="footer d-flex justify-content-around mb-1">
       <div>{{ state.remain }}</div>
       <router-link
-        v-if="state.can_access_details"
+        v-if="state.canAccessDetails"
         class="link link-detail"
-        :to="{ name: 'details', params: { pollId: pollId } }">
+        :to="{ name: 'details', params: { pollId: poll.pollId } }">
         詳細を見る
       </router-link>
-      <div>@{{ owner.name }}</div>
+      <div>@{{ poll.owner.name }}</div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, reactive, watch } from 'vue'
+import { defineComponent, PropType, reactive } from 'vue'
 import PollResultComponent from '/@/components/PollResult.vue'
 import apis, {
-  Choice,
-  User,
-  UserStatus,
   UserStatusAccessModeEnum,
   PostPollId,
   PollResults,
   PollType,
-  PollTag
+  PollSummary
 } from '/@/lib/apis'
+import { watchEffect } from 'vue'
 
 interface State {
-  only_browsable: boolean
-  can_answer: boolean
-  can_access_details: boolean
+  onlyBrowsable: boolean
+  canAnswer: boolean
+  canAccessDetails: boolean
   now: Date
   remain: string
   comment: string
-  PollResult: PollResults
+  pollResult: PollResults
 }
 
 export default defineComponent({
   components: { PollResultComponent },
   props: {
-    pollId: {
-      type: String,
-      required: true
-    },
-    title: {
-      type: String,
-      required: true
-    },
-    type: {
-      type: String,
-      required: true
-    },
-    deadline: {
-      type: String,
-      required: true
-    },
-    tags: {
-      type: Array as PropType<PollTag[]>,
-      required: true
-    },
-    question: {
-      type: Array as PropType<Choice[]>,
-      required: true
-    },
-    createdAt: {
-      type: String,
-      required: true
-    },
-    qStatus: {
-      type: String,
-      required: true
-    },
-    owner: {
-      type: Object as PropType<User>,
-      required: true
-    },
-    userStatus: {
-      type: Object as PropType<UserStatus>,
+    poll: {
+      type: Object as PropType<PollSummary>,
       required: true
     }
   },
   setup(props) {
     const state = reactive<State>({
-      only_browsable: false,
-      can_answer: false,
-      can_access_details: false,
+      onlyBrowsable: false,
+      canAnswer: false,
+      canAccessDetails: false,
       now: new Date(),
       remain: '',
       comment: '',
-      PollResult: {
+      pollResult: {
         pollId: '',
         type: PollType.Radio,
         count: 0,
@@ -143,51 +108,56 @@ export default defineComponent({
       }
     })
 
-    state.only_browsable =
-      props.userStatus.accessMode == UserStatusAccessModeEnum.OnlyBrowsable
-    state.can_answer =
-      props.userStatus.accessMode == UserStatusAccessModeEnum.CanAnswer
-    state.can_access_details =
-      props.userStatus.accessMode == UserStatusAccessModeEnum.CanAccessDetails
+    state.onlyBrowsable =
+      props.poll.userStatus.accessMode == UserStatusAccessModeEnum.OnlyBrowsable
+    state.canAnswer =
+      props.poll.userStatus.accessMode == UserStatusAccessModeEnum.CanAnswer
+    state.canAccessDetails =
+      props.poll.userStatus.accessMode ==
+      UserStatusAccessModeEnum.CanAccessDetails
 
-    const comp_remain = () => {
-      if (props.deadline === '-1') {
-        state.remain = '期限なし'
-        return
+    const compRemain = (now: Date) => {
+      if (!props.poll.deadline) {
+        return '期限なし'
       }
-      const deadline = new Date(props.deadline)
-      if (deadline.getTime() - state.now.getTime() <= 0) {
-        state.remain = '公開済み'
-        state.can_answer = false
-        state.can_access_details = true
-        return
+
+      const deadline = new Date(props.poll.deadline)
+
+      if (deadline.getTime() <= now.getTime()) {
+        return '公開済み'
       }
-      let dif = Math.floor(
-        (deadline.getTime() - state.now.getTime()) / (60 * 1000)
-      )
+
+      let dif = Math.floor((deadline.getTime() - now.getTime()) / (60 * 1000))
       const day = Math.floor(dif / 1440)
       dif %= 1440
       const hour = Math.floor(dif / 60)
       dif %= 60
       const minute = dif
-      state.remain =
-        day > 0
-          ? '残り : ' + day.toString() + '日'
-          : hour > 0
-            ? '残り : ' + hour.toString() + '時間' + minute.toString() + '分'
-            : '残り : ' + minute.toString() + '分'
+
+      if (day > 0) {
+        return `残り : ${day}日`
+      } else if (hour > 0) {
+        return `残り : ${hour}時間${minute}分`
+      } else {
+        return `残り : ${minute}分`
+      }
     }
-    comp_remain()
-    setInterval(() => {
+
+    const timer = setInterval(() => {
       state.now = new Date()
     }, 1000)
-    watch(state.now, () => {
-      comp_remain()
+    watchEffect(() => {
+      state.remain = compRemain(state.now)
+      if (state.remain == '公開済み') {
+        state.canAnswer = false
+        state.canAccessDetails = true
+        clearInterval(timer)
+      }
     })
 
     const postPoll = async (pollID: PostPollId) => {
       try {
-        await apis.postPollsPollID(props.pollId, pollID)
+        await apis.postPollsPollID(props.poll.pollId, pollID)
       } catch {
         alert('投票できませんでした。時間を空けてもう一度お試しください。')
         return
@@ -195,7 +165,9 @@ export default defineComponent({
     }
     const getResult = async () => {
       try {
-        state.PollResult = (await apis.getPollsPollIDResults(props.pollId)).data
+        state.pollResult = (
+          await apis.getPollsPollIDResults(props.poll.pollId)
+        ).data
       } catch {
         alert('投票結果を取得できませんでした。')
         return
@@ -203,15 +175,15 @@ export default defineComponent({
     }
     const submitPollID = async (i: number) => {
       const pollID: PostPollId = {
-        answer: [props.question[i].id],
+        answer: [props.poll.question[i].id],
         comment: state.comment
       }
       await postPoll(pollID)
       await getResult()
-      state.can_answer = false
-      state.can_access_details = true
+      state.canAnswer = false
+      state.canAccessDetails = true
     }
-    if (state.can_access_details) getResult()
+    if (state.canAccessDetails) getResult()
 
     return {
       state,

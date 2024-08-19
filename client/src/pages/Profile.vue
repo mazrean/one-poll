@@ -2,43 +2,21 @@
   <div class="container">
     <h1><em class="bi bi-person-fill" /> プロフィール</h1>
     <ul id="myTab" class="nav nav-tabs" role="tablist">
-      <li class="nav-item" role="presentation">
+      <li
+        v-for="tab in tabs"
+        :key="tab.id"
+        class="nav-item"
+        role="presentation">
         <button
-          id="home-tab"
+          :id="`${tab.id}-tab`"
           class="nav-link active"
           data-bs-toggle="tab"
-          data-bs-target="#home"
+          :data-bs-target="`#${tab.id}`"
           type="button"
           role="tab"
-          aria-controls="home"
-          aria-selected="true">
-          アカウント情報
-        </button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button
-          id="profile-tab"
-          class="nav-link"
-          data-bs-toggle="tab"
-          data-bs-target="#profile"
-          type="button"
-          role="tab"
-          aria-controls="profile"
-          aria-selected="false">
-          作成した質問一覧
-        </button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button
-          id="contact-tab"
-          class="nav-link"
-          data-bs-toggle="tab"
-          data-bs-target="#contact"
-          type="button"
-          role="tab"
-          aria-controls="contact"
-          aria-selected="false">
-          回答した質問一覧
+          :aria-controls="tab.id"
+          :aria-selected="tab.selected">
+          {{ tab.name }}
         </button>
       </li>
     </ul>
@@ -58,36 +36,17 @@
         aria-labelledby="profile-tab">
         <div class="m-auto">
           <div
-            v-if="state.isLoading_1"
+            v-if="!state.pollOwners"
             class="spinner-border text-secondary m-3"
             role="status"></div>
-          <div v-else-if="state.PollOwners.length === 0" class="m-3">
+          <div v-else-if="state.pollOwners.length === 0" class="m-3">
             <p>表示可能な質問がありません。</p>
           </div>
           <div v-else class="d-flex flex-wrap justify-content-center">
             <div
-              v-for="PollSummary in state.PollOwners"
-              :key="PollSummary.pollId">
-              <PollCardComponent
-                :poll-id="PollSummary.pollId"
-                :title="PollSummary.title"
-                :type="PollSummary.type"
-                :deadline="
-                  typeof PollSummary.deadline !== 'undefined'
-                    ? PollSummary.deadline
-                    : '-1'
-                "
-                :tags="
-                  typeof PollSummary.tags !== 'undefined'
-                    ? PollSummary.tags
-                    : [{ id: '-1', name: '' }]
-                "
-                :question="PollSummary.question"
-                :created-at="PollSummary.createdAt"
-                :q-status="PollSummary.qStatus"
-                :owner="PollSummary.owner"
-                :user-status="PollSummary.userStatus">
-              </PollCardComponent>
+              v-for="pollSummary in state.pollOwners"
+              :key="pollSummary.pollId">
+              <PollCardComponent :poll="pollSummary" />
             </div>
           </div>
         </div>
@@ -99,36 +58,17 @@
         aria-labelledby="contact-tab">
         <div class="m-auto">
           <div
-            v-if="state.isLoading_2"
+            v-if="!state.pollAnswers"
             class="spinner-border text-secondary m-3"
             role="status"></div>
-          <div v-else-if="state.PollAnswers.length === 0" class="m-3">
+          <div v-else-if="state.pollAnswers.length === 0" class="m-3">
             <p>表示可能な質問がありません。</p>
           </div>
           <div v-else class="d-flex flex-wrap justify-content-center">
             <div
-              v-for="PollSummary in state.PollAnswers"
-              :key="PollSummary.pollId">
-              <PollCardComponent
-                :poll-id="PollSummary.pollId"
-                :title="PollSummary.title"
-                :type="PollSummary.type"
-                :deadline="
-                  typeof PollSummary.deadline !== 'undefined'
-                    ? PollSummary.deadline
-                    : '-1'
-                "
-                :tags="
-                  typeof PollSummary.tags !== 'undefined'
-                    ? PollSummary.tags
-                    : [{ id: '-1', name: '' }]
-                "
-                :question="PollSummary.question"
-                :created-at="PollSummary.createdAt"
-                :q-status="PollSummary.qStatus"
-                :owner="PollSummary.owner"
-                :user-status="PollSummary.userStatus">
-              </PollCardComponent>
+              v-for="pollSummary in state.pollAnswers"
+              :key="pollSummary.pollId">
+              <PollCardComponent :poll="pollSummary" />
             </div>
           </div>
         </div>
@@ -144,44 +84,46 @@ import PollCardComponent from '/@/components/PollCard.vue'
 import apis, { PollSummary } from '/@/lib/apis'
 
 interface State {
-  PollOwners: PollSummary[]
-  PollAnswers: PollSummary[]
-  isLoading_1: boolean
-  isLoading_2: boolean
+  pollOwners: PollSummary[] | null
+  pollAnswers: PollSummary[] | null
 }
 
 export default defineComponent({
   name: 'ProfilePage',
   components: { PollCardComponent },
   setup() {
-    const state = reactive<State>({
-      PollOwners: [],
-      PollAnswers: [],
-      isLoading_1: true,
-      isLoading_2: true
-    })
     const store = useMainStore()
     const userID = computed(() => store.userID)
-    onMounted(async () => {
-      try {
-        state.PollOwners = (await apis.getUsersMeOwners()).data
-      } catch {
-        state.PollOwners = []
-      }
-      state.isLoading_1 = false
+
+    const state = reactive<State>({
+      pollOwners: null,
+      pollAnswers: null
     })
     onMounted(async () => {
       try {
-        state.PollAnswers = (await apis.getUsersMeAnswers()).data
+        state.pollOwners = (await apis.getUsersMeOwners()).data
       } catch {
-        state.PollAnswers = []
+        state.pollOwners = []
       }
-      state.isLoading_2 = false
     })
+    onMounted(async () => {
+      try {
+        state.pollAnswers = (await apis.getUsersMeAnswers()).data
+      } catch {
+        state.pollAnswers = []
+      }
+    })
+
+    const tabs = [
+      { id: 'home', name: 'アカウント情報', selected: true },
+      { id: 'profile', name: '作成した質問一覧', selected: false },
+      { id: 'contact', name: '回答した質問一覧', selected: false }
+    ]
+
     return {
       state,
-      PollCardComponent,
-      userID
+      userID,
+      tabs
     }
   }
 })
