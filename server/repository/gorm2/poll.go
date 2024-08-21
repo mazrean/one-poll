@@ -138,13 +138,13 @@ func (p *Poll) GetPolls(ctx context.Context, params *repository.PollSearchParams
 		if params.Limit > 0 {
 			query = query.Limit(params.Limit)
 		} else if params.Limit < 0 {
-			return nil, repository.ErrInvalidParameterValue("Limit", "be positive")
+			return nil, errors.New("limit must be positive")
 		}
 
 		if params.Offset > 0 {
 			query = query.Offset(params.Offset)
 		} else if params.Offset < 0 {
-			return nil, repository.ErrInvalidParameterValue("Offset", "be positive")
+			return nil, errors.New("offset must be positive")
 		}
 
 		if params.Owner != nil {

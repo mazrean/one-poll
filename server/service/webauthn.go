@@ -23,7 +23,7 @@ type WebAuthn interface {
 	BeginRegistration(ctx context.Context, user *domain.User) (*domain.WebAuthnRelyingParty, values.WebAuthnChallenge, error)
 	/*
 		FinishRegistration clientDataを検証し、クレデンシャルを保存する
-		エラー: ErrWebAuthnInvalidChallenge, ErrWebAuthnInvalidOrigin, ErrWebAuthnDuplicate
+		エラー: ErrWebAuthnInvalidDataType, ErrWebAuthnInvalidChallenge, ErrWebAuthnInvalidOrigin, ErrWebAuthnInvalidRelyingParty, ErrWebAuthnDuplicate
 	*/
 	FinishRegistration(
 		ctx context.Context,
@@ -31,13 +31,17 @@ type WebAuthn interface {
 		sessionChallenge values.WebAuthnChallenge,
 		relyingPartyHash values.WebAuthnRelyingPartyIDHash,
 		clientData *domain.WebAuthnClientData,
-		credential *domain.WebAuthnCredential,
-	) error
+		credID values.WebAuthnCredentialCredID,
+		aaguid values.WebAuthnCredentialAAGUID,
+		publicKey values.WebAuthnCredentialPublicKey,
+		algorithm values.WebAuthnCredentialAlgorithm,
+		transports []values.WebAuthnCredentialTransport,
+	) (*domain.WebAuthnCredential, error)
 	// BeginLogin ログインの開始
 	BeginLogin(ctx context.Context) (*domain.WebAuthnRelyingParty, values.WebAuthnChallenge, error)
 	/*
 		FinishLogin clientData、signatureを検証し、ログインを完了する
-		エラー: ErrWebAuthnInvalidChallenge, ErrWebAuthnInvalidOrigin, ErrWebAuthnInvalidSignature
+		エラー: ErrWebAuthnInvalidDataType, ErrWebAuthnInvalidChallenge, ErrWebAuthnInvalidOrigin, ErrWebAuthnInvalidRelyingParty, ErrWebAuthnInvalidCredential, ErrWebAuthnInvalidSignature
 	*/
 	FinishLogin(
 		ctx context.Context,
@@ -48,4 +52,5 @@ type WebAuthn interface {
 		credID values.WebAuthnCredentialCredID,
 		signature values.WebAuthnSignature,
 	) (*domain.User, error)
+	DeleteCredential(ctx context.Context, user *domain.User, credID values.WebAuthnCredentialCredID) error
 }

@@ -6,10 +6,14 @@ import (
 	"crypto/ecdsa"
 	"crypto/sha256"
 	"crypto/x509"
+	_ "embed"
 	"encoding/asn1"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"math/big"
+	"time"
 
 	"github.com/mazrean/one-poll/domain"
 	"github.com/mazrean/one-poll/domain/values"
@@ -21,20 +25,53 @@ type WebAuthn struct {
 	relyingPartyIDHash           values.WebAuthnRelyingPartyIDHash
 	relyingParty                 *domain.WebAuthnRelyingParty
 	db                           repository.DB
-	webauthnCredentialRepository repository.WebauthnCredential
+	webauthnCredentialRepository repository.WebAuthnCredential
+	aaguid2NameMap               map[values.WebAuthnCredentialAAGUID]values.WebAuthnCredentialName
 }
 
 func NewWebAuthn(
 	relyingParty *domain.WebAuthnRelyingParty,
 	db repository.DB,
-	webauthnCredentialRepository repository.WebauthnCredential,
-) *WebAuthn {
+	webauthnCredentialRepository repository.WebAuthnCredential,
+) (*WebAuthn, error) {
+	aaguid2NameMap, err := loadAAGUID2NameMap()
+	if err != nil {
+		return nil, fmt.Errorf("failed to load aaguid2NameMap: %w", err)
+	}
+
 	return &WebAuthn{
 		relyingPartyIDHash:           relyingParty.ID().Hash(),
 		relyingParty:                 relyingParty,
 		db:                           db,
 		webauthnCredentialRepository: webauthnCredentialRepository,
+		aaguid2NameMap:               aaguid2NameMap,
+	}, nil
+}
+
+//go:generate curl -o webauthn_aaguid.json https://raw.githubusercontent.com/passkeydeveloper/passkey-authenticator-aaguids/main/aaguid.json
+//go:embed webauthn_aaguid.json
+var aaguidJSON []byte
+
+func loadAAGUID2NameMap() (map[values.WebAuthnCredentialAAGUID]values.WebAuthnCredentialName, error) {
+	var aaguidMap map[string]struct {
+		Name string `json:"name"`
 	}
+	err := json.Unmarshal(aaguidJSON, &aaguidMap)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal aaguid2NameMap: %w", err)
+	}
+
+	aaguid2NameMap := make(map[values.WebAuthnCredentialAAGUID]values.WebAuthnCredentialName, len(aaguidMap))
+	for aaguidStr, v := range aaguidMap {
+		aaguid, err := values.NewWebAuthnCredentialAAGUIDFromString(aaguidStr)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create aaguid: %w", err)
+		}
+
+		aaguid2NameMap[aaguid] = values.NewWebAuthnCredentialName(v.Name)
+	}
+
+	return aaguid2NameMap, nil
 }
 
 func (wa *WebAuthn) BeginRegistration(ctx context.Context, _ *domain.User) (*domain.WebAuthnRelyingParty, values.WebAuthnChallenge, error) {
@@ -52,35 +89,56 @@ func (wa *WebAuthn) FinishRegistration(
 	sessionChallenge values.WebAuthnChallenge,
 	relyingPartyHash values.WebAuthnRelyingPartyIDHash,
 	clientData *domain.WebAuthnClientData,
-	credential *domain.WebAuthnCredential,
-) error {
+	credID values.WebAuthnCredentialCredID,
+	aaguid values.WebAuthnCredentialAAGUID,
+	publicKey values.WebAuthnCredentialPublicKey,
+	algorithm values.WebAuthnCredentialAlgorithm,
+	transports []values.WebAuthnCredentialTransport,
+) (*domain.WebAuthnCredential, error) {
 	// ClientDataの検証
 	if clientData.DataType() != values.WebAuthnClientDataTypeCreate {
-		return service.ErrWebAuthnInvalidDataType
+		return nil, service.ErrWebAuthnInvalidDataType
 	}
 
 	if sessionChallenge.ConstantTimeEqual(clientData.Challenge()) {
-		return service.ErrWebAuthnInvalidChallenge
+		return nil, service.ErrWebAuthnInvalidChallenge
 	}
 
 	if clientData.Origin() != wa.relyingParty.Origin() {
-		return service.ErrWebAuthnInvalidOrigin
+		return nil, service.ErrWebAuthnInvalidOrigin
 	}
 
 	// RelyingPartyIDHashの検証
 	if relyingPartyHash != wa.relyingPartyIDHash {
-		return service.ErrWebAuthnInvalidRelyingParty
+		return nil, service.ErrWebAuthnInvalidRelyingParty
 	}
+
+	name, ok := wa.aaguid2NameMap[aaguid]
+	if !ok {
+		name = values.NewWebAuthnCredentialName("Unknown Authenticator")
+	}
+
+	now := time.Now()
+	credential := domain.NewWebAuthnCredential(
+		values.NewWebAuthnCredentialID(),
+		credID,
+		name,
+		publicKey,
+		algorithm,
+		transports,
+		now,
+		now,
+	)
 
 	err := wa.webauthnCredentialRepository.StoreCredential(ctx, user.GetID(), credential)
 	if errors.Is(err, repository.ErrDuplicateRecord) {
-		return service.ErrWebAuthnDuplicate
+		return nil, service.ErrWebAuthnDuplicate
 	}
 	if err != nil {
-		return fmt.Errorf("failed to store credential: %w", err)
+		return nil, fmt.Errorf("failed to store credential: %w", err)
 	}
 
-	return nil
+	return credential, nil
 }
 
 func (wa *WebAuthn) BeginLogin(ctx context.Context) (*domain.WebAuthnRelyingParty, values.WebAuthnChallenge, error) {
@@ -119,27 +177,46 @@ func (wa *WebAuthn) FinishLogin(
 		return nil, service.ErrWebAuthnInvalidRelyingParty
 	}
 
-	credential, user, err := wa.webauthnCredentialRepository.GetCredentialWithUserByCredID(ctx, credID)
-	if errors.Is(err, repository.ErrRecordNotFound) {
-		return nil, service.ErrWebAuthnInvalidCredential
-	}
-	if err != nil {
-		return nil, fmt.Errorf("failed to get credential: %w", err)
-	}
+	var user *domain.User
+	err := wa.db.Transaction(ctx, nil, func(ctx context.Context) error {
+		var (
+			credential *domain.WebAuthnCredential
+			err        error
+		)
+		credential, user, err = wa.webauthnCredentialRepository.GetCredentialWithUserByCredID(ctx, credID, repository.LockTypeRecord)
+		if errors.Is(err, repository.ErrRecordNotFound) {
+			return service.ErrWebAuthnInvalidCredential
+		}
+		if err != nil {
+			return fmt.Errorf("failed to get credential: %w", err)
+		}
 
-	verificationData := bytes.NewBuffer(nil)
-	verificationData.Write(authData.Raw())
-	clientDataHash := clientData.Hash()
-	verificationData.Write(clientDataHash[:])
+		verificationData := bytes.NewBuffer(nil)
+		verificationData.Write(authData.Raw())
+		clientDataHash := clientData.Hash()
+		verificationData.Write(clientDataHash[:])
 
-	switch credential.Algorithm() {
-	case values.WebAuthnCredentialAlgorithmES256:
-		err = wa.verifySignatureES256(verificationData.Bytes(), credential.PublicKey(), signature)
-	default:
-		return nil, fmt.Errorf("unsupported algorithm: %d", credential.Algorithm())
-	}
+		switch credential.Algorithm() {
+		case values.WebAuthnCredentialAlgorithmES256:
+			err = wa.verifySignatureES256(verificationData.Bytes(), credential.PublicKey(), signature)
+		default:
+			return fmt.Errorf("unsupported algorithm: %d", credential.Algorithm())
+		}
+		if err != nil {
+			return fmt.Errorf("%w: %w", service.ErrWebAuthnInvalidSignature, err)
+		}
+
+		credential.UpdateLastUsedAt()
+		err = wa.webauthnCredentialRepository.UpdateLastUsedAt(ctx, credential)
+		if err != nil {
+			// 認証自体は成功しているため、ログだけ出して続行
+			log.Printf("failed to update last used at: %v", err)
+		}
+
+		return nil
+	})
 	if err != nil {
-		return nil, fmt.Errorf("%w: %w", service.ErrWebAuthnInvalidSignature, err)
+		return nil, fmt.Errorf("failed in transaction: %w", err)
 	}
 
 	return user, nil

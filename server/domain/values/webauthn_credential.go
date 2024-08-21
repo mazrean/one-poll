@@ -9,49 +9,68 @@ import (
 
 type WebAuthnCredentialID uuid.UUID
 
-func NewWebauthnCredentialID() WebAuthnCredentialID {
+func NewWebAuthnCredentialID() WebAuthnCredentialID {
 	return WebAuthnCredentialID(uuid.New())
 }
 
-func NewWebauthnCredentialIDFromUUID(id uuid.UUID) WebAuthnCredentialID {
+func NewWebAuthnCredentialIDFromUUID(id uuid.UUID) WebAuthnCredentialID {
 	return WebAuthnCredentialID(id)
 }
 
 type WebAuthnCredentialCredID []byte
 
-func NewWebauthnCredentialCredID(id []byte) WebAuthnCredentialCredID {
+func NewWebAuthnCredentialCredID(id []byte) WebAuthnCredentialCredID {
 	return WebAuthnCredentialCredID(id)
 }
 
-var ErrWebauthnCredentialCredIDTooShort = errors.New("webauthn credential id should be at least 16 bytes")
+var ErrWebAuthnCredentialCredIDTooShort = errors.New("webauthn credential id should be at least 16 bytes")
 
 func (id WebAuthnCredentialCredID) Validate() error {
 	if len(id) < 16 {
-		return ErrWebauthnCredentialCredIDTooShort
+		return ErrWebAuthnCredentialCredIDTooShort
 	}
 
 	return nil
 }
 
+type WebAuthnCredentialAAGUID uuid.UUID
+
+func NewWebAuthnCredentialAAGUID(guid uuid.UUID) WebAuthnCredentialAAGUID {
+	return WebAuthnCredentialAAGUID(guid)
+}
+
+func NewWebAuthnCredentialAAGUIDFromString(guid string) (WebAuthnCredentialAAGUID, error) {
+	id, err := uuid.Parse(guid)
+	if err != nil {
+		return WebAuthnCredentialAAGUID{}, err
+	}
+
+	return WebAuthnCredentialAAGUID(id), nil
+}
+
+func (guid WebAuthnCredentialAAGUID) String() string {
+	return uuid.UUID(guid).String()
+}
+
 type WebAuthnCredentialName string
 
-func NewWebauthnCredentialName(name string) WebAuthnCredentialName {
+func NewWebAuthnCredentialName(name string) WebAuthnCredentialName {
 	return WebAuthnCredentialName(name)
 }
 
 var (
-	ErrWebauthnCredentialNameEmpty   = errors.New("webauthn credential name is empty")
-	ErrWebauthnCredentialNameTooLong = errors.New("webauthn credential name should be at most 64 characters")
+	ErrWebAuthnCredentialNameEmpty   = errors.New("webauthn credential name is empty")
+	ErrWebAuthnCredentialNameTooLong = errors.New("webauthn credential name should be at most 64 characters")
 )
 
 func (name WebAuthnCredentialName) Validate() error {
 	if len(name) == 0 {
-		return ErrWebauthnCredentialNameEmpty
+		return ErrWebAuthnCredentialNameEmpty
 	}
 
 	length := utf8.RuneCountInString(string(name))
 	if length > 64 {
-		return ErrWebauthnCredentialNameTooLong
+		return ErrWebAuthnCredentialNameTooLong
 	}
 
 	return nil
@@ -59,15 +78,15 @@ func (name WebAuthnCredentialName) Validate() error {
 
 type WebAuthnCredentialPublicKey []byte
 
-func NewWebauthnCredentialPublicKey(key []byte) WebAuthnCredentialPublicKey {
+func NewWebAuthnCredentialPublicKey(key []byte) WebAuthnCredentialPublicKey {
 	return WebAuthnCredentialPublicKey(key)
 }
 
-var ErrWebauthnCredentialPublicKeyEmpty = errors.New("webauthn credential public key is empty")
+var ErrWebAuthnCredentialPublicKeyEmpty = errors.New("webauthn credential public key is empty")
 
 func (key WebAuthnCredentialPublicKey) Validate() error {
 	if len(key) == 0 {
-		return ErrWebauthnCredentialPublicKeyEmpty
+		return ErrWebAuthnCredentialPublicKeyEmpty
 	}
 
 	return nil
@@ -86,25 +105,25 @@ var WebAuthnCredentialAlgorithms = []WebAuthnCredentialAlgorithm{
 type WebAuthnCredentialTransport uint8
 
 const (
-	WebauthnCredentialTransportUSB WebAuthnCredentialTransport = iota + 1
-	WebauthnCredentialTransportNFC
-	WebauthnCredentialTransportBLE
-	WebauthnCredentialTransportSmartCard
-	WebauthnCredentialTransportHybrid
+	WebAuthnCredentialTransportUSB WebAuthnCredentialTransport = iota + 1
+	WebAuthnCredentialTransportNFC
+	WebAuthnCredentialTransportBLE
+	WebAuthnCredentialTransportSmartCard
+	WebAuthnCredentialTransportHybrid
 	WebAuthnCredentialTransportInternal
 )
 
 func (t WebAuthnCredentialTransport) String() string {
 	switch t {
-	case WebauthnCredentialTransportUSB:
+	case WebAuthnCredentialTransportUSB:
 		return "usb"
-	case WebauthnCredentialTransportNFC:
+	case WebAuthnCredentialTransportNFC:
 		return "nfc"
-	case WebauthnCredentialTransportBLE:
+	case WebAuthnCredentialTransportBLE:
 		return "ble"
-	case WebauthnCredentialTransportSmartCard:
+	case WebAuthnCredentialTransportSmartCard:
 		return "smart_card"
-	case WebauthnCredentialTransportHybrid:
+	case WebAuthnCredentialTransportHybrid:
 		return "hybrid"
 	case WebAuthnCredentialTransportInternal:
 		return "internal"
