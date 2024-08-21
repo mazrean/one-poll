@@ -12,4 +12,5 @@ var (
 	ErrInvalidParameterValue = func(paramName, constraint string) error {
 		return fmt.Errorf("Invalid Parameter Value : parameter '%s' must %s", paramName, constraint)
 	}
+	ErrDuplicateRecord = errors.New("duplicate record")
 )

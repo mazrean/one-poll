@@ -6,26 +6,26 @@ import (
 	"github.com/mazrean/one-poll/domain/values"
 )
 
-type WebauthnCredential struct {
-	id         values.WebauthnCredentialID
-	credID     values.WebauthnCredentialCredID
-	name       values.WebauthnCredentialName
-	publicKey  values.WebauthnCredentialPublicKey
-	algorithm  values.WebauthnCredentialAlgorithm
-	transports []values.WebauthnCredentialTransport
+type WebAuthnCredential struct {
+	id         values.WebAuthnCredentialID
+	credID     values.WebAuthnCredentialCredID
+	name       values.WebAuthnCredentialName
+	publicKey  values.WebAuthnCredentialPublicKey
+	algorithm  values.WebAuthnCredentialAlgorithm
+	transports []values.WebAuthnCredentialTransport
 	createdAt  time.Time
 }
 
 func NewWebauthnCredential(
-	id values.WebauthnCredentialID,
-	credID values.WebauthnCredentialCredID,
-	name values.WebauthnCredentialName,
-	publicKey values.WebauthnCredentialPublicKey,
-	algorithm values.WebauthnCredentialAlgorithm,
-	transports []values.WebauthnCredentialTransport,
+	id values.WebAuthnCredentialID,
+	credID values.WebAuthnCredentialCredID,
+	name values.WebAuthnCredentialName,
+	publicKey values.WebAuthnCredentialPublicKey,
+	algorithm values.WebAuthnCredentialAlgorithm,
+	transports []values.WebAuthnCredentialTransport,
 	createdAt time.Time,
-) *WebauthnCredential {
-	return &WebauthnCredential{
+) *WebAuthnCredential {
+	return &WebAuthnCredential{
 		id:         id,
 		credID:     credID,
 		name:       name,
@@ -36,30 +36,30 @@ func NewWebauthnCredential(
 	}
 }
 
-func (w *WebauthnCredential) ID() values.WebauthnCredentialID {
+func (w *WebAuthnCredential) ID() values.WebAuthnCredentialID {
 	return w.id
 }
 
-func (w *WebauthnCredential) CredID() values.WebauthnCredentialCredID {
+func (w *WebAuthnCredential) CredID() values.WebAuthnCredentialCredID {
 	return w.credID
 }
 
-func (w *WebauthnCredential) Name() values.WebauthnCredentialName {
+func (w *WebAuthnCredential) Name() values.WebAuthnCredentialName {
 	return w.name
 }
 
-func (w *WebauthnCredential) PublicKey() values.WebauthnCredentialPublicKey {
+func (w *WebAuthnCredential) PublicKey() values.WebAuthnCredentialPublicKey {
 	return w.publicKey
 }
 
-func (w *WebauthnCredential) Algorithm() values.WebauthnCredentialAlgorithm {
+func (w *WebAuthnCredential) Algorithm() values.WebAuthnCredentialAlgorithm {
 	return w.algorithm
 }
 
-func (w *WebauthnCredential) Transports() []values.WebauthnCredentialTransport {
+func (w *WebAuthnCredential) Transports() []values.WebAuthnCredentialTransport {
 	return w.transports
 }
 
-func (w *WebauthnCredential) CreatedAt() time.Time {
+func (w *WebAuthnCredential) CreatedAt() time.Time {
 	return w.createdAt
 }

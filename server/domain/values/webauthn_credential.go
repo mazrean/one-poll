@@ -7,25 +7,25 @@ import (
 	"github.com/google/uuid"
 )
 
-type WebauthnCredentialID uuid.UUID
+type WebAuthnCredentialID uuid.UUID
 
-func NewWebauthnCredentialID() WebauthnCredentialID {
-	return WebauthnCredentialID(uuid.New())
+func NewWebauthnCredentialID() WebAuthnCredentialID {
+	return WebAuthnCredentialID(uuid.New())
 }
 
-func NewWebauthnCredentialIDFromUUID(id uuid.UUID) WebauthnCredentialID {
-	return WebauthnCredentialID(id)
+func NewWebauthnCredentialIDFromUUID(id uuid.UUID) WebAuthnCredentialID {
+	return WebAuthnCredentialID(id)
 }
 
-type WebauthnCredentialCredID []byte
+type WebAuthnCredentialCredID []byte
 
-func NewWebauthnCredentialCredID(id []byte) WebauthnCredentialCredID {
-	return WebauthnCredentialCredID(id)
+func NewWebauthnCredentialCredID(id []byte) WebAuthnCredentialCredID {
+	return WebAuthnCredentialCredID(id)
 }
 
 var ErrWebauthnCredentialCredIDTooShort = errors.New("webauthn credential id should be at least 16 bytes")
 
-func (id WebauthnCredentialCredID) Validate() error {
+func (id WebAuthnCredentialCredID) Validate() error {
 	if len(id) < 16 {
 		return ErrWebauthnCredentialCredIDTooShort
 	}
@@ -33,10 +33,10 @@ func (id WebauthnCredentialCredID) Validate() error {
 	return nil
 }
 
-type WebauthnCredentialName string
+type WebAuthnCredentialName string
 
-func NewWebauthnCredentialName(name string) WebauthnCredentialName {
-	return WebauthnCredentialName(name)
+func NewWebauthnCredentialName(name string) WebAuthnCredentialName {
+	return WebAuthnCredentialName(name)
 }
 
 var (
@@ -44,7 +44,7 @@ var (
 	ErrWebauthnCredentialNameTooLong = errors.New("webauthn credential name should be at most 64 characters")
 )
 
-func (name WebauthnCredentialName) Validate() error {
+func (name WebAuthnCredentialName) Validate() error {
 	if len(name) == 0 {
 		return ErrWebauthnCredentialNameEmpty
 	}
@@ -57,15 +57,15 @@ func (name WebauthnCredentialName) Validate() error {
 	return nil
 }
 
-type WebauthnCredentialPublicKey []byte
+type WebAuthnCredentialPublicKey []byte
 
-func NewWebauthnCredentialPublicKey(key []byte) WebauthnCredentialPublicKey {
-	return WebauthnCredentialPublicKey(key)
+func NewWebauthnCredentialPublicKey(key []byte) WebAuthnCredentialPublicKey {
+	return WebAuthnCredentialPublicKey(key)
 }
 
 var ErrWebauthnCredentialPublicKeyEmpty = errors.New("webauthn credential public key is empty")
 
-func (key WebauthnCredentialPublicKey) Validate() error {
+func (key WebAuthnCredentialPublicKey) Validate() error {
 	if len(key) == 0 {
 		return ErrWebauthnCredentialPublicKeyEmpty
 	}
@@ -73,16 +73,20 @@ func (key WebauthnCredentialPublicKey) Validate() error {
 	return nil
 }
 
-type WebauthnCredentialAlgorithm uint
+type WebAuthnCredentialAlgorithm uint
 
 const (
-	WebauthnCredentialAlgorithmES256 WebauthnCredentialAlgorithm = iota + 1
+	WebAuthnCredentialAlgorithmES256 WebAuthnCredentialAlgorithm = iota + 1
 )
 
-type WebauthnCredentialTransport uint8
+var WebAuthnCredentialAlgorithms = []WebAuthnCredentialAlgorithm{
+	WebAuthnCredentialAlgorithmES256,
+}
+
+type WebAuthnCredentialTransport uint8
 
 const (
-	WebauthnCredentialTransportUSB WebauthnCredentialTransport = iota + 1
+	WebauthnCredentialTransportUSB WebAuthnCredentialTransport = iota + 1
 	WebauthnCredentialTransportNFC
 	WebauthnCredentialTransportBLE
 	WebauthnCredentialTransportSmartCard
@@ -90,7 +94,7 @@ const (
 	WebAuthnCredentialTransportInternal
 )
 
-func (t WebauthnCredentialTransport) String() string {
+func (t WebAuthnCredentialTransport) String() string {
 	switch t {
 	case WebauthnCredentialTransportUSB:
 		return "usb"
