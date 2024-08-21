@@ -255,6 +255,15 @@ func (wa *WebAuthn) verifySignatureES256(
 	return nil
 }
 
+func (wa *WebAuthn) GetCredentials(ctx context.Context, user *domain.User) ([]*domain.WebAuthnCredential, error) {
+	credentials, err := wa.webauthnCredentialRepository.GetCredentialsByUserID(ctx, user.GetID())
+	if err != nil {
+		return nil, fmt.Errorf("failed to get credentials: %w", err)
+	}
+
+	return credentials, nil
+}
+
 func (wa *WebAuthn) DeleteCredential(ctx context.Context, user *domain.User, credID values.WebAuthnCredentialCredID) error {
 	err := wa.webauthnCredentialRepository.DeleteCredential(ctx, user.GetID(), credID)
 	if errors.Is(err, repository.ErrNoRecordDeleted) {

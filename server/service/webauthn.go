@@ -53,6 +53,8 @@ type WebAuthn interface {
 		credID values.WebAuthnCredentialCredID,
 		signature values.WebAuthnSignature,
 	) (*domain.User, error)
+	// GetCredentials クレデンシャルの取得
+	GetCredentials(ctx context.Context, user *domain.User) ([]*domain.WebAuthnCredential, error)
 	/*
 		DeleteCredential クレデンシャルの削除
 		エラー: ErrWebAuthnNoCredential
