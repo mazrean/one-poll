@@ -101,33 +101,3 @@ const (
 var WebAuthnCredentialAlgorithms = []WebAuthnCredentialAlgorithm{
 	WebAuthnCredentialAlgorithmES256,
 }
-
-type WebAuthnCredentialTransport uint8
-
-const (
-	WebAuthnCredentialTransportUSB WebAuthnCredentialTransport = iota + 1
-	WebAuthnCredentialTransportNFC
-	WebAuthnCredentialTransportBLE
-	WebAuthnCredentialTransportSmartCard
-	WebAuthnCredentialTransportHybrid
-	WebAuthnCredentialTransportInternal
-)
-
-func (t WebAuthnCredentialTransport) String() string {
-	switch t {
-	case WebAuthnCredentialTransportUSB:
-		return "usb"
-	case WebAuthnCredentialTransportNFC:
-		return "nfc"
-	case WebAuthnCredentialTransportBLE:
-		return "ble"
-	case WebAuthnCredentialTransportSmartCard:
-		return "smart_card"
-	case WebAuthnCredentialTransportHybrid:
-		return "hybrid"
-	case WebAuthnCredentialTransportInternal:
-		return "internal"
-	default:
-		return ""
-	}
-}

@@ -36,7 +36,6 @@ type WebAuthn interface {
 		aaguid values.WebAuthnCredentialAAGUID,
 		publicKey values.WebAuthnCredentialPublicKey,
 		algorithm values.WebAuthnCredentialAlgorithm,
-		transports []values.WebAuthnCredentialTransport,
 	) (*domain.WebAuthnCredential, error)
 	// BeginLogin ログインの開始
 	BeginLogin(ctx context.Context) (*domain.WebAuthnRelyingParty, values.WebAuthnChallenge, error)

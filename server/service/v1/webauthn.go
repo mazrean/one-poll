@@ -93,7 +93,6 @@ func (wa *WebAuthn) FinishRegistration(
 	aaguid values.WebAuthnCredentialAAGUID,
 	publicKey values.WebAuthnCredentialPublicKey,
 	algorithm values.WebAuthnCredentialAlgorithm,
-	transports []values.WebAuthnCredentialTransport,
 ) (*domain.WebAuthnCredential, error) {
 	// ClientDataの検証
 	if clientData.DataType() != values.WebAuthnClientDataTypeCreate {
@@ -125,7 +124,6 @@ func (wa *WebAuthn) FinishRegistration(
 		name,
 		publicKey,
 		algorithm,
-		transports,
 		now,
 		now,
 	)

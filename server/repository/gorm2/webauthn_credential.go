@@ -14,9 +14,8 @@ import (
 )
 
 type WebAuthnCredential struct {
-	db           *DB
-	algorismMap  map[values.WebAuthnCredentialAlgorithm]WebAuthnCredentialAlgorithmTable
-	transportMap map[values.WebAuthnCredentialTransport]WebAuthnCredentialTransportTypeTable
+	db          *DB
+	algorismMap map[values.WebAuthnCredentialAlgorithm]WebAuthnCredentialAlgorithmTable
 }
 
 func NewWebAuthnCredential(db *DB) (*WebAuthnCredential, error) {
@@ -25,15 +24,9 @@ func NewWebAuthnCredential(db *DB) (*WebAuthnCredential, error) {
 		return nil, fmt.Errorf("failed to setup algorism table: %w", err)
 	}
 
-	transportMap, err := setupWebAuthnCredentialTransportTypeTable(db.db)
-	if err != nil {
-		return nil, fmt.Errorf("failed to setup transport table: %w", err)
-	}
-
 	return &WebAuthnCredential{
-		db:           db,
-		algorismMap:  algorismMap,
-		transportMap: transportMap,
+		db:          db,
+		algorismMap: algorismMap,
 	}, nil
 }
 
@@ -74,63 +67,6 @@ func setupWebAuthnCredentialAlgorismTable(db *gorm.DB) (map[values.WebAuthnCrede
 	return algorismMap, nil
 }
 
-var (
-	transportUSB       = "USB"
-	transportNFC       = "NFC"
-	transportBLE       = "BLE"
-	transportSmartCard = "SmartCard"
-	transportHybrid    = "Hybrid"
-	transportInternal  = "Internal"
-)
-
-func setupWebAuthnCredentialTransportTypeTable(db *gorm.DB) (map[values.WebAuthnCredentialTransport]WebAuthnCredentialTransportTypeTable, error) {
-	transports := []WebAuthnCredentialTransportTypeTable{
-		{Name: transportUSB, Active: true},
-		{Name: transportNFC, Active: true},
-		{Name: transportBLE, Active: true},
-		{Name: transportSmartCard, Active: true},
-		{Name: transportHybrid, Active: true},
-		{Name: transportInternal, Active: true},
-	}
-
-	for i, transport := range transports {
-		err := db.
-			Session(&gorm.Session{}).
-			Where("name = ?", transport.Name).
-			FirstOrCreate(&transport).Error
-		if err != nil {
-			return nil, fmt.Errorf("failed to create resource type: %w", err)
-		}
-
-		transports[i] = transport
-	}
-
-	transportTypeMap := make(map[values.WebAuthnCredentialTransport]WebAuthnCredentialTransportTypeTable, len(transports))
-	for _, transport := range transports {
-		var transportValue values.WebAuthnCredentialTransport
-		switch transport.Name {
-		case transportUSB:
-			transportValue = values.WebAuthnCredentialTransportUSB
-		case transportNFC:
-			transportValue = values.WebAuthnCredentialTransportNFC
-		case transportBLE:
-			transportValue = values.WebAuthnCredentialTransportBLE
-		case transportSmartCard:
-			transportValue = values.WebAuthnCredentialTransportSmartCard
-		case transportHybrid:
-			transportValue = values.WebAuthnCredentialTransportHybrid
-		case transportInternal:
-			transportValue = values.WebAuthnCredentialTransportInternal
-		default:
-			return nil, fmt.Errorf("unknown transport: %s", transport.Name)
-		}
-
-		transportTypeMap[transportValue] = transport
-	}
-
-	return transportTypeMap, nil
-}
-
 func (wac *WebAuthnCredential) StoreCredential(ctx context.Context, userID values.UserID, credential *domain.WebAuthnCredential) error {
 	db, err := wac.db.getDB(ctx)
 	if err != nil {
@@ -142,25 +78,11 @@ func (wac *WebAuthnCredential) StoreCredential(ctx context.Context, userID value
 		return fmt.Errorf("unknown algorism: %d", credential.Algorithm())
 	}
 
-	transports := make([]WebAuthnCredentialTransportTable, 0, len(credential.Transports()))
-	for _, transport := range credential.Transports() {
-		transportType, ok := wac.transportMap[transport]
-		if !ok {
-			return fmt.Errorf("unknown transport: %s", transport)
-		}
-
-		transports = append(transports, WebAuthnCredentialTransportTable{
-			CredentialID: uuid.UUID(credential.ID()),
-			TypeID:       transportType.ID,
-		})
-	}
-
 	credentialTable := WebAuthnCredentialTable{
 		ID:          uuid.UUID(credential.ID()),
 		UserID:      uuid.UUID(userID),
 		Name:        string(credential.Name()),
 		AlgorithmID: algorismID.ID,
-		Transports:  transports,
 		CreatedAt:   credential.CreatedAt(),
 		LastUsedAt:  credential.LastUsedAt(),
 	}
@@ -190,7 +112,6 @@ func (wac *WebAuthnCredential) GetCredentialsByUserID(ctx context.Context, userI
 	}
 
 	credentials := make([]*domain.WebAuthnCredential, 0, len(credentialTables))
-CREDENTIAL_LOOP:
 	for _, credentialTable := range credentialTables {
 		var algorithm values.WebAuthnCredentialAlgorithm
 		switch credentialTable.Algorithm.Name {
@@ -201,37 +122,12 @@ CREDENTIAL_LOOP:
 			continue
 		}
 
-		transports := make([]values.WebAuthnCredentialTransport, 0, len(credentialTable.Transports))
-		for _, transport := range credentialTable.Transports {
-			var transportType values.WebAuthnCredentialTransport
-			switch transport.Type.Name {
-			case transportUSB:
-				transportType = values.WebAuthnCredentialTransportUSB
-			case transportNFC:
-				transportType = values.WebAuthnCredentialTransportNFC
-			case transportBLE:
-				transportType = values.WebAuthnCredentialTransportBLE
-			case transportSmartCard:
-				transportType = values.WebAuthnCredentialTransportSmartCard
-			case transportHybrid:
-				transportType = values.WebAuthnCredentialTransportHybrid
-			case transportInternal:
-				transportType = values.WebAuthnCredentialTransportInternal
-			default:
-				log.Printf("error: unknown transport: %s", transport.Type.Name)
-				continue CREDENTIAL_LOOP
-			}
-
-			transports = append(transports, transportType)
-		}
-
 		credential := domain.NewWebAuthnCredential(
 			values.NewWebAuthnCredentialIDFromUUID(credentialTable.ID),
 			values.NewWebAuthnCredentialCredID(credentialTable.CredID),
 			values.NewWebAuthnCredentialName(credentialTable.Name),
 			values.NewWebAuthnCredentialPublicKey(credentialTable.PublicKey),
 			algorithm,
-			transports,
 			credentialTable.CreatedAt,
 			credentialTable.LastUsedAt,
 		)
@@ -275,36 +171,12 @@ func (wac *WebAuthnCredential) GetCredentialWithUserByCredID(ctx context.Context
 		return nil, nil, fmt.Errorf("unknown algorism: %s", credentialTable.Algorithm.Name)
 	}
 
-	transports := make([]values.WebAuthnCredentialTransport, 0, len(credentialTable.Transports))
-	for _, transport := range credentialTable.Transports {
-		var transportType values.WebAuthnCredentialTransport
-		switch transport.Type.Name {
-		case transportUSB:
-			transportType = values.WebAuthnCredentialTransportUSB
-		case transportNFC:
-			transportType = values.WebAuthnCredentialTransportNFC
-		case transportBLE:
-			transportType = values.WebAuthnCredentialTransportBLE
-		case transportSmartCard:
-			transportType = values.WebAuthnCredentialTransportSmartCard
-		case transportHybrid:
-			transportType = values.WebAuthnCredentialTransportHybrid
-		case transportInternal:
-			transportType = values.WebAuthnCredentialTransportInternal
-		default:
-			return nil, nil, fmt.Errorf("unknown transport: %s", transport.Type.Name)
-		}
-
-		transports = append(transports, transportType)
-	}
-
 	credential := domain.NewWebAuthnCredential(
 		values.NewWebAuthnCredentialIDFromUUID(credentialTable.ID),
 		values.NewWebAuthnCredentialCredID(credentialTable.CredID),
 		values.NewWebAuthnCredentialName(credentialTable.Name),
 		values.NewWebAuthnCredentialPublicKey(credentialTable.PublicKey),
 		algorithm,
-		transports,
 		credentialTable.CreatedAt,
 		credentialTable.LastUsedAt,
 	)

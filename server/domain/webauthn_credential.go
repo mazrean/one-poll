@@ -12,7 +12,6 @@ type WebAuthnCredential struct {
 	name       values.WebAuthnCredentialName
 	publicKey  values.WebAuthnCredentialPublicKey
 	algorithm  values.WebAuthnCredentialAlgorithm
-	transports []values.WebAuthnCredentialTransport
 	createdAt  time.Time
 	lastUsedAt time.Time
 }
@@ -23,7 +22,6 @@ func NewWebAuthnCredential(
 	name values.WebAuthnCredentialName,
 	publicKey values.WebAuthnCredentialPublicKey,
 	algorithm values.WebAuthnCredentialAlgorithm,
-	transports []values.WebAuthnCredentialTransport,
 	createdAt time.Time,
 	lastUsedAd time.Time,
 ) *WebAuthnCredential {
@@ -33,7 +31,6 @@ func NewWebAuthnCredential(
 		name:       name,
 		publicKey:  publicKey,
 		algorithm:  algorithm,
-		transports: transports,
 		createdAt:  createdAt,
 		lastUsedAt: lastUsedAd,
 	}
@@ -57,10 +54,6 @@ func (w *WebAuthnCredential) PublicKey() values.WebAuthnCredentialPublicKey {
 
 func (w *WebAuthnCredential) Algorithm() values.WebAuthnCredentialAlgorithm {
 	return w.algorithm
-}
-
-func (w *WebAuthnCredential) Transports() []values.WebAuthnCredentialTransport {
-	return w.transports
 }
 
 func (w *WebAuthnCredential) CreatedAt() time.Time {
