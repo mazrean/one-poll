@@ -208,7 +208,8 @@ func (wa *WebAuthn) FinishLogin(
 
 		credential.UpdateLastUsedAt()
 		err = wa.webauthnCredentialRepository.UpdateLastUsedAt(ctx, credential)
-		if err != nil {
+		// 同時刻に使用された場合は更新されないためErrNoRecordUpdatedは無視
+		if err != nil && !errors.Is(err, repository.ErrNoRecordUpdated) {
 			// 認証自体は成功しているため、ログだけ出して続行
 			log.Printf("failed to update last used at: %v", err)
 		}
@@ -249,6 +250,18 @@ func (wa *WebAuthn) verifySignatureES256(
 
 	if !ecdsa.Verify(ecdsaKey, h.Sum(nil), signature.R, signature.S) {
 		return errors.New("invalid signature")
+	}
+
+	return nil
+}
+
+func (wa *WebAuthn) DeleteCredential(ctx context.Context, user *domain.User, credID values.WebAuthnCredentialCredID) error {
+	err := wa.webauthnCredentialRepository.DeleteCredential(ctx, user.GetID(), credID)
+	if errors.Is(err, repository.ErrNoRecordDeleted) {
+		return service.ErrWebAuthnNoCredential
+	}
+	if err != nil {
+		return fmt.Errorf("failed to delete credential: %w", err)
 	}
 
 	return nil

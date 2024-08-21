@@ -16,6 +16,7 @@ var (
 	ErrWebAuthnDuplicate           = errors.New("duplicate credential")
 	ErrWebAuthnInvalidSignature    = errors.New("invalid signature")
 	ErrWebAuthnInvalidCredential   = errors.New("invalid credential")
+	ErrWebAuthnNoCredential        = errors.New("no credential")
 )
 
 type WebAuthn interface {
@@ -52,5 +53,9 @@ type WebAuthn interface {
 		credID values.WebAuthnCredentialCredID,
 		signature values.WebAuthnSignature,
 	) (*domain.User, error)
+	/*
+		DeleteCredential クレデンシャルの削除
+		エラー: ErrWebAuthnNoCredential
+	*/
 	DeleteCredential(ctx context.Context, user *domain.User, credID values.WebAuthnCredentialCredID) error
 }
