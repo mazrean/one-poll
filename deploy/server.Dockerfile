@@ -11,8 +11,6 @@ RUN --mount=type=cache,target=/go/pkg/mod/cache \
   go mod download
 
 COPY ./server .
-COPY ./docs /go/src/github.com/mazrean/one-poll/docs
-RUN go generate ./...
 RUN --mount=type=cache,target=/root/.cache/go-build \
   go build -o one-poll -ldflags "-s -w"
 
