@@ -20,7 +20,7 @@
           class="form-control d-flex mx-3 my-1"
           name="searchTitle"
           placeholder="キーワードで検索 (Enterで更新)"
-          @Input="state.searchTitle = $event.target.value"
+          @input="state.searchTitle = $event.target.value"
           @keydown.enter="onKeyword()" />
         <input
           v-model="state.searchTag"
@@ -28,7 +28,7 @@
           class="form-control d-flex mx-3 my-1"
           name="searchTag"
           placeholder="タグで検索 (タグ候補選択で更新)"
-          @Input="calculateFilter()" />
+          @input="calculateFilter()" />
         <ul v-for="v in state.autocompletes" :key="v.id" class="list-group">
           <button
             class="list-group-item list-group-item-action p-1"

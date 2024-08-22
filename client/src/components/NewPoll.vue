@@ -47,7 +47,7 @@
                     :disabled="i < 2"
                     type="button"
                     class="btn btn-close d-flex my-auto ml-3"
-                    @Click="deleteOption(i)"></button>
+                    @click="deleteOption(i)"></button>
                 </div>
               </li>
             </ul>
@@ -55,7 +55,7 @@
               v-show="state.options.length < 5"
               class="btn link"
               type="button"
-              @Click="insertOption()">
+              @click="insertOption()">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="32"
@@ -82,7 +82,7 @@
                     }}<button
                       type="button"
                       class="btn btn-sm btn-close"
-                      @Click="deleteTag(v)"></button
+                      @click="deleteTag(v)"></button
                   ></span>
                 </li>
               </ul>
@@ -96,7 +96,7 @@
               name="tag"
               maxlength="16"
               placeholder="新しく追加するタグ名を入力 (Enterで追加)"
-              @Input="calculateFilter()"
+              @input="calculateFilter()"
               @keydown.enter="insertTag()" />
             <ul v-for="v in state.autocompletes" :key="v.id" class="list-group">
               <button
