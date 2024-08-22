@@ -121,6 +121,7 @@ func (wac *WebAuthnCredential) GetCredentialsByUserID(ctx context.Context, userI
 		Joins("Algorithm").
 		Where("user_id = ?", uuid.UUID(userID)).
 		Where("Algorithm.active = true").
+		Order("created_at DESC").
 		Find(&credentialTables).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get credentials: %w", err)
@@ -233,7 +234,7 @@ func (wac *WebAuthnCredential) UpdateLastUsedAt(ctx context.Context, credential 
 	return nil
 }
 
-func (wac *WebAuthnCredential) DeleteCredential(ctx context.Context, userID values.UserID, credID values.WebAuthnCredentialCredID) error {
+func (wac *WebAuthnCredential) DeleteCredential(ctx context.Context, userID values.UserID, credentialID values.WebAuthnCredentialID) error {
 	db, err := wac.db.getDB(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get db: %w", err)
@@ -241,7 +242,7 @@ func (wac *WebAuthnCredential) DeleteCredential(ctx context.Context, userID valu
 
 	result := db.
 		Where("user_id = ?", uuid.UUID(userID)).
-		Where("cred_id = ?", base64.StdEncoding.EncodeToString(credID)).
+		Where("id = ?", uuid.UUID(credentialID)).
 		Delete(&WebAuthnCredentialTable{})
 	err = result.Error
 	if err != nil {

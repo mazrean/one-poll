@@ -252,8 +252,8 @@ func (wa *WebAuthn) GetCredentials(ctx context.Context, user *domain.User) ([]*d
 	return credentials, nil
 }
 
-func (wa *WebAuthn) DeleteCredential(ctx context.Context, user *domain.User, credID values.WebAuthnCredentialCredID) error {
-	err := wa.webauthnCredentialRepository.DeleteCredential(ctx, user.GetID(), credID)
+func (wa *WebAuthn) DeleteCredential(ctx context.Context, user *domain.User, credentialID values.WebAuthnCredentialID) error {
+	err := wa.webauthnCredentialRepository.DeleteCredential(ctx, user.GetID(), credentialID)
 	if errors.Is(err, repository.ErrNoRecordDeleted) {
 		return service.ErrWebAuthnNoCredential
 	}

@@ -16,9 +16,6 @@ import (
 type unimplemented interface {
 	// (POST /tags)
 	PostTags(ctx echo.Context) error
-	// webauthnの登録情報削除
-	// (DELETE /webauthn/credentials)
-	DeleteWebauthnCredentials(ctx echo.Context) error
 }
 
 type API struct {

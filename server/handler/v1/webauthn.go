@@ -478,3 +478,34 @@ func parseClientData(clientDataJSON string) (*domain.WebAuthnClientData, error) 
 		values.NewWebAuthnClientDataHashFromRaw(clientDataBytes),
 	), nil
 }
+
+// webauthnの登録情報削除
+// (DELETE /webauthn/credentials)
+func (w *WebAuthn) DeleteWebauthnCredentials(c echo.Context, credentialID uuid.UUID) error {
+	session, err := w.Session.getSession(c)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid session")
+	}
+
+	user, err := w.Session.getUser(session)
+	if errors.Is(err, ErrNoValue) {
+		return echo.NewHTTPError(http.StatusUnauthorized, "login required")
+	}
+	if err != nil && !errors.Is(err, ErrNoValue) {
+		log.Printf("failed to get user: %v", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get user")
+	}
+
+	id := values.NewWebAuthnCredentialIDFromUUID(credentialID)
+
+	err = w.webAuthnService.DeleteCredential(c.Request().Context(), user, id)
+	if errors.Is(err, service.ErrWebAuthnNoCredential) {
+		return echo.NewHTTPError(http.StatusBadRequest, "no credential")
+	}
+	if err != nil {
+		log.Printf("failed to delete credentials: %v", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to delete credentials")
+	}
+
+	return c.NoContent(http.StatusOK)
+}

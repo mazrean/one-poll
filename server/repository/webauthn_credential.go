@@ -12,5 +12,5 @@ type WebAuthnCredential interface {
 	GetCredentialsByUserID(ctx context.Context, userID values.UserID) ([]*domain.WebAuthnCredential, error)
 	GetCredentialWithUserByCredID(ctx context.Context, credID values.WebAuthnCredentialCredID, lockType LockType) (*domain.WebAuthnCredential, *domain.User, error)
 	UpdateLastUsedAt(ctx context.Context, credential *domain.WebAuthnCredential) error
-	DeleteCredential(ctx context.Context, userID values.UserID, credID values.WebAuthnCredentialCredID) error
+	DeleteCredential(ctx context.Context, userID values.UserID, credentialID values.WebAuthnCredentialID) error
 }

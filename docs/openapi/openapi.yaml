@@ -734,6 +734,14 @@ paths:
       description: WebAuthn登録情報一覧
       tags:
         - webauthn
+  /webauthn/credentials/{credentialID}:
+    parameters:
+      - schema:
+          type: string
+          format: uuid
+        name: credentialID
+        in: path
+        required: true
     delete:
       summary: 'webauthnの登録情報削除'
       operationId: delete-webauthn-credentials

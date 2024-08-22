@@ -57,5 +57,5 @@ type WebAuthn interface {
 		DeleteCredential クレデンシャルの削除
 		エラー: ErrWebAuthnNoCredential
 	*/
-	DeleteCredential(ctx context.Context, user *domain.User, credID values.WebAuthnCredentialCredID) error
+	DeleteCredential(ctx context.Context, user *domain.User, credentialID values.WebAuthnCredentialID) error
 }

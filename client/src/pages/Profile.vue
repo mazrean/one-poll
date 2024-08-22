@@ -44,17 +44,17 @@
             </button>
           </div>
           <div
-            v-if="!state.pollOwners"
+            v-if="!state.passkeys"
             class="spinner-border text-secondary m-3"
             role="status"></div>
-          <div v-else-if="state.pollOwners.length === 0" class="m-3">
+          <div v-else-if="state.passkeys.length === 0" class="m-3">
             <p>パスキーがありません。</p>
           </div>
           <div v-else class="d-flex flex-wrap justify-content-center">
-            <div
-              v-for="pollSummary in state.pollOwners"
-              :key="pollSummary.pollId">
-              <PollCardComponent :poll="pollSummary" />
+            <div v-for="passkey in state.passkeys" :key="passkey.id">
+              <PasskeyCardComponent
+                :passkey="passkey"
+                @delete="onPasskeyDelete" />
             </div>
           </div>
         </div>
@@ -111,24 +111,38 @@
 import { defineComponent, computed, reactive, onMounted } from 'vue'
 import { useMainStore } from '/@/store/index'
 import PollCardComponent from '/@/components/PollCard.vue'
-import apis, { PollSummary, WebAuthnCredentialType } from '/@/lib/apis'
+import apis, {
+  PollSummary,
+  WebAuthnCredential,
+  WebAuthnCredentialType
+} from '/@/lib/apis'
 import { b64urlDecode, b64urlEncode, uuid2bytes } from '/@/lib/encoding'
+import PasskeyCardComponent from '/@/components/PasskeyCard.vue'
 
 interface State {
+  passkeys: WebAuthnCredential[] | null
   pollOwners: PollSummary[] | null
   pollAnswers: PollSummary[] | null
 }
 
 export default defineComponent({
   name: 'ProfilePage',
-  components: { PollCardComponent },
+  components: { PollCardComponent, PasskeyCardComponent },
   setup() {
     const store = useMainStore()
     const userID = computed(() => store.userID)
 
     const state = reactive<State>({
+      passkeys: null,
       pollOwners: null,
       pollAnswers: null
+    })
+    onMounted(async () => {
+      try {
+        state.passkeys = (await apis.getWebauthnCredentials()).data
+      } catch {
+        state.passkeys = []
+      }
     })
     onMounted(async () => {
       try {
@@ -175,7 +189,7 @@ export default defineComponent({
         return
       }
 
-      await apis.postWebauthnResisterFinish({
+      const resisterRes = await apis.postWebauthnResisterFinish({
         id: credential.id,
         type: WebAuthnCredentialType.PublicKey,
         rawId: b64urlEncode(credential.rawId),
@@ -186,11 +200,28 @@ export default defineComponent({
           clientDataJSON: b64urlEncode(credential.response.clientDataJSON)
         }
       })
+      if (resisterRes.status !== 200) {
+        alert('登録に失敗しました。')
+        return
+      }
+
+      state.passkeys = (await apis.getWebauthnCredentials()).data
+    }
+
+    const onPasskeyDelete = async (id: string) => {
+      const res = await apis.deleteWebauthnCredentials(id)
+      if (res.status !== 200) {
+        alert('削除に失敗しました。')
+        return
+      }
+
+      state.passkeys =
+        state.passkeys?.filter(passkey => passkey.id !== id) ?? null
     }
 
     let tabs = [
       { id: 'home', label: 'アカウント情報', active: true },
-      { id: 'passkey', label: 'パスキー', active: false },
+      { id: 'passkey', label: 'パスキー一覧', active: false },
       { id: 'profile', label: '作成した質問一覧', active: false },
       { id: 'contact', label: '回答した質問一覧', active: false }
     ]
@@ -201,7 +232,8 @@ export default defineComponent({
       state,
       tabs,
       userID,
-      onPasskeyRegister
+      onPasskeyRegister,
+      onPasskeyDelete
     }
   }
 })
