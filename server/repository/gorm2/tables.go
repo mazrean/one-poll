@@ -36,9 +36,9 @@ type WebAuthnCredentialTable struct {
 	ID          uuid.UUID                        `gorm:"type:char(36);not null;primaryKey;size:36"`
 	UserID      uuid.UUID                        `gorm:"type:char(36);not null;size:36"`
 	User        UserTable                        `gorm:"foreignKey:UserID"`
-	CredID      []byte                           `gorm:"type:binary(64);not null;unique"`
+	CredID      string                           `gorm:"type:varchar(256);not null;size:50"`
 	Name        string                           `gorm:"type:varchar(50);not null;size:50"`
-	PublicKey   []byte                           `gorm:"type:binary(65);not null;size:65"`
+	PublicKey   []byte                           `gorm:"type:varbinary(33);not null;size:65"`
 	AlgorithmID int                              `gorm:"type:tinyint;not null"`
 	Algorithm   WebAuthnCredentialAlgorithmTable `gorm:"foreignKey:AlgorithmID"`
 	CreatedAt   time.Time                        `gorm:"type:datetime;not null"`

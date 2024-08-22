@@ -11,7 +11,10 @@ func NewWebAuthnAuthData(
 	rpIDHash values.WebAuthnRelyingPartyIDHash,
 	raw []byte,
 ) *WebAuthnAuthData {
-	return &WebAuthnAuthData{relyingPartyIDHash: rpIDHash}
+	return &WebAuthnAuthData{
+		relyingPartyIDHash: rpIDHash,
+		raw:                raw,
+	}
 }
 
 func (w *WebAuthnAuthData) RelyingPartyIDHash() values.WebAuthnRelyingPartyIDHash {

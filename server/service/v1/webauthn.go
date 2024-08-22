@@ -109,7 +109,6 @@ func (wa *WebAuthn) FinishRegistration(
 		return nil, service.ErrWebAuthnInvalidRelyingParty
 	}
 
-	log.Printf("aaguid: %s", aaguid.String())
 	name, ok := wa.aaguid2NameMap[aaguid]
 	if !ok {
 		name = values.NewWebAuthnCredentialName("Unknown Authenticator")
@@ -149,7 +148,6 @@ func (wa *WebAuthn) BeginLogin(ctx context.Context) (*domain.WebAuthnRelyingPart
 func (wa *WebAuthn) FinishLogin(
 	ctx context.Context,
 	sessionChallenge values.WebAuthnChallenge,
-	relyingPartyHash values.WebAuthnRelyingPartyIDHash,
 	clientData *domain.WebAuthnClientData,
 	authData *domain.WebAuthnAuthData,
 	credID values.WebAuthnCredentialCredID,
@@ -169,7 +167,7 @@ func (wa *WebAuthn) FinishLogin(
 	}
 
 	// RelyingPartyIDHashの検証
-	if relyingPartyHash != wa.relyingPartyIDHash {
+	if authData.RelyingPartyIDHash() != wa.relyingPartyIDHash {
 		return nil, service.ErrWebAuthnInvalidRelyingParty
 	}
 
@@ -226,6 +224,10 @@ func (wa *WebAuthn) verifySignatureES256(
 	signature values.WebAuthnSignature,
 ) error {
 	x, y := elliptic.UnmarshalCompressed(elliptic.P256(), publicKey)
+	if x == nil {
+		return errors.New("invalid public key")
+	}
+
 	ecdsaKey := &ecdsa.PublicKey{
 		Curve: elliptic.P256(),
 		X:     x,

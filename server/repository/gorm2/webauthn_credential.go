@@ -2,6 +2,7 @@ package gorm2
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"log"
@@ -83,10 +84,12 @@ func (wac *WebAuthnCredential) StoreCredential(ctx context.Context, userID value
 		return fmt.Errorf("unknown algorism: %d", credential.Algorithm())
 	}
 
+	base64.StdEncoding.EncodeToString(credential.CredID())
+
 	credentialTable := WebAuthnCredentialTable{
 		ID:          uuid.UUID(credential.ID()),
 		UserID:      uuid.UUID(userID),
-		CredID:      credential.CredID(),
+		CredID:      base64.StdEncoding.EncodeToString(credential.CredID()),
 		Name:        string(credential.Name()),
 		PublicKey:   credential.PublicKey(),
 		AlgorithmID: algorismID.ID,
@@ -134,9 +137,15 @@ func (wac *WebAuthnCredential) GetCredentialsByUserID(ctx context.Context, userI
 			continue
 		}
 
+		credID, err := base64.StdEncoding.DecodeString(credentialTable.CredID)
+		if err != nil {
+			log.Printf("error: failed to decode credID: %v", err)
+			continue
+		}
+
 		credential := domain.NewWebAuthnCredential(
 			values.NewWebAuthnCredentialIDFromUUID(credentialTable.ID),
-			values.NewWebAuthnCredentialCredID(credentialTable.CredID),
+			values.NewWebAuthnCredentialCredID(credID),
 			values.NewWebAuthnCredentialName(credentialTable.Name),
 			values.NewWebAuthnCredentialPublicKey(credentialTable.PublicKey),
 			algorithm,
@@ -165,7 +174,7 @@ func (wac *WebAuthnCredential) GetCredentialWithUserByCredID(ctx context.Context
 	err = db.
 		Joins("Algorithm").
 		Joins("User").
-		Where("cred_id = ?", credID).
+		Where("cred_id = ?", base64.StdEncoding.EncodeToString(credID)).
 		Where("Algorithm.active = true").
 		First(&credentialTable).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -185,7 +194,7 @@ func (wac *WebAuthnCredential) GetCredentialWithUserByCredID(ctx context.Context
 
 	credential := domain.NewWebAuthnCredential(
 		values.NewWebAuthnCredentialIDFromUUID(credentialTable.ID),
-		values.NewWebAuthnCredentialCredID(credentialTable.CredID),
+		credID,
 		values.NewWebAuthnCredentialName(credentialTable.Name),
 		values.NewWebAuthnCredentialPublicKey(credentialTable.PublicKey),
 		algorithm,
@@ -232,7 +241,7 @@ func (wac *WebAuthnCredential) DeleteCredential(ctx context.Context, userID valu
 
 	result := db.
 		Where("user_id = ?", uuid.UUID(userID)).
-		Where("cred_id = ?", credID).
+		Where("cred_id = ?", base64.StdEncoding.EncodeToString(credID)).
 		Delete(&WebAuthnCredentialTable{})
 	err = result.Error
 	if err != nil {

@@ -112,6 +112,7 @@ import { defineComponent, computed, reactive, onMounted } from 'vue'
 import { useMainStore } from '/@/store/index'
 import PollCardComponent from '/@/components/PollCard.vue'
 import apis, { PollSummary, WebAuthnCredentialType } from '/@/lib/apis'
+import { b64urlDecode, b64urlEncode, uuid2bytes } from '/@/lib/encoding'
 
 interface State {
   pollOwners: PollSummary[] | null
@@ -143,30 +144,6 @@ export default defineComponent({
         state.pollAnswers = []
       }
     })
-
-    const uuid2bytes = (uuid: string) => {
-      const hex = uuid.replace(/-/g, '')
-
-      const bytes = new Uint8Array(16)
-      for (let i = 0; i < 16; i++) {
-        bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16)
-      }
-
-      return bytes
-    }
-    const b64urlDecode = (input: string) => {
-      return Uint8Array.from(input.replace(/-/g, '+').replace(/_/g, '/'), c =>
-        c.charCodeAt(0)
-      )
-    }
-    const b64urlEncode = (input: ArrayBuffer) => {
-      let bytes = input instanceof Uint8Array ? input : new Uint8Array(input)
-
-      return btoa(String.fromCharCode(...bytes))
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
-        .replace(/=/g, '')
-    }
 
     const onPasskeyRegister = async () => {
       if (!window.PublicKeyCredential) {

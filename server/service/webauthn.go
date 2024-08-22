@@ -46,7 +46,6 @@ type WebAuthn interface {
 	FinishLogin(
 		ctx context.Context,
 		sessionChallenge values.WebAuthnChallenge,
-		relyingPartyHash values.WebAuthnRelyingPartyIDHash,
 		clientData *domain.WebAuthnClientData,
 		authData *domain.WebAuthnAuthData,
 		credID values.WebAuthnCredentialCredID,

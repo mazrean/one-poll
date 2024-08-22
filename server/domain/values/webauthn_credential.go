@@ -23,11 +23,18 @@ func NewWebAuthnCredentialCredID(id []byte) WebAuthnCredentialCredID {
 	return WebAuthnCredentialCredID(id)
 }
 
-var ErrWebAuthnCredentialCredIDTooShort = errors.New("webauthn credential id should be at least 16 bytes")
+var (
+	ErrWebAuthnCredentialCredIDTooShort = errors.New("webauthn credential id should be at least 16 bytes")
+	ErrWebAuthnCredentialCredIDTooLong  = errors.New("webauthn credential id should be at most 200 bytes")
+)
 
 func (id WebAuthnCredentialCredID) Validate() error {
 	if len(id) < 16 {
 		return ErrWebAuthnCredentialCredIDTooShort
+	}
+
+	if len(id) > 200 {
+		return ErrWebAuthnCredentialCredIDTooLong
 	}
 
 	return nil

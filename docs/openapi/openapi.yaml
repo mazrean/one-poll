@@ -516,6 +516,25 @@ components:
         - clientDataJSON
         - authenticatorData
         - signature
+    WebAuthnPublicKeyCredentialRequest:
+      title: WebAuthnPublicKeyCredentialRequest
+      type: object
+      properties:
+        id:
+          type: string
+          format: base64
+        rawId:
+          type: string
+          format: base64
+        type:
+          $ref: '#/components/schemas/WebAuthnCredentialType'
+        response:
+          $ref: '#/components/schemas/WebAuthnPublicKeyCredentialRequestResponse'
+      required:
+        - id
+        - rawId
+        - type
+        - response
     WebAuthnCredential:
       title: WebAuthnCredential
       type: object
@@ -690,7 +709,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WebAuthnPublicKeyCredentialRequestResponse'
+              $ref: '#/components/schemas/WebAuthnPublicKeyCredentialRequest'
       responses:
         '200':
           description: OK

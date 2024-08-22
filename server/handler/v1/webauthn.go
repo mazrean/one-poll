@@ -312,6 +312,135 @@ func parsePublicKey(publicKey []byte) (values.WebAuthnCredentialPublicKey, value
 	return pubKey, algorism, nil
 }
 
+// webauthnの認証開始
+// (POST /webauthn/authenticate/start)
+func (w *WebAuthn) PostWebauthnAuthenticateStart(c echo.Context) error {
+	session, err := w.Session.getSession(c)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid session")
+	}
+
+	relyingParty, challenge, err := w.webAuthnService.BeginLogin(c.Request().Context())
+	if err != nil {
+		log.Printf("failed to start authentication: %v", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to start authentication")
+	}
+
+	w.Session.setWebAuthnLoginChallenge(session, challenge)
+
+	err = w.Session.save(c, session)
+	if err != nil {
+		log.Printf("failed to save session: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to save session")
+	}
+
+	relyingPartyID := string(relyingParty.ID())
+	strChallenge := base64.RawURLEncoding.EncodeToString(challenge)
+
+	timeout := 60000
+
+	return c.JSON(http.StatusOK, openapi.WebAuthnPublicKeyCredentialRequestOptions{
+		RpId:      &relyingPartyID,
+		Challenge: strChallenge,
+		Timeout:   &timeout,
+	})
+}
+
+// webauthnの認証終了
+// (POST /webauthn/authenticate/finish)
+func (w *WebAuthn) PostWebauthnAuthenticateFinish(c echo.Context) error {
+	session, err := w.Session.getSession(c)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid session")
+	}
+
+	challenge, err := w.Session.getWebAuthnLoginChallenge(session)
+	if errors.Is(err, ErrNoValue) {
+		return echo.NewHTTPError(http.StatusBadRequest, "login challenge not found")
+	}
+	if err != nil {
+		log.Printf("failed to get login challenge: %v", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get login challenge")
+	}
+
+	var req openapi.WebAuthnPublicKeyCredentialRequest
+	if err := c.Bind(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid request")
+	}
+
+	credIDBinary, err := base64.RawURLEncoding.DecodeString(req.Id)
+	if err != nil {
+		log.Printf("failed to decode cred id: %v", err)
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid cred id")
+	}
+	credID := values.NewWebAuthnCredentialCredID(credIDBinary)
+
+	clientData, err := parseClientData(req.Response.ClientDataJSON)
+	if err != nil {
+		log.Printf("failed to parse client data: %v", err)
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid client data")
+	}
+
+	authenticatorData, err := parseAuthenticatorData(req.Response.AuthenticatorData)
+	if err != nil {
+		log.Printf("failed to parse authenticator data: %v", err)
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid authenticator data")
+	}
+
+	sig, err := base64.RawURLEncoding.DecodeString(req.Response.Signature)
+	if err != nil {
+		log.Printf("failed to decode signature: %v", err)
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid signature")
+	}
+
+	user, err := w.webAuthnService.FinishLogin(
+		c.Request().Context(),
+		challenge,
+		clientData,
+		authenticatorData,
+		credID,
+		values.NewWebAuthnSignature(sig),
+	)
+	switch {
+	case errors.Is(err, service.ErrWebAuthnInvalidChallenge),
+		errors.Is(err, service.ErrWebAuthnInvalidOrigin),
+		errors.Is(err, service.ErrWebAuthnInvalidRelyingParty),
+		errors.Is(err, service.ErrWebAuthnInvalidDataType):
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid request")
+	case errors.Is(err, service.ErrWebAuthnInvalidSignature),
+		errors.Is(err, service.ErrWebAuthnInvalidCredential):
+		log.Printf("failed to finish login: %v", err)
+		return echo.NewHTTPError(http.StatusUnauthorized, "invalid credential")
+	case err != nil:
+		log.Printf("failed to finish login: %v", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to finish login")
+	}
+
+	w.Session.setUser(session, user)
+
+	err = w.Session.save(c, session)
+	if err != nil {
+		log.Printf("failed to save session: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to save session")
+	}
+
+	return c.NoContent(http.StatusOK)
+}
+
+func parseAuthenticatorData(authenticatorData string) (*domain.WebAuthnAuthData, error) {
+	authenticatorDataBytes, err := base64.RawURLEncoding.DecodeString(authenticatorData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode authenticator data: %w", err)
+	}
+
+	rpIDHash := [32]byte(authenticatorDataBytes[0:32])
+
+	return domain.NewWebAuthnAuthData(
+		values.NewWebAuthnRelyingPartyIDHash(rpIDHash),
+		authenticatorDataBytes,
+	), nil
+}
+
 func parseClientData(clientDataJSON string) (*domain.WebAuthnClientData, error) {
 	clientDataBytes, err := base64.RawURLEncoding.DecodeString(clientDataJSON)
 	if err != nil {
