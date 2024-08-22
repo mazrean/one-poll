@@ -31,7 +31,18 @@
             pattern="[0-9a-zA-Z_]{8,50}" />
           <div class="invalid-feedback">{{ passwordErrorMessage }}</div>
         </div>
-        <button type="submit" class="btn btn-primary mt-3">{{ sign }}</button>
+        <div class="row align-items-center mt-3 mx-0">
+          <button type="submit" class="col btn btn-primary me-1">
+            {{ sign }}
+          </button>
+          <button
+            v-if="sign === 'サインイン' && isPasskeyEnable"
+            type="button"
+            class="col btn btn-secondary ms-1"
+            @click="onPasskey">
+            パスキーを使う
+          </button>
+        </div>
       </form>
       <div v-if="sign === 'サインイン'" class="mt-2">
         <router-link class="link link-detail" :to="{ name: 'signup' }"
@@ -61,7 +72,7 @@ export default defineComponent({
       default: 'パスワードは8~50文字の英数字・アンダーバーにしてください'
     }
   },
-  emits: ['on-submit-event'],
+  emits: ['on-submit-event', 'on-passkey-event'],
   setup(props, context) {
     const name = ref<string>('')
     const password = ref<string>('')
@@ -69,6 +80,10 @@ export default defineComponent({
 
     const onSubmitForm = () => {
       context.emit('on-submit-event', name.value, password.value)
+    }
+
+    const onPasskey = () => {
+      context.emit('on-passkey-event')
     }
 
     let nameError = true
@@ -114,6 +129,8 @@ export default defineComponent({
       password,
       validated,
       onSubmitForm,
+      onPasskey,
+      isPasskeyEnable: !!window.PublicKeyCredential,
       validation,
       resetForm
     }

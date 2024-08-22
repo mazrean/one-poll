@@ -10,6 +10,7 @@ info:
     url: 'http://www.example.com/support'
 tags:
   - name: user
+  - name: webauthn
   - name: poll
   - name: tag
   - name: result
@@ -336,6 +337,226 @@ components:
       required:
         - answer
         - createdAt
+    WebAuthnRelyingParty:
+      title: WebAuthnRelyingParty
+      type: object
+      properties:
+        id:
+          type: string
+          format: uri
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+      required:
+        - name
+    WebAuthnUser:
+      title: WebAuthnUser
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          $ref: '#/components/schemas/UserName'
+        displayName:
+          $ref: '#/components/schemas/UserName'
+      required:
+        - id
+        - name
+        - displayName
+    WebAuthnChallenge:
+      title: WebAuthnChallenge
+      type: string
+      format: base64
+    WebAuthnPubKeyCredParam:
+      title: WebAuthnPubKeyCredParam
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/WebAuthnCredentialType'
+        alg:
+          $ref: '#/components/schemas/WebAuthnCredentialAlgorithm'
+      required:
+        - type
+        - alg
+    WebAuthnAuthenticatorAttestationType:
+      title: WebAuthnAuthenticatorAttestationType
+      type: string
+      enum:
+        - none
+        - indirect
+        - direct
+    WebAuthnAuthenticatorAttachment:
+      title: WebAuthnAuthenticatorAttachment
+      type: string
+      enum:
+        - platform
+        - cross-platform
+    WebAuthnAuthenticatorResidentKeyRequirement:
+      title: WebAuthnAuthenticatorResidentKeyRequirement
+      type: string
+      enum:
+        - required
+        - preferred
+        - discouraged
+    WebAuthnAuthenticatorSelectionCriteria:
+      title: WebAuthnAuthenticatorSelectionCriteria
+      type: object
+      properties:
+        authenticatorAttachment:
+          $ref: '#/components/schemas/WebAuthnAuthenticatorAttachment'
+        requireResidentKey:
+          type: boolean
+          default: true
+        residentKey:
+          $ref: '#/components/schemas/WebAuthnAuthenticatorResidentKeyRequirement'
+    WebAuthnPublicKeyCredentialCreationOptions:
+      title: WebAuthnPublicKeyCredentialCreationOptions
+      type: object
+      properties:
+        rp:
+          $ref: '#/components/schemas/WebAuthnRelyingParty'
+        user:
+          $ref: '#/components/schemas/WebAuthnUser'
+        challenge:
+          $ref: '#/components/schemas/WebAuthnChallenge'
+        pubKeyCredParams:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebAuthnPubKeyCredParam'
+        timeout:
+          type: integer
+          default: 60000
+        authenticatorSelection:
+          $ref: '#/components/schemas/WebAuthnAuthenticatorSelectionCriteria'
+        attestation:
+          $ref: '#/components/schemas/WebAuthnAuthenticatorAttestationType'
+      required:
+        - rp
+        - user
+        - challenge
+        - pubKeyCredParams
+        - timeout
+        - authenticatorSelection
+        - attestation
+    WebAuthnPublicKeyCredentialCreationResponse:
+      title: WebAuthnPublicKeyCredentialCreationResponse
+      type: object
+      properties:
+        clientDataJSON:
+          type: string
+          format: base64
+        attestationObject:
+          type: string
+          format: base64
+      required:
+        - clientDataJSON
+        - attestationObject
+    WebAuthnPublicKeyCredentialCreation:
+      title: WebAuthnPublicKeyCredentialCreation
+      type: object
+      properties:
+        id:
+          type: string
+          format: base64
+        rawId:
+          type: string
+          format: base64
+        response:
+          $ref: '#/components/schemas/WebAuthnPublicKeyCredentialCreationResponse'
+        type:
+          $ref: '#/components/schemas/WebAuthnCredentialType'
+      required:
+        - id
+        - rawId
+        - response
+        - type
+    WebAuthnCredentialType:
+      title: WebAuthnCredentialType
+      type: string
+      enum:
+        - public-key
+    WebAuthnCredentialAlgorithm:
+      title: WebAuthnCredentialAlgorithm
+      type: integer
+      enum:
+        - -7
+    WebAuthnPublicKeyCredentialRequestOptions:
+      title: WebAuthnPublicKeyCredentialRequestOptions
+      type: object
+      properties:
+        challenge:
+          $ref: '#/components/schemas/WebAuthnChallenge'
+        timeout:
+          type: integer
+          default: 60000
+        rpId:
+          type: string
+          format: uri
+      required:
+        - challenge
+    WebAuthnPublicKeyCredentialRequestResponse:
+      title: WebAuthnPublicKeyCredentialRequestResponse
+      type: object
+      properties:
+        clientDataJSON:
+          type: string
+          format: base64
+        authenticatorData:
+          type: string
+          format: base64
+        signature:
+          type: string
+          format: base64
+        userHandle:
+          type: string
+          format: base64
+      required:
+        - clientDataJSON
+        - authenticatorData
+        - signature
+    WebAuthnPublicKeyCredentialRequest:
+      title: WebAuthnPublicKeyCredentialRequest
+      type: object
+      properties:
+        id:
+          type: string
+          format: base64
+        rawId:
+          type: string
+          format: base64
+        type:
+          $ref: '#/components/schemas/WebAuthnCredentialType'
+        response:
+          $ref: '#/components/schemas/WebAuthnPublicKeyCredentialRequestResponse'
+      required:
+        - id
+        - rawId
+        - type
+        - response
+    WebAuthnCredential:
+      title: WebAuthnCredential
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+        createdAt:
+          type: string
+          format: date-time
+        lastUsedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - createdAt
+        - lastUsedAt
   parameters: {}
   requestBodies: {}
   responses: {}
@@ -435,6 +656,101 @@ paths:
                 $ref: '#/components/schemas/PollSummaries'
       operationId: get-users-me-answers
       description: 回答質問一覧
+  /webauthn/resister/start:
+    post:
+      summary: 'webauthnの公開鍵登録開始'
+      operationId: post-webauthn-resister-start
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebAuthnPublicKeyCredentialCreationOptions'
+      description: WebAuthn登録開始
+      tags:
+        - webauthn
+  /webauthn/resister/finish:
+    post:
+      summary: 'webauthnの公開鍵登録終了'
+      operationId: post-webauthn-resister-finish
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebAuthnPublicKeyCredentialCreation'
+      responses:
+        '201':
+          description: Registered
+        '400':
+          description: Bad Request
+      description: WebAuthn登録終了
+      tags:
+        - webauthn
+  /webauthn/authenticate/start:
+    post:
+      summary: 'webauthnの認証開始'
+      operationId: post-webauthn-authenticate-start
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebAuthnPublicKeyCredentialRequestOptions'
+      description: WebAuthn認証開始
+      tags:
+        - webauthn
+  /webauthn/authenticate/finish:
+    post:
+      summary: 'webauthnの認証終了'
+      operationId: post-webauthn-authenticate-finish
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebAuthnPublicKeyCredentialRequest'
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+      description: WebAuthn認証終了
+      tags:
+        - webauthn
+  /webauthn/credentials:
+    get:
+      summary: 'webauthnの登録情報一覧'
+      operationId: get-webauthn-credentials
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WebAuthnCredential'
+      description: WebAuthn登録情報一覧
+      tags:
+        - webauthn
+  /webauthn/credentials/{credentialID}:
+    parameters:
+      - schema:
+          type: string
+          format: uuid
+        name: credentialID
+        in: path
+        required: true
+    delete:
+      summary: 'webauthnの登録情報削除'
+      operationId: delete-webauthn-credentials
+      responses:
+        '204':
+          description: OK
+      description: WebAuthn登録情報削除
+      tags:
+        - webauthn
   /polls:
     get:
       summary: ''

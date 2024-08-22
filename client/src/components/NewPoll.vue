@@ -98,7 +98,7 @@
               placeholder="新しく追加するタグ名を入力 (Enterで追加)"
               @Input="calculateFilter()"
               @keydown.enter="insertTag()" />
-            <ul v-for="v in state.autocompletes" :key="v" class="list-group">
+            <ul v-for="v in state.autocompletes" :key="v.id" class="list-group">
               <button
                 class="list-group-item list-group-item-action p-1"
                 type="button"

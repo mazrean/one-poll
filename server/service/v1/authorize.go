@@ -30,7 +30,7 @@ func (a *Authorization) Signup(ctx context.Context, name values.UserName, passwo
 		if err == nil {
 			return service.ErrUserAlreadyExists
 		}
-		if err != nil && !errors.Is(err, repository.ErrRecordNotFound) {
+		if !errors.Is(err, repository.ErrRecordNotFound) {
 			return fmt.Errorf("failed to get user: %w", err)
 		}
 

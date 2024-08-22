@@ -11,6 +11,8 @@ import (
 var (
 	tables = []interface{}{
 		&UserTable{},
+		&WebAuthnCredentialTable{},
+		&WebAuthnCredentialAlgorithmTable{},
 		&PollTable{},
 		&PollTypeTable{},
 		&TagTable{},
@@ -28,6 +30,33 @@ type UserTable struct {
 
 func (*UserTable) TableName() string {
 	return "users"
+}
+
+type WebAuthnCredentialTable struct {
+	ID          uuid.UUID                        `gorm:"type:char(36);not null;primaryKey;size:36"`
+	UserID      uuid.UUID                        `gorm:"type:char(36);not null;size:36"`
+	User        UserTable                        `gorm:"foreignKey:UserID"`
+	CredID      string                           `gorm:"type:varchar(256);not null;size:50"`
+	Name        string                           `gorm:"type:varchar(50);not null;size:50"`
+	PublicKey   []byte                           `gorm:"type:varbinary(33);not null;size:65"`
+	AlgorithmID int                              `gorm:"type:tinyint;not null"`
+	Algorithm   WebAuthnCredentialAlgorithmTable `gorm:"foreignKey:AlgorithmID"`
+	CreatedAt   time.Time                        `gorm:"type:datetime;not null"`
+	LastUsedAt  time.Time                        `gorm:"type:datetime;not null"`
+}
+
+func (*WebAuthnCredentialTable) TableName() string {
+	return "webauthn_credentials"
+}
+
+type WebAuthnCredentialAlgorithmTable struct {
+	ID     int    `gorm:"type:TINYINT AUTO_INCREMENT;not null;primaryKey"`
+	Name   string `gorm:"type:varchar(50);not null;size:50;unique"`
+	Active bool   `gorm:"type:bool;not null;default:true"`
+}
+
+func (*WebAuthnCredentialAlgorithmTable) TableName() string {
+	return "webauthn_credential_algorithms"
 }
 
 type PollTable struct {

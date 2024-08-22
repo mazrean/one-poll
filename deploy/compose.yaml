@@ -21,6 +21,9 @@ services:
       DB_DATABASE: one_poll
       SESSION_SECRET:
       ADDR: :3000
+      RP_ID: one-poll.mazrean.com
+      RP_ORIGIN: https://one-poll.mazrean.com
+      RP_NAME: One Poll
     depends_on:
       one-poll-mariadb:
         condition: service_healthy

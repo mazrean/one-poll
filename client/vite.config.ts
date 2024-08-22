@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import path from 'path'
 import vue from '@vitejs/plugin-vue'
-import brotli from "rollup-plugin-brotli";
+import brotli from 'rollup-plugin-brotli'
 
 export default defineConfig({
   resolve: {

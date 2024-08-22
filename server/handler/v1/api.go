@@ -25,6 +25,7 @@ type API struct {
 	*Tag
 	*Comment
 	*Response
+	*WebAuthn
 	unimplemented
 }
 
@@ -35,6 +36,7 @@ func NewAPI(
 	tag *Tag,
 	comment *Comment,
 	response *Response,
+	webAuthn *WebAuthn,
 ) *API {
 	return &API{
 		Checker:  checker,
@@ -43,6 +45,7 @@ func NewAPI(
 		Tag:      tag,
 		Comment:  comment,
 		Response: response,
+		WebAuthn: webAuthn,
 	}
 }
 
