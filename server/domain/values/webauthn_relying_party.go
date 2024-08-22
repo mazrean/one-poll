@@ -3,8 +3,7 @@ package values
 import (
 	"crypto/sha256"
 	"errors"
-	"fmt"
-	"net/url"
+	"regexp"
 )
 
 type WebAuthnRelyingPartyID string
@@ -14,43 +13,14 @@ func NewWebAuthnRelyingPartyID(id string) WebAuthnRelyingPartyID {
 }
 
 var (
-	ErrWebAuthnRelyingPartyIDInvalidURL       = errors.New("invalid url")
-	ErrWebAuthnRelyingPartyIDSchemeExists     = errors.New("scheme exists")
-	ErrWebAuthnRelyingPartyIDHostEmpty        = errors.New("host is empty")
-	ErrWebAuthnRelyingPartyIDPathNotEmpty     = errors.New("path is not empty")
-	ErrWebAuthnRelyingPartyIDQueryNotEmpty    = errors.New("query is not empty")
-	ErrWebAuthnRelyingPartyIDFragmentNotEmpty = errors.New("fragment is not empty")
-	ErrWebAuthnRelyingPartyIDUserNotNil       = errors.New("user is not nil")
+	ErrWebAuthnRelyingPartyIDInvalidDomain = errors.New("invalid domain")
 )
 
+var domainRegexp = regexp.MustCompile(`^(?i)[a-z0-9-]+(\.[a-z0-9-]+)+\.?$`)
+
 func (id WebAuthnRelyingPartyID) Validate() error {
-	idURL, err := url.Parse(string(id))
-	if err != nil {
-		return fmt.Errorf("%w: %w", ErrWebAuthnRelyingPartyIDInvalidURL, err)
-	}
-
-	if idURL.Scheme != "" {
-		return ErrWebAuthnRelyingPartyIDSchemeExists
-	}
-
-	if idURL.Host == "" {
-		return ErrWebAuthnRelyingPartyIDHostEmpty
-	}
-
-	if idURL.RawPath != "" {
-		return fmt.Errorf("%w: %s", ErrWebAuthnRelyingPartyIDPathNotEmpty, idURL.RawPath)
-	}
-
-	if idURL.RawQuery != "" {
-		return fmt.Errorf("%w: %s", ErrWebAuthnRelyingPartyIDQueryNotEmpty, idURL.RawQuery)
-	}
-
-	if idURL.Fragment != "" {
-		return fmt.Errorf("%w: %s", ErrWebAuthnRelyingPartyIDFragmentNotEmpty, idURL.Fragment)
-	}
-
-	if idURL.User != nil {
-		return ErrWebAuthnRelyingPartyIDUserNotNil
+	if !domainRegexp.MatchString(string(id)) && string(id) != "localhost" {
+		return ErrWebAuthnRelyingPartyIDInvalidDomain
 	}
 
 	return nil

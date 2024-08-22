@@ -16,6 +16,15 @@ import (
 type unimplemented interface {
 	// (POST /tags)
 	PostTags(ctx echo.Context) error
+	// webauthnの認証終了
+	// (POST /webauthn/authenticate/finish)
+	PostWebauthnAuthenticateFinish(ctx echo.Context) error
+	// webauthnの認証開始
+	// (POST /webauthn/authenticate/start)
+	PostWebauthnAuthenticateStart(ctx echo.Context) error
+	// webauthnの登録情報削除
+	// (DELETE /webauthn/credentials)
+	DeleteWebauthnCredentials(ctx echo.Context) error
 }
 
 type API struct {
@@ -25,6 +34,7 @@ type API struct {
 	*Tag
 	*Comment
 	*Response
+	*WebAuthn
 	unimplemented
 }
 
@@ -35,6 +45,7 @@ func NewAPI(
 	tag *Tag,
 	comment *Comment,
 	response *Response,
+	webAuthn *WebAuthn,
 ) *API {
 	return &API{
 		Checker:  checker,
@@ -43,6 +54,7 @@ func NewAPI(
 		Tag:      tag,
 		Comment:  comment,
 		Response: response,
+		WebAuthn: webAuthn,
 	}
 }
 

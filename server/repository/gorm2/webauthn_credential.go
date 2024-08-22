@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
 	"github.com/mazrean/one-poll/domain"
 	"github.com/mazrean/one-poll/domain/values"
@@ -53,6 +54,10 @@ func setupWebAuthnCredentialAlgorismTable(db *gorm.DB) (map[values.WebAuthnCrede
 
 	algorismMap := make(map[values.WebAuthnCredentialAlgorithm]WebAuthnCredentialAlgorithmTable, len(algorisms))
 	for _, algorism := range algorisms {
+		if !algorism.Active {
+			continue
+		}
+
 		var algorismValue values.WebAuthnCredentialAlgorithm
 		switch algorism.Name {
 		case algorismES256:
@@ -81,7 +86,9 @@ func (wac *WebAuthnCredential) StoreCredential(ctx context.Context, userID value
 	credentialTable := WebAuthnCredentialTable{
 		ID:          uuid.UUID(credential.ID()),
 		UserID:      uuid.UUID(userID),
+		CredID:      credential.CredID(),
 		Name:        string(credential.Name()),
+		PublicKey:   credential.PublicKey(),
 		AlgorithmID: algorismID.ID,
 		CreatedAt:   credential.CreatedAt(),
 		LastUsedAt:  credential.LastUsedAt(),
@@ -89,6 +96,11 @@ func (wac *WebAuthnCredential) StoreCredential(ctx context.Context, userID value
 
 	err = db.Create(&credentialTable).Error
 	if err != nil {
+		var mysqlErr *mysql.MySQLError
+		if errors.As(err, &mysqlErr) && mysqlErr.Number == 1062 {
+			return repository.ErrDuplicateRecord
+		}
+
 		return fmt.Errorf("failed to create credential: %w", err)
 	}
 
@@ -104,8 +116,8 @@ func (wac *WebAuthnCredential) GetCredentialsByUserID(ctx context.Context, userI
 	var credentialTables []WebAuthnCredentialTable
 	err = db.
 		Joins("Algorithm").
-		Preload("Transports.Type").
 		Where("user_id = ?", uuid.UUID(userID)).
+		Where("Algorithm.active = true").
 		Find(&credentialTables).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get credentials: %w", err)
@@ -153,8 +165,8 @@ func (wac *WebAuthnCredential) GetCredentialWithUserByCredID(ctx context.Context
 	err = db.
 		Joins("Algorithm").
 		Joins("User").
-		Preload("Transports.Type").
 		Where("cred_id = ?", credID).
+		Where("Algorithm.active = true").
 		First(&credentialTable).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil, repository.ErrRecordNotFound

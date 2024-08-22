@@ -39,6 +39,36 @@ const (
 	OnlyBrowsable    UserStatusAccessMode = "only_browsable"
 )
 
+// Defines values for WebAuthnAuthenticatorAttachment.
+const (
+	CrossPlatform WebAuthnAuthenticatorAttachment = "cross-platform"
+	Platform      WebAuthnAuthenticatorAttachment = "platform"
+)
+
+// Defines values for WebAuthnAuthenticatorAttestationType.
+const (
+	Direct   WebAuthnAuthenticatorAttestationType = "direct"
+	Indirect WebAuthnAuthenticatorAttestationType = "indirect"
+	None     WebAuthnAuthenticatorAttestationType = "none"
+)
+
+// Defines values for WebAuthnAuthenticatorResidentKeyRequirement.
+const (
+	Discouraged WebAuthnAuthenticatorResidentKeyRequirement = "discouraged"
+	Preferred   WebAuthnAuthenticatorResidentKeyRequirement = "preferred"
+	Required    WebAuthnAuthenticatorResidentKeyRequirement = "required"
+)
+
+// Defines values for WebAuthnCredentialAlgorithm.
+const (
+	Minus7 WebAuthnCredentialAlgorithm = -7
+)
+
+// Defines values for WebAuthnCredentialType.
+const (
+	PublicKey WebAuthnCredentialType = "public-key"
+)
+
 // Answer 選択したボタンid配列
 type Answer = []openapi_types.UUID
 
@@ -203,6 +233,101 @@ type UserStatus struct {
 // UserStatusAccessMode only_browable 質問の閲覧　can_answer 解答できる　can_access_details 結果の表示
 type UserStatusAccessMode string
 
+// WebAuthnAuthenticatorAttachment defines model for WebAuthnAuthenticatorAttachment.
+type WebAuthnAuthenticatorAttachment string
+
+// WebAuthnAuthenticatorAttestationType defines model for WebAuthnAuthenticatorAttestationType.
+type WebAuthnAuthenticatorAttestationType string
+
+// WebAuthnAuthenticatorResidentKeyRequirement defines model for WebAuthnAuthenticatorResidentKeyRequirement.
+type WebAuthnAuthenticatorResidentKeyRequirement string
+
+// WebAuthnAuthenticatorSelectionCriteria defines model for WebAuthnAuthenticatorSelectionCriteria.
+type WebAuthnAuthenticatorSelectionCriteria struct {
+	AuthenticatorAttachment *WebAuthnAuthenticatorAttachment             `json:"authenticatorAttachment,omitempty"`
+	RequireResidentKey      *bool                                        `json:"requireResidentKey,omitempty"`
+	ResidentKey             *WebAuthnAuthenticatorResidentKeyRequirement `json:"residentKey,omitempty"`
+}
+
+// WebAuthnChallenge defines model for WebAuthnChallenge.
+type WebAuthnChallenge = string
+
+// WebAuthnCredential defines model for WebAuthnCredential.
+type WebAuthnCredential struct {
+	CreatedAt  time.Time          `json:"createdAt"`
+	Id         openapi_types.UUID `json:"id"`
+	LastUsedAt time.Time          `json:"lastUsedAt"`
+	Name       string             `json:"name"`
+}
+
+// WebAuthnCredentialAlgorithm defines model for WebAuthnCredentialAlgorithm.
+type WebAuthnCredentialAlgorithm int
+
+// WebAuthnCredentialType defines model for WebAuthnCredentialType.
+type WebAuthnCredentialType string
+
+// WebAuthnPubKeyCredParam defines model for WebAuthnPubKeyCredParam.
+type WebAuthnPubKeyCredParam struct {
+	Alg  WebAuthnCredentialAlgorithm `json:"alg"`
+	Type WebAuthnCredentialType      `json:"type"`
+}
+
+// WebAuthnPublicKeyCredentialCreation defines model for WebAuthnPublicKeyCredentialCreation.
+type WebAuthnPublicKeyCredentialCreation struct {
+	Id       string                                      `json:"id"`
+	RawId    string                                      `json:"rawId"`
+	Response WebAuthnPublicKeyCredentialCreationResponse `json:"response"`
+	Type     WebAuthnCredentialType                      `json:"type"`
+}
+
+// WebAuthnPublicKeyCredentialCreationOptions defines model for WebAuthnPublicKeyCredentialCreationOptions.
+type WebAuthnPublicKeyCredentialCreationOptions struct {
+	Attestation            WebAuthnAuthenticatorAttestationType   `json:"attestation"`
+	AuthenticatorSelection WebAuthnAuthenticatorSelectionCriteria `json:"authenticatorSelection"`
+	Challenge              WebAuthnChallenge                      `json:"challenge"`
+	PubKeyCredParams       []WebAuthnPubKeyCredParam              `json:"pubKeyCredParams"`
+	Rp                     WebAuthnRelyingParty                   `json:"rp"`
+	Timeout                int                                    `json:"timeout"`
+	User                   WebAuthnUser                           `json:"user"`
+}
+
+// WebAuthnPublicKeyCredentialCreationResponse defines model for WebAuthnPublicKeyCredentialCreationResponse.
+type WebAuthnPublicKeyCredentialCreationResponse struct {
+	AttestationObject string `json:"attestationObject"`
+	ClientDataJSON    string `json:"clientDataJSON"`
+}
+
+// WebAuthnPublicKeyCredentialRequestOptions defines model for WebAuthnPublicKeyCredentialRequestOptions.
+type WebAuthnPublicKeyCredentialRequestOptions struct {
+	Challenge WebAuthnChallenge `json:"challenge"`
+	RpId      *string           `json:"rpId,omitempty"`
+	Timeout   *int              `json:"timeout,omitempty"`
+}
+
+// WebAuthnPublicKeyCredentialRequestResponse defines model for WebAuthnPublicKeyCredentialRequestResponse.
+type WebAuthnPublicKeyCredentialRequestResponse struct {
+	AuthenticatorData string  `json:"authenticatorData"`
+	ClientDataJSON    string  `json:"clientDataJSON"`
+	Signature         string  `json:"signature"`
+	UserHandle        *string `json:"userHandle,omitempty"`
+}
+
+// WebAuthnRelyingParty defines model for WebAuthnRelyingParty.
+type WebAuthnRelyingParty struct {
+	Id   *string `json:"id,omitempty"`
+	Name string  `json:"name"`
+}
+
+// WebAuthnUser defines model for WebAuthnUser.
+type WebAuthnUser struct {
+	// DisplayName アカウント名。uuidで管理されるが、ユーザー視点の観点で重複を許さない
+	DisplayName UserName           `json:"displayName"`
+	Id          openapi_types.UUID `json:"id"`
+
+	// Name アカウント名。uuidで管理されるが、ユーザー視点の観点で重複を許さない
+	Name UserName `json:"name"`
+}
+
 // GetPollsParams defines parameters for GetPolls.
 type GetPollsParams struct {
 	// Limit 最大質問数
@@ -238,6 +363,12 @@ type PostUsersJSONRequestBody = PostUser
 
 // PostUsersSigninJSONRequestBody defines body for PostUsersSignin for application/json ContentType.
 type PostUsersSigninJSONRequestBody = PostUser
+
+// PostWebauthnAuthenticateFinishJSONRequestBody defines body for PostWebauthnAuthenticateFinish for application/json ContentType.
+type PostWebauthnAuthenticateFinishJSONRequestBody = WebAuthnPublicKeyCredentialRequestResponse
+
+// PostWebauthnResisterFinishJSONRequestBody defines body for PostWebauthnResisterFinish for application/json ContentType.
+type PostWebauthnResisterFinishJSONRequestBody = WebAuthnPublicKeyCredentialCreation
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -292,6 +423,24 @@ type ServerInterface interface {
 
 	// (POST /users/signout)
 	PostUsersSignout(ctx echo.Context) error
+	// webauthnの認証終了
+	// (POST /webauthn/authenticate/finish)
+	PostWebauthnAuthenticateFinish(ctx echo.Context) error
+	// webauthnの認証開始
+	// (POST /webauthn/authenticate/start)
+	PostWebauthnAuthenticateStart(ctx echo.Context) error
+	// webauthnの登録情報削除
+	// (DELETE /webauthn/credentials)
+	DeleteWebauthnCredentials(ctx echo.Context) error
+	// webauthnの登録情報一覧
+	// (GET /webauthn/credentials)
+	GetWebauthnCredentials(ctx echo.Context) error
+	// webauthnの公開鍵登録終了
+	// (POST /webauthn/resister/finish)
+	PostWebauthnResisterFinish(ctx echo.Context) error
+	// webauthnの公開鍵登録開始
+	// (POST /webauthn/resister/start)
+	PostWebauthnResisterStart(ctx echo.Context) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -533,6 +682,60 @@ func (w *ServerInterfaceWrapper) PostUsersSignout(ctx echo.Context) error {
 	return err
 }
 
+// PostWebauthnAuthenticateFinish converts echo context to params.
+func (w *ServerInterfaceWrapper) PostWebauthnAuthenticateFinish(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostWebauthnAuthenticateFinish(ctx)
+	return err
+}
+
+// PostWebauthnAuthenticateStart converts echo context to params.
+func (w *ServerInterfaceWrapper) PostWebauthnAuthenticateStart(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostWebauthnAuthenticateStart(ctx)
+	return err
+}
+
+// DeleteWebauthnCredentials converts echo context to params.
+func (w *ServerInterfaceWrapper) DeleteWebauthnCredentials(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.DeleteWebauthnCredentials(ctx)
+	return err
+}
+
+// GetWebauthnCredentials converts echo context to params.
+func (w *ServerInterfaceWrapper) GetWebauthnCredentials(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetWebauthnCredentials(ctx)
+	return err
+}
+
+// PostWebauthnResisterFinish converts echo context to params.
+func (w *ServerInterfaceWrapper) PostWebauthnResisterFinish(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostWebauthnResisterFinish(ctx)
+	return err
+}
+
+// PostWebauthnResisterStart converts echo context to params.
+func (w *ServerInterfaceWrapper) PostWebauthnResisterStart(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostWebauthnResisterStart(ctx)
+	return err
+}
+
 // This is a simple interface which specifies echo.Route addition functions which
 // are present on both echo.Echo and echo.Group, since we want to allow using
 // either of them for path registration
@@ -578,57 +781,78 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/users/me/owners", wrapper.GetUsersMeOwners)
 	router.POST(baseURL+"/users/signin", wrapper.PostUsersSignin)
 	router.POST(baseURL+"/users/signout", wrapper.PostUsersSignout)
+	router.POST(baseURL+"/webauthn/authenticate/finish", wrapper.PostWebauthnAuthenticateFinish)
+	router.POST(baseURL+"/webauthn/authenticate/start", wrapper.PostWebauthnAuthenticateStart)
+	router.DELETE(baseURL+"/webauthn/credentials", wrapper.DeleteWebauthnCredentials)
+	router.GET(baseURL+"/webauthn/credentials", wrapper.GetWebauthnCredentials)
+	router.POST(baseURL+"/webauthn/resister/finish", wrapper.PostWebauthnResisterFinish)
+	router.POST(baseURL+"/webauthn/resister/start", wrapper.PostWebauthnResisterStart)
 
 }
 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

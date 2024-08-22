@@ -21,12 +21,16 @@ func NewWebAuthnChallenge() (WebAuthnChallenge, error) {
 	return WebAuthnChallenge(challenge), nil
 }
 
-var ErrWebAuthnSessionChallengeInvalid = errors.New("challenge is invalid")
+func NewWebAuthnChallengeFromBytes(challenge []byte) WebAuthnChallenge {
+	return WebAuthnChallenge(challenge)
+}
+
+var ErrWebAuthnChallengeInvalid = errors.New("challenge is invalid")
 
 func NewWebAuthnChallengeFromBase64URL(challenge string) (WebAuthnChallenge, error) {
-	b, err := base64.URLEncoding.DecodeString(challenge)
+	b, err := base64.RawURLEncoding.DecodeString(challenge)
 	if err != nil {
-		return nil, ErrWebAuthnSessionChallengeInvalid
+		return nil, fmt.Errorf("%w(%s): %v", ErrWebAuthnChallengeInvalid, challenge, err)
 	}
 
 	return WebAuthnChallenge(b), nil
@@ -68,7 +72,7 @@ func (origin WebAuthnOrigin) Validate() error {
 		return fmt.Errorf("%w: %w", ErrWebAuthnOriginInvalidURL, err)
 	}
 
-	if originURL.Scheme != "https" {
+	if originURL.Scheme != "https" && originURL.Hostname() != "localhost" {
 		return fmt.Errorf("%w: %s", ErrWebAuthnOriginNotHTTPS, originURL.Scheme)
 	}
 

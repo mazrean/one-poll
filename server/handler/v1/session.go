@@ -123,3 +123,25 @@ func (s *Session) getUser(session *sessions.Session) (*domain.User, error) {
 		values.NewUserHashedPassword(userHashedPassword),
 	), nil
 }
+
+const (
+	webAuthnResisterChallenge = "webauthnRegisterChallenge"
+)
+
+func (s *Session) setWebAuthnResisterChallenge(session *sessions.Session, challenge values.WebAuthnChallenge) {
+	session.Values[webAuthnResisterChallenge] = []byte(challenge)
+}
+
+func (s *Session) getWebAuthnRegisterChallenge(session *sessions.Session) (values.WebAuthnChallenge, error) {
+	iChallenge, ok := session.Values[webAuthnResisterChallenge]
+	if !ok {
+		return nil, ErrNoValue
+	}
+
+	challenge, ok := iChallenge.([]byte)
+	if !ok {
+		return nil, ErrValueBroken
+	}
+
+	return values.NewWebAuthnChallengeFromBytes(challenge), nil
+}

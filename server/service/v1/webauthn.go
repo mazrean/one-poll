@@ -1,18 +1,15 @@
 package v1
 
 import (
-	"bytes"
 	"context"
 	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/sha256"
-	"crypto/x509"
 	_ "embed"
-	"encoding/asn1"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
-	"math/big"
 	"time"
 
 	"github.com/mazrean/one-poll/domain"
@@ -112,6 +109,7 @@ func (wa *WebAuthn) FinishRegistration(
 		return nil, service.ErrWebAuthnInvalidRelyingParty
 	}
 
+	log.Printf("aaguid: %s", aaguid.String())
 	name, ok := wa.aaguid2NameMap[aaguid]
 	if !ok {
 		name = values.NewWebAuthnCredentialName("Unknown Authenticator")
@@ -189,14 +187,15 @@ func (wa *WebAuthn) FinishLogin(
 			return fmt.Errorf("failed to get credential: %w", err)
 		}
 
-		verificationData := bytes.NewBuffer(nil)
-		verificationData.Write(authData.Raw())
 		clientDataHash := clientData.Hash()
-		verificationData.Write(clientDataHash[:])
 
 		switch credential.Algorithm() {
 		case values.WebAuthnCredentialAlgorithmES256:
-			err = wa.verifySignatureES256(verificationData.Bytes(), credential.PublicKey(), signature)
+			err = wa.verifySignatureES256(
+				append(authData.Raw(), clientDataHash[:]...),
+				credential.PublicKey(),
+				signature,
+			)
 		default:
 			return fmt.Errorf("unsupported algorithm: %d", credential.Algorithm())
 		}
@@ -224,29 +223,18 @@ func (wa *WebAuthn) FinishLogin(
 func (wa *WebAuthn) verifySignatureES256(
 	verificationData []byte,
 	publicKey values.WebAuthnCredentialPublicKey,
-	sig values.WebAuthnSignature,
+	signature values.WebAuthnSignature,
 ) error {
-	key, err := x509.ParsePKIXPublicKey(publicKey)
-	if err != nil {
-		return fmt.Errorf("failed to marshal public key: %w", err)
-	}
-	ecdsaKey, ok := key.(*ecdsa.PublicKey)
-	if !ok {
-		return errors.New("not an ECDSA public key")
+	x, y := elliptic.UnmarshalCompressed(elliptic.P256(), publicKey)
+	ecdsaKey := &ecdsa.PublicKey{
+		Curve: elliptic.P256(),
+		X:     x,
+		Y:     y,
 	}
 
-	signature := &struct {
-		R, S *big.Int
-	}{}
-	_, err = asn1.Unmarshal(sig, signature)
-	if err != nil {
-		return nil
-	}
+	hash := sha256.Sum256(verificationData)
 
-	h := sha256.New()
-	h.Write(verificationData)
-
-	if !ecdsa.Verify(ecdsaKey, h.Sum(nil), signature.R, signature.S) {
+	if !ecdsa.VerifyASN1(ecdsaKey, hash[:], signature) {
 		return errors.New("invalid signature")
 	}
 
