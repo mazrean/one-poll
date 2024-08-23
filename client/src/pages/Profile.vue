@@ -221,6 +221,8 @@ export default defineComponent({
             return
           }
         }
+
+        alert('登録に失敗しました。')
       }
 
       state.passkeys = (await apis.getWebauthnCredentials()).data
