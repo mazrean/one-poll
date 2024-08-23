@@ -123,7 +123,6 @@ func (w *WebAuthn) PostWebauthnResisterStart(c echo.Context) error {
 		})
 	}
 
-	authenticatorAttachment := openapi.Platform
 	requireResidentKey := true
 	residentKey := openapi.Required
 
@@ -143,9 +142,8 @@ func (w *WebAuthn) PostWebauthnResisterStart(c echo.Context) error {
 		ExcludeCredentials: &resExcludeCredentials,
 		Attestation:        openapi.Direct,
 		AuthenticatorSelection: openapi.WebAuthnAuthenticatorSelectionCriteria{
-			AuthenticatorAttachment: &authenticatorAttachment,
-			RequireResidentKey:      &requireResidentKey,
-			ResidentKey:             &residentKey,
+			RequireResidentKey: &requireResidentKey,
+			ResidentKey:        &residentKey,
 		},
 	})
 }
