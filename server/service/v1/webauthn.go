@@ -71,13 +71,18 @@ func loadAAGUID2NameMap() (map[values.WebAuthnCredentialAAGUID]values.WebAuthnCr
 	return aaguid2NameMap, nil
 }
 
-func (wa *WebAuthn) BeginRegistration(ctx context.Context, _ *domain.User) (*domain.WebAuthnRelyingParty, values.WebAuthnChallenge, error) {
+func (wa *WebAuthn) BeginRegistration(ctx context.Context, user *domain.User) (*domain.WebAuthnRelyingParty, values.WebAuthnChallenge, []*domain.WebAuthnCredential, error) {
 	challenge, err := values.NewWebAuthnChallenge()
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to generate challenge: %w", err)
+		return nil, nil, nil, fmt.Errorf("failed to generate challenge: %w", err)
 	}
 
-	return wa.relyingParty, challenge, nil
+	credentials, err := wa.webauthnCredentialRepository.GetCredentialsByUserID(ctx, user.GetID())
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("failed to get credentials: %w", err)
+	}
+
+	return wa.relyingParty, challenge, credentials, nil
 }
 
 func (wa *WebAuthn) FinishRegistration(

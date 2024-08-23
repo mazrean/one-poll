@@ -172,6 +172,10 @@ export default defineComponent({
           ...res.user,
           id: uuid2bytes(res.user.id)
         },
+        excludeCredentials: res.excludeCredentials?.map(cred => ({
+          ...cred,
+          id: b64urlDecode(cred.id)
+        })),
         challenge: b64urlDecode(res.challenge)
       }
 

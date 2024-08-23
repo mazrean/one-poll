@@ -21,7 +21,7 @@ var (
 
 type WebAuthn interface {
 	// BeginRegistration クレデンシャル登録の開始
-	BeginRegistration(ctx context.Context, user *domain.User) (*domain.WebAuthnRelyingParty, values.WebAuthnChallenge, error)
+	BeginRegistration(ctx context.Context, user *domain.User) (*domain.WebAuthnRelyingParty, values.WebAuthnChallenge, []*domain.WebAuthnCredential, error)
 	/*
 		FinishRegistration clientDataを検証し、クレデンシャルを保存する
 		エラー: ErrWebAuthnInvalidDataType, ErrWebAuthnInvalidChallenge, ErrWebAuthnInvalidOrigin, ErrWebAuthnInvalidRelyingParty, ErrWebAuthnDuplicate

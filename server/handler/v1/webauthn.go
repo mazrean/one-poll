@@ -98,7 +98,7 @@ func (w *WebAuthn) PostWebauthnResisterStart(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get user")
 	}
 
-	relyingParty, challenge, err := w.webAuthnService.BeginRegistration(c.Request().Context(), user)
+	relyingParty, challenge, excludeCredentials, err := w.webAuthnService.BeginRegistration(c.Request().Context(), user)
 	if err != nil {
 		log.Printf("failed to start registration: %v", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to start registration")
@@ -115,6 +115,15 @@ func (w *WebAuthn) PostWebauthnResisterStart(c echo.Context) error {
 	relyingPartyID := string(relyingParty.ID())
 	strChallenge := base64.RawURLEncoding.EncodeToString(challenge)
 
+	resExcludeCredentials := make([]openapi.WebAuthnCredentialBase, 0, len(excludeCredentials))
+	for _, credential := range excludeCredentials {
+		resExcludeCredentials = append(resExcludeCredentials, openapi.WebAuthnCredentialBase{
+			Id:   base64.RawURLEncoding.EncodeToString(credential.CredID()),
+			Type: openapi.PublicKey,
+		})
+	}
+
+	authenticatorAttachment := openapi.Platform
 	requireResidentKey := true
 	residentKey := openapi.Required
 
@@ -128,13 +137,15 @@ func (w *WebAuthn) PostWebauthnResisterStart(c echo.Context) error {
 			Name:        string(user.GetName()),
 			DisplayName: string(user.GetName()),
 		},
-		Timeout:          60000,
-		Challenge:        strChallenge,
-		PubKeyCredParams: w.pubKeyCredParams,
-		Attestation:      openapi.Direct,
+		Timeout:            60000,
+		Challenge:          strChallenge,
+		PubKeyCredParams:   w.pubKeyCredParams,
+		ExcludeCredentials: &resExcludeCredentials,
+		Attestation:        openapi.Direct,
 		AuthenticatorSelection: openapi.WebAuthnAuthenticatorSelectionCriteria{
-			RequireResidentKey: &requireResidentKey,
-			ResidentKey:        &residentKey,
+			AuthenticatorAttachment: &authenticatorAttachment,
+			RequireResidentKey:      &requireResidentKey,
+			ResidentKey:             &residentKey,
 		},
 	})
 }

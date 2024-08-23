@@ -411,6 +411,18 @@ components:
           default: true
         residentKey:
           $ref: '#/components/schemas/WebAuthnAuthenticatorResidentKeyRequirement'
+    WebAuthnCredentialBase:
+      title: WebAuthnCredentialBase
+      type: object
+      properties:
+        id:
+          type: string
+          format: base64
+        type:
+          $ref: '#/components/schemas/WebAuthnCredentialType'
+      required:
+        - id
+        - type
     WebAuthnPublicKeyCredentialCreationOptions:
       title: WebAuthnPublicKeyCredentialCreationOptions
       type: object
@@ -430,6 +442,10 @@ components:
           default: 60000
         authenticatorSelection:
           $ref: '#/components/schemas/WebAuthnAuthenticatorSelectionCriteria'
+        excludeCredentials:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebAuthnCredentialBase'
         attestation:
           $ref: '#/components/schemas/WebAuthnAuthenticatorAttestationType'
       required:
