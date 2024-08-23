@@ -47,31 +47,38 @@ export default defineComponent({
         challenge: b64urlDecode(res.challenge)
       }
 
-      const credential = await navigator.credentials.get({ publicKey: option })
-      const { PublicKeyCredential, AuthenticatorAssertionResponse } = window
-      if (
-        !credential ||
-        credential.type !== 'public-key' ||
-        !(credential instanceof PublicKeyCredential) ||
-        !(credential.response instanceof AuthenticatorAssertionResponse)
-      ) {
-        alert('認証に失敗しました。')
-        return
-      }
-
-      const authRes = await api.postWebauthnAuthenticateFinish({
-        id: credential.id,
-        type: WebAuthnCredentialType.PublicKey,
-        rawId: b64urlEncode(credential.rawId),
-        response: {
-          clientDataJSON: b64urlEncode(credential.response.clientDataJSON),
-          authenticatorData: b64urlEncode(
-            credential.response.authenticatorData
-          ),
-          signature: b64urlEncode(credential.response.signature)
+      try {
+        const credential = await navigator.credentials.get({
+          publicKey: option
+        })
+        const { PublicKeyCredential, AuthenticatorAssertionResponse } = window
+        if (
+          !credential ||
+          credential.type !== 'public-key' ||
+          !(credential instanceof PublicKeyCredential) ||
+          !(credential.response instanceof AuthenticatorAssertionResponse)
+        ) {
+          alert('認証に失敗しました。')
+          return
         }
-      })
-      if (authRes.status !== 200) {
+
+        const authRes = await api.postWebauthnAuthenticateFinish({
+          id: credential.id,
+          type: WebAuthnCredentialType.PublicKey,
+          rawId: b64urlEncode(credential.rawId),
+          response: {
+            clientDataJSON: b64urlEncode(credential.response.clientDataJSON),
+            authenticatorData: b64urlEncode(
+              credential.response.authenticatorData
+            ),
+            signature: b64urlEncode(credential.response.signature)
+          }
+        })
+        if (authRes.status !== 200) {
+          alert('認証に失敗しました。')
+          return
+        }
+      } catch {
         alert('認証に失敗しました。')
         return
       }
