@@ -183,9 +183,6 @@ export default defineComponent({
           userVerification: 'required' as const
         }
       }
-      console.log(
-        [...option.challenge].map((v: number) => v.toString(16)).join('')
-      )
 
       const credential = await navigator.credentials.create({
         publicKey: option
