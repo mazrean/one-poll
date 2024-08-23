@@ -184,34 +184,43 @@ export default defineComponent({
         }
       }
 
-      const credential = await navigator.credentials.create({
-        publicKey: option
-      })
-      const { PublicKeyCredential, AuthenticatorAttestationResponse } = window
-      if (
-        !credential ||
-        credential.type !== 'public-key' ||
-        !(credential instanceof PublicKeyCredential) ||
-        !(credential.response instanceof AuthenticatorAttestationResponse)
-      ) {
-        alert('登録に失敗しました。')
-        return
-      }
-
-      const resisterRes = await apis.postWebauthnResisterFinish({
-        id: credential.id,
-        type: WebAuthnCredentialType.PublicKey,
-        rawId: b64urlEncode(credential.rawId),
-        response: {
-          attestationObject: b64urlEncode(
-            credential.response.attestationObject
-          ),
-          clientDataJSON: b64urlEncode(credential.response.clientDataJSON)
+      try {
+        const credential = await navigator.credentials.create({
+          publicKey: option
+        })
+        const { PublicKeyCredential, AuthenticatorAttestationResponse } = window
+        if (
+          !credential ||
+          credential.type !== 'public-key' ||
+          !(credential instanceof PublicKeyCredential) ||
+          !(credential.response instanceof AuthenticatorAttestationResponse)
+        ) {
+          alert('登録に失敗しました。')
+          return
         }
-      })
-      if (resisterRes.status !== 200) {
-        alert('登録に失敗しました。')
-        return
+
+        const resisterRes = await apis.postWebauthnResisterFinish({
+          id: credential.id,
+          type: WebAuthnCredentialType.PublicKey,
+          rawId: b64urlEncode(credential.rawId),
+          response: {
+            attestationObject: b64urlEncode(
+              credential.response.attestationObject
+            ),
+            clientDataJSON: b64urlEncode(credential.response.clientDataJSON)
+          }
+        })
+        if (resisterRes.status !== 200) {
+          alert('登録に失敗しました。')
+          return
+        }
+      } catch (e) {
+        if (e instanceof Error) {
+          if (e.name === 'InvalidStateError') {
+            alert('既に登録されているパスキーです。')
+            return
+          }
+        }
       }
 
       state.passkeys = (await apis.getWebauthnCredentials()).data
