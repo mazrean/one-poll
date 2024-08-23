@@ -3,8 +3,10 @@ package values
 import (
 	"crypto/subtle"
 	"encoding/base64"
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"log"
 	"net/url"
 
 	"github.com/mazrean/one-poll/pkg/random"
@@ -47,6 +49,7 @@ func (c WebAuthnChallenge) Validate() error {
 }
 
 func (c WebAuthnChallenge) ConstantTimeEqual(other WebAuthnChallenge) bool {
+	log.Printf("c: %s, other: %s", hex.EncodeToString(c), hex.EncodeToString(other))
 	return subtle.ConstantTimeCompare(c, other) == 1
 }
 

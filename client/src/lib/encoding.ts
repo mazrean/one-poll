@@ -10,7 +10,7 @@ export const uuid2bytes = (uuid: string) => {
 }
 
 export const b64urlDecode = (input: string) => {
-  return Uint8Array.from(input.replace(/-/g, '+').replace(/_/g, '/'), c =>
+  return Uint8Array.from(atob(input.replace(/-/g, '+').replace(/_/g, '/')), c =>
     c.charCodeAt(0)
   )
 }

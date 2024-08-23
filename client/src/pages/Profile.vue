@@ -37,6 +37,7 @@
         <div class="m-auto">
           <div class="m-3">
             <button
+              v-if="isPasskeyEnabled"
               type="button"
               class="btn btn-lg btn-primary"
               @click="onPasskeyRegister">
@@ -176,8 +177,15 @@ export default defineComponent({
           ...cred,
           id: b64urlDecode(cred.id)
         })),
-        challenge: b64urlDecode(res.challenge)
+        challenge: b64urlDecode(res.challenge),
+        authenticatorSelection: {
+          ...res.authenticatorSelection,
+          userVerification: 'required' as const
+        }
       }
+      console.log(
+        [...option.challenge].map((v: number) => v.toString(16)).join('')
+      )
 
       const credential = await navigator.credentials.create({
         publicKey: option
@@ -229,15 +237,14 @@ export default defineComponent({
       { id: 'profile', label: '作成した質問一覧', active: false },
       { id: 'contact', label: '回答した質問一覧', active: false }
     ]
-    if (!window.PublicKeyCredential)
-      tabs = tabs.filter(tab => tab.id !== 'passkey')
 
     return {
       state,
       tabs,
       userID,
       onPasskeyRegister,
-      onPasskeyDelete
+      onPasskeyDelete,
+      isPasskeyEnabled: !!window.PublicKeyCredential
     }
   }
 })

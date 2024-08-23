@@ -4,6 +4,7 @@ import (
 	"crypto/elliptic"
 	"encoding/base64"
 	"encoding/binary"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -104,6 +105,7 @@ func (w *WebAuthn) PostWebauthnResisterStart(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to start registration")
 	}
 
+	log.Printf("challenge: %v\n", hex.EncodeToString(challenge))
 	w.Session.setWebAuthnResisterChallenge(session, challenge)
 
 	err = w.Session.save(c, session)
@@ -202,6 +204,8 @@ func (w *WebAuthn) PostWebauthnResisterFinish(c echo.Context) error {
 		log.Printf("failed to parse public key: %v", err)
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid public key")
 	}
+
+	log.Printf("challenge: %v\n", hex.EncodeToString(clientData.Challenge()))
 
 	credential, err := w.webAuthnService.FinishRegistration(
 		c.Request().Context(),

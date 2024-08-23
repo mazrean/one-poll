@@ -101,7 +101,7 @@ func (wa *WebAuthn) FinishRegistration(
 		return nil, service.ErrWebAuthnInvalidDataType
 	}
 
-	if sessionChallenge.ConstantTimeEqual(clientData.Challenge()) {
+	if !sessionChallenge.ConstantTimeEqual(clientData.Challenge()) {
 		return nil, service.ErrWebAuthnInvalidChallenge
 	}
 
@@ -163,7 +163,7 @@ func (wa *WebAuthn) FinishLogin(
 		return nil, service.ErrWebAuthnInvalidDataType
 	}
 
-	if sessionChallenge.ConstantTimeEqual(clientData.Challenge()) {
+	if !sessionChallenge.ConstantTimeEqual(clientData.Challenge()) {
 		return nil, service.ErrWebAuthnInvalidChallenge
 	}
 
