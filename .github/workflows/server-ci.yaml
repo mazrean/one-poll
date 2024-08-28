@@ -77,7 +77,7 @@ jobs:
           cache: true
       - run: go test ./... -v -coverprofile=./coverage.txt -race -vet=off
         env:
-          COLLECTION_ENV: development
+          APP_ENV: development
           DB_USERNAME: root
           DB_PASSWORD: password
           DB_HOSTNAME: 127.0.0.1
