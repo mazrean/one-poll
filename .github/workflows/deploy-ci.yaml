@@ -52,3 +52,4 @@ jobs:
         with:
           service: ${{ vars.SERVER_CLOUDRUN_SERVICE_NAME }}
           image: ${{ vars.SERVER_IMAGE }}
+          region: ${{ vars.REGION }}
