@@ -50,6 +50,6 @@ jobs:
       - id: "deploy"
         uses: "google-github-actions/deploy-cloudrun@v2"
         with:
-          service: ${{ vars.SERVER_CLOUDRUN_SERVICE_NAME }}
+          service: ${{ vars.SERVER_CLOUDRUN_SERVICE }}
           image: ${{ vars.SERVER_IMAGE }}
           region: ${{ vars.REGION }}
