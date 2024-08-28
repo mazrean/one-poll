@@ -53,12 +53,13 @@ func NewDB(isProduction common.IsProduction) (*DB, error) {
 		logLevel = logger.Info
 	}
 
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&loc=Asia%%2FTokyo&charset=utf8mb4",
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&loc=Asia%%2FTokyo&charset=utf8mb4&tls=%t",
 		user,
 		pass,
 		host,
 		port,
 		database,
+		isProduction,
 	)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logLevel),
