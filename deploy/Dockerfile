@@ -46,7 +46,6 @@ RUN apk --update --no-cache add ca-certificates \
   && update-ca-certificates \
   && rm -rf /usr/share/ca-certificates
 
-COPY --from=client /app/client/dist/ ./handler/v1/static/
 COPY --from=server /go/src/github.com/mazrean/one-poll/server/one-poll ./one-poll
 
 ENTRYPOINT ["./one-poll"]
