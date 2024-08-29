@@ -29,7 +29,7 @@ RUN --mount=type=cache,target=/go/pkg/mod/cache \
   go mod download
 
 COPY ./server .
-COPY --from=client /app/client/dist/* ./server/handler/v1/static/
+COPY --from=client /app/client/dist/ ./handler/v1/static/
 RUN --mount=type=cache,target=/root/.cache/go-build \
   go build -o one-poll -ldflags "-s -w"
 
@@ -46,6 +46,7 @@ RUN apk --update --no-cache add ca-certificates \
   && update-ca-certificates \
   && rm -rf /usr/share/ca-certificates
 
+COPY --from=client /app/client/dist/ ./handler/v1/static/
 COPY --from=server /go/src/github.com/mazrean/one-poll/server/one-poll ./one-poll
 
 ENTRYPOINT ["./one-poll"]

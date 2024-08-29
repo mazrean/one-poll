@@ -7,6 +7,7 @@ import (
 	"embed"
 	"fmt"
 	"io/fs"
+	"log"
 	"regexp"
 	"strings"
 
@@ -68,10 +69,13 @@ func (a *API) Start(addr string) error {
 	e.Use(middleware.Logger())
 	e.Use(middleware.RewriteWithConfig(middleware.RewriteConfig{
 		Rules: map[string]string{
-			"/":        "/index.html",
-			"/signup":  "/index.html",
-			"singin":   "/index.html",
-			"/profile": "/index.html",
+			"/":         "/index.html",
+			"/signup":   "/index.html",
+			"/signup/":  "/index.html",
+			"/singin":   "/index.html",
+			"/signin/":  "/index.html",
+			"/profile":  "/index.html",
+			"/profile/": "/index.html",
 		},
 		RegexRules: map[*regexp.Regexp]string{
 			regexp.MustCompile("^/details/(.*)$"): "/index.html",
@@ -98,14 +102,15 @@ func (a *API) Start(addr string) error {
 
 func StaticBrotliMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		log.Println(c.Request().URL.Path)
 		if c.Request().Method != "GET" ||
-			strings.HasPrefix(c.Path(), "/api") {
+			strings.HasPrefix(c.Request().URL.Path, "/api") {
 			return next(c)
 		}
 
 		exts := []string{".html", ".css", ".js"}
 		for _, ext := range exts {
-			if strings.HasSuffix(c.Path(), ext) {
+			if strings.HasSuffix(c.Request().URL.Path, ext) {
 				goto AFTER_EXT_LOOP
 			}
 		}
