@@ -7,7 +7,6 @@ import (
 	"embed"
 	"fmt"
 	"io/fs"
-	"log"
 	"regexp"
 	"strings"
 
@@ -67,21 +66,18 @@ func (a *API) Start(addr string) error {
 
 	e.Use(middleware.Recover())
 	e.Use(middleware.Logger())
-	e.Use(middleware.RewriteWithConfig(middleware.RewriteConfig{
+	e.Pre(middleware.RewriteWithConfig(middleware.RewriteConfig{
 		Rules: map[string]string{
-			"/":         "/index.html",
-			"/signup":   "/index.html",
-			"/signup/":  "/index.html",
-			"/singin":   "/index.html",
-			"/signin/":  "/index.html",
-			"/profile":  "/index.html",
-			"/profile/": "/index.html",
+			"/": "/index.html",
 		},
 		RegexRules: map[*regexp.Regexp]string{
+			regexp.MustCompile("^/signup$"):       "/index.html",
+			regexp.MustCompile("^/signin$"):       "/index.html",
+			regexp.MustCompile("^/profile$"):      "/index.html",
 			regexp.MustCompile("^/details/(.*)$"): "/index.html",
 		},
 	}))
-	e.Use(StaticBrotliMiddleware)
+	e.Pre(StaticBrotliMiddleware)
 
 	staticFS, err := fs.Sub(staticFS, "static")
 	if err != nil {
@@ -102,25 +98,30 @@ func (a *API) Start(addr string) error {
 
 func StaticBrotliMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		log.Println(c.Request().URL.Path)
 		if c.Request().Method != "GET" ||
 			strings.HasPrefix(c.Request().URL.Path, "/api") {
 			return next(c)
 		}
 
-		exts := []string{".html", ".css", ".js"}
-		for _, ext := range exts {
-			if strings.HasSuffix(c.Request().URL.Path, ext) {
+		brotliTypes := []struct{ ext, contentType string }{
+			{".html", "text/html"},
+			{".css", "text/css"},
+			{".js", "application/javascript"},
+		}
+		var contentsType string
+		for _, brotliType := range brotliTypes {
+			if strings.HasSuffix(c.Request().URL.Path, brotliType.ext) {
+				contentsType = brotliType.contentType
 				goto AFTER_EXT_LOOP
 			}
 		}
 		return next(c)
 
 	AFTER_EXT_LOOP:
-		acceptEncodings := strings.Split(strings.TrimSpace(c.Request().Header.Get("Accept-Encoding")), ",")
+		acceptEncodings := strings.Split(c.Request().Header.Get("Accept-Encoding"), ",")
 		for _, acceptEncoding := range acceptEncodings {
 			encoding, _, _ := strings.Cut(acceptEncoding, ";")
-			if encoding == "br" {
+			if strings.TrimSpace(encoding) == "br" {
 				goto AFTER_ACCEPT_ENCODING_LOOP
 			}
 		}
@@ -128,6 +129,7 @@ func StaticBrotliMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 
 	AFTER_ACCEPT_ENCODING_LOOP:
 		c.Response().Header().Set("Content-Encoding", "br")
+		c.Response().Header().Set("Content-Type", contentsType)
 		c.Request().URL.Path += ".br"
 
 		return next(c)
