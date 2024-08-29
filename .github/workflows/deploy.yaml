@@ -1,4 +1,4 @@
-name: Deploy
+name: Server Deploy
 
 on:
   push:
@@ -7,10 +7,8 @@ on:
     branches-ignore:
       - "**"
 
-env:
-  IMAGE_NAME: one-poll
 jobs:
-  server-image:
+  build_and_deploy:
     name: Build Server Image
     runs-on: ubuntu-latest
     permissions:
@@ -39,7 +37,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ./
-          file: ./deploy/server.Dockerfile
+          file: ./deploy/Dockerfile
           push: true
           platforms: linux/amd64
           cache-from: type=gha
