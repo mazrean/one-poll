@@ -5,7 +5,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"os"
+	"strconv"
 
 	"github.com/mazrean/one-poll/pkg/common"
 	pkgContext "github.com/mazrean/one-poll/pkg/context"
@@ -21,6 +23,19 @@ type DB struct {
 }
 
 func NewDB(isProduction common.IsProduction) (*DB, error) {
+	var isMigrateEnabled bool
+	strIsMigrateEnabled, ok := os.LookupEnv("DB_MIGRATE")
+	if ok {
+		var err error
+		isMigrateEnabled, err = strconv.ParseBool(strIsMigrateEnabled)
+		if err != nil {
+			log.Printf("failed to parse DB_MIGRATE: %v", err)
+			isMigrateEnabled = false
+		}
+	} else {
+		isMigrateEnabled = false
+	}
+
 	user, ok := os.LookupEnv("DB_USERNAME")
 	if !ok {
 		return nil, errors.New("DB_USERNAME is not set")
@@ -69,9 +84,11 @@ func NewDB(isProduction common.IsProduction) (*DB, error) {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 
-	err = db.AutoMigrate(tables...)
-	if err != nil {
-		return nil, fmt.Errorf("failed to auto migrate: %w", err)
+	if isMigrateEnabled {
+		err = db.AutoMigrate(tables...)
+		if err != nil {
+			return nil, fmt.Errorf("failed to auto migrate: %w", err)
+		}
 	}
 
 	return &DB{
