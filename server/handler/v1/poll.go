@@ -96,7 +96,7 @@ func (p *Poll) PostPolls(c echo.Context) error {
 }
 
 func (p *Poll) GetPolls(c echo.Context, params openapi.GetPollsParams) error {
-	c.Response().Header().Set("Cache-Control", "public, max-age=86400, stale-while-revalidate=31536000")
+	c.Response().Header().Set("Cache-Control", "public, max-age=3600, stale-while-revalidate=31536000, stale-if-error=86400")
 	var user *domain.User
 	if params.Public != nil && !*params.Public {
 		c.Response().Header().Set("Cache-Control", "no-store")
