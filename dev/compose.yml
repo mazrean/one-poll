@@ -8,6 +8,7 @@ services:
     volumes:
       - ../server:/go/src/github.com/mazrean/one-poll
     environment:
+      DB_MIGRATE: "true"
       APP_ENV: development
       DB_USERNAME: root
       DB_PASSWORD: ""

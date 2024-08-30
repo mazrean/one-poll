@@ -49,12 +49,15 @@ func (s *Session) getSession(c echo.Context) (*sessions.Session, error) {
 		return nil, fmt.Errorf("failed to get session: %w", err)
 	}
 
+	session.Options.MaxAge = 60 * 60 * 24 * 7
+	session.Options.Secure = true
+	session.Options.HttpOnly = false
+
 	c.Set(sessionContextKey, session)
 
 	return session, nil
 }
 
-//nolint:unused
 func (s *Session) save(c echo.Context, session *sessions.Session) error {
 	err := s.store.Save(c.Request(), c.Response(), session)
 	if err != nil {

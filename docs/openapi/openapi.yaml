@@ -798,6 +798,11 @@ paths:
           in: query
           name: match
           description: タイトルの部分一致
+        - schema:
+            type: boolean
+          in: query
+          name: public
+          description: 公開情報のみ。キャッシュが効くため、応答速度が速い。
     post:
       summary: ''
       tags:

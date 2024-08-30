@@ -68,5 +68,6 @@ func (c Comment) GetPollsPollIDComments(ctx echo.Context, pollID string, params 
 		comments = append(comments, comment)
 	}
 
+	ctx.Response().Header().Set("Cache-Control", "public, max-age=86400, stale-while-revalidate=31536000")
 	return ctx.JSON(http.StatusOK, comments)
 }

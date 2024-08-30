@@ -19,7 +19,7 @@
           >
         </h4>
       </li>
-      <li v-if="userID !== ''">
+      <li v-if="userID">
         <h4>
           <router-link class="nav-link link" :to="{ name: 'profile' }">
             <em class="bi bi-person-fill" /> プロフィール
@@ -30,7 +30,7 @@
         <a href="#" class="nav-link link-dark">
           <div class="py-1">
             <button
-              v-if="userID !== ''"
+              v-if="userID"
               type="button"
               class="btn btn-lg btn-primary"
               data-bs-toggle="modal"
@@ -47,7 +47,7 @@
         </a>
       </li>
     </ul>
-    <div v-if="userID !== ''">
+    <div v-if="userID">
       <hr />
       <div class="dropdown">
         <a

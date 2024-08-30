@@ -57,9 +57,11 @@
 </template>
 
 <script lang="ts">
+import { useMainStore } from '/@/store'
 import PollCardComponent from '/@/components/PollCard.vue'
 import apis, { PollSummary, PollTag } from '/@/lib/apis'
-import { reactive, onMounted, onUnmounted } from 'vue'
+import { reactive, onMounted, onUnmounted, computed } from 'vue'
+import { watch } from 'vue'
 
 interface State {
   pollSummaries: PollSummary[]
@@ -68,6 +70,7 @@ interface State {
   searchTag: string
   tags: PollTag[]
   autocompletes: PollTag[]
+  isLoading: boolean
 }
 
 export default {
@@ -80,22 +83,30 @@ export default {
       searchTitle: '',
       searchTag: '',
       tags: [],
-      autocompletes: []
+      autocompletes: [],
+      isLoading: false
     })
+
+    const store = useMainStore()
+    const isLogined = computed(() => !!store.userID)
 
     let limit = 10
     let offset = 0
-    let isLoading = false
     let isEnd = false
 
     const getPolls = async () => {
-      if (isLoading || isEnd) return []
+      if (state.isLoading || isEnd) return []
 
-      isLoading = true
+      state.isLoading = true
       let newPollSummaries: PollSummary[]
       try {
         newPollSummaries = (
-          await apis.getPolls(limit, offset, state.searchTitle || undefined)
+          await apis.getPolls(
+            limit,
+            offset,
+            state.searchTitle || undefined,
+            !isLogined.value
+          )
         ).data
       } catch {
         newPollSummaries = []
@@ -122,7 +133,7 @@ export default {
       } else {
         state.pollSummaries = [...state.pollSummaries, ...newPollSummaries]
       }
-      isLoading = false
+      state.isLoading = false
     }
     const getTags = async () => {
       try {
@@ -175,6 +186,14 @@ export default {
       }
     }
 
+    watch(isLogined, async () => {
+      state.pollSummaries = []
+      state.PollSummaries_origin = []
+      offset = 0
+      isEnd = false
+      await getPolls()
+    })
+
     onMounted(() => {
       window.addEventListener('wheel', scrollHandler)
       window.addEventListener('touchmove', scrollHandler)
@@ -189,11 +208,9 @@ export default {
 
     return {
       state,
-      getPolls,
       calculateFilter,
       onAutocomplete,
-      onKeyword,
-      PollCardComponent
+      onKeyword
     }
   }
 }

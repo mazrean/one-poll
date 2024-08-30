@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -148,6 +149,11 @@ func (r *Response) GetPollsPollIDResults(c echo.Context, pollID string) error {
 			Choice: string(item.GetLabel()),
 			Count:  item.Count,
 		})
+	}
+
+	c.Response().Header().Set("Cache-Control", "no-store")
+	if result.GetDeadline().Valid && result.GetDeadline().Time.Before(time.Now()) {
+		c.Response().Header().Set("Cache-Control", "public, max-age=86400, stale-while-revalidate=31536000, stale-if-error=31536000")
 	}
 
 	return c.JSON(http.StatusOK, openapi.PollResults{

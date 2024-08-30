@@ -44,18 +44,18 @@ import { useMainStore } from '/@/store/index'
 
 router.beforeEach(async (to, _, next) => {
   const store = useMainStore()
-  await store.setUserID()
+  const setUserPromise = store.setUserID()
   if (to.matched.some(record => record.meta.requiresAuth)) {
+    await setUserPromise
     // requiresAuthがtrueなら評価
-    if (store.getUserID() === '') {
+    if (!store.getUserID()) {
       // 未ログインならログインページへ
       next('/signin')
-    } else {
-      next() // スルー
+      return
     }
-  } else {
-    next() // スルー
   }
+
+  next() // スルー
 })
 
 export default router

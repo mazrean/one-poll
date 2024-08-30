@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/mazrean/one-poll/domain/values"
@@ -168,6 +169,8 @@ func (u *User) GetUsersMe(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get user")
 	}
 
+	time.Sleep(10 * time.Second)
+	c.Response().Header().Set("Cache-Control", "no-store")
 	return c.JSON(http.StatusOK, openapi.User{
 		Name: openapi.UserName(user.GetName()),
 		Uuid: types.UUID(user.GetID()),

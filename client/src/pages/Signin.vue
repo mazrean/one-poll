@@ -36,7 +36,7 @@ export default defineComponent({
         form.value?.resetForm()
         return
       }
-      await store.setUserID()
+      store.setUserIDValue(user.name)
       router.push('/')
     }
 

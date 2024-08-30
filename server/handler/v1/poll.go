@@ -96,18 +96,22 @@ func (p *Poll) PostPolls(c echo.Context) error {
 }
 
 func (p *Poll) GetPolls(c echo.Context, params openapi.GetPollsParams) error {
-	session, err := p.Session.getSession(c)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "invalid session")
-	}
+	c.Response().Header().Set("Cache-Control", "public, max-age=86400, stale-while-revalidate=31536000")
+	var user *domain.User
+	if params.Public != nil && !*params.Public {
+		c.Response().Header().Set("Cache-Control", "no-store")
+		session, err := p.Session.getSession(c)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "invalid session")
+		}
 
-	user, err := p.Session.getUser(session)
-	if errors.Is(err, ErrNoValue) {
-		user = nil
-	}
-	if err != nil && !errors.Is(err, ErrNoValue) {
-		log.Printf("failed to get user: %v", err)
-		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get user")
+		user, err = p.Session.getUser(session)
+		if errors.Is(err, ErrNoValue) {
+			user = nil
+		} else if err != nil {
+			log.Printf("failed to get user: %v", err)
+			return echo.NewHTTPError(http.StatusInternalServerError, "failed to get user")
+		}
 	}
 
 	var searchParams *service.PollSearchParams
@@ -229,6 +233,7 @@ func (p *Poll) GetPollsPollID(c echo.Context, pollID string) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to convert poll info")
 	}
 
+	c.Response().Header().Set("Cache-Control", "no-store")
 	return c.JSON(http.StatusOK, apiPollInfo)
 }
 

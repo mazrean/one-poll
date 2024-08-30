@@ -35,5 +35,6 @@ func (t *Tag) GetTags(c echo.Context) error {
 		})
 	}
 
+	c.Response().Header().Set("Cache-Control", "public, max-age=86400, stale-while-revalidate=86400, stale-if-error=86400")
 	return c.JSON(http.StatusOK, apiTags)
 }

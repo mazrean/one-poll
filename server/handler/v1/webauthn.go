@@ -78,6 +78,7 @@ func (w *WebAuthn) GetWebauthnCredentials(c echo.Context) error {
 		})
 	}
 
+	c.Response().Header().Set("Cache-Control", "no-store")
 	return c.JSON(http.StatusOK, apiCredentials)
 }
 

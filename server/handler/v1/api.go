@@ -78,6 +78,7 @@ func (a *API) Start(addr string) error {
 		},
 	}))
 	e.Pre(StaticBrotliMiddleware)
+	e.Pre(StaticCacheControlMiddleware)
 
 	staticFS, err := fs.Sub(staticFS, "static")
 	if err != nil {
@@ -94,6 +95,24 @@ func (a *API) Start(addr string) error {
 	openapi.RegisterHandlersWithBaseURL(api, a, "")
 
 	return e.Start(addr)
+}
+
+func StaticCacheControlMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		if c.Request().Method != "GET" ||
+			strings.HasPrefix(c.Request().URL.Path, "/api") {
+			return next(c)
+		}
+
+		cacheControl := "public, max-age=31536000, immutable, stale-if-error=86400, stale-while-revalidate=31536000"
+		if c.Request().URL.Path == "/index.html" {
+			cacheControl = "public, max-age=3600, immutable, stale-if-error=86400, stale-while-revalidate=31536000"
+		}
+
+		c.Response().Header().Set("Cache-Control", cacheControl)
+
+		return next(c)
+	}
 }
 
 func StaticBrotliMiddleware(next echo.HandlerFunc) echo.HandlerFunc {

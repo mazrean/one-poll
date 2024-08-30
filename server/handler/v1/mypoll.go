@@ -41,6 +41,7 @@ func (p *Poll) GetUsersMeOwners(ctx echo.Context) error {
 		apiPolls = append(apiPolls, &apiPoll)
 	}
 
+	ctx.Response().Header().Set("Cache-Control", "no-store")
 	return ctx.JSON(http.StatusOK, apiPolls)
 }
 
@@ -76,5 +77,6 @@ func (p *Poll) GetUsersMeAnswers(ctx echo.Context) error {
 		apiPolls = append(apiPolls, &apiPoll)
 	}
 
+	ctx.Response().Header().Set("Cache-Control", "no-store")
 	return ctx.JSON(http.StatusOK, apiPolls)
 }
