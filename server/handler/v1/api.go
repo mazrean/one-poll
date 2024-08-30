@@ -106,7 +106,7 @@ func StaticCacheControlMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 
 		cacheControl := "public, max-age=31536000, immutable, stale-if-error=86400, stale-while-revalidate=31536000"
 		if c.Request().URL.Path == "/index.html" || c.Request().URL.Path == "/index.html.br" {
-			cacheControl = "public, max-age=0, immutable, stale-if-error=86400, stale-while-revalidate=31536000"
+			cacheControl = "public, max-age=0, stale-if-error=86400, stale-while-revalidate=31536000"
 		}
 
 		c.Response().Header().Set("Cache-Control", cacheControl)
