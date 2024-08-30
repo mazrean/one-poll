@@ -38,11 +38,7 @@
           </button>
         </ul>
       </div>
-      <div
-        v-if="state.isLoading"
-        class="spinner-border text-secondary m-3"
-        role="status"></div>
-      <div v-else-if="state.pollSummaries.length === 0" class="m-3">
+      <div v-if="state.pollSummaries.length === 0" class="m-3">
         <p>表示可能な質問がありません。</p>
       </div>
       <div v-else class="d-flex flex-wrap justify-content-center">
@@ -52,6 +48,10 @@
           <PollCardComponent :poll="pollSummary" />
         </div>
       </div>
+      <div
+        v-if="state.isLoading"
+        class="spinner-border text-secondary m-3"
+        role="status" />
     </div>
   </div>
 </template>
