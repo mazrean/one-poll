@@ -39,4 +39,5 @@ type PollSearchParams struct {
 	Limit  int
 	Offset int
 	Match  string
+	Tags   []values.TagName
 }

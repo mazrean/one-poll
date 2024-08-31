@@ -15,41 +15,46 @@
             d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
         </svg>
         <input
-          v-model="state.searchTitle"
           type="searchTitle"
           class="form-control d-flex mx-3 my-1"
           name="searchTitle"
           placeholder="キーワードで検索 (Enterで更新)"
-          @input="state.searchTitle = $event.target.value"
-          @keydown.enter="onKeyword()" />
+          @keydown.enter="
+            searchTitle =
+              ($event.target as HTMLInputElement | null)?.value ?? ''
+          " />
         <input
-          v-model="state.searchTag"
+          v-model="inputTag"
           type="searchTag"
           class="form-control d-flex mx-3 my-1"
           name="searchTag"
-          placeholder="タグで検索 (タグ候補選択で更新)"
-          @input="calculateFilter()" />
-        <ul v-for="v in state.autocompletes" :key="v.id" class="list-group">
+          placeholder="タグで検索 (タグ候補選択で更新)" />
+        <ul v-for="v in autocompletes" :key="v.id" class="list-group">
           <button
             class="list-group-item list-group-item-action p-1"
             type="button"
-            @click="onAutocomplete(v.name)">
+            @click="
+              () => {
+                searchTag = v.name
+                inputTag = v.name
+              }
+            ">
             <em class="bi bi-tags-fill" /> {{ v.name }}
           </button>
         </ul>
       </div>
-      <div v-if="state.pollSummaries.length === 0" class="m-3">
+      <div
+        v-if="pollSummaries != null && pollSummaries.length === 0"
+        class="m-3">
         <p>表示可能な質問がありません。</p>
       </div>
       <div v-else class="d-flex flex-wrap justify-content-center">
-        <div
-          v-for="pollSummary in state.pollSummaries"
-          :key="pollSummary.pollId">
+        <div v-for="pollSummary in pollSummaries" :key="pollSummary.pollId">
           <PollCardComponent :poll="pollSummary" />
         </div>
       </div>
       <div
-        v-if="state.isLoading"
+        v-if="isLoading"
         class="spinner-border text-secondary m-3"
         role="status" />
     </div>
@@ -60,139 +65,91 @@
 import { useMainStore } from '/@/store'
 import PollCardComponent from '/@/components/PollCard.vue'
 import apis, { PollSummary, PollTag } from '/@/lib/apis'
-import { reactive, onMounted, onUnmounted, computed } from 'vue'
+import { onMounted, onUnmounted, computed } from 'vue'
 import { watch } from 'vue'
-
-interface State {
-  pollSummaries: PollSummary[]
-  PollSummaries_origin: PollSummary[]
-  searchTitle: string
-  searchTag: string
-  tags: PollTag[]
-  autocompletes: PollTag[]
-  isLoading: boolean
-}
+import { ref } from 'vue'
+import { watchEffect } from 'vue'
 
 export default {
   name: 'HomePage',
   components: { PollCardComponent },
   setup() {
-    const state = reactive<State>({
-      pollSummaries: [],
-      PollSummaries_origin: [],
-      searchTitle: '',
-      searchTag: '',
-      tags: [],
-      autocompletes: [],
-      isLoading: false
-    })
-
     const store = useMainStore()
     const isLogined = computed(() => !!store.userID)
 
-    let limit = 10
-    let offset = 0
-    let isEnd = false
+    const tags = ref<PollTag[] | null>(null)
+    ;(async () => {
+      tags.value = (await apis.getTags()).data
+    })()
 
-    const getPolls = async () => {
-      if (state.isLoading || isEnd) return []
+    const searchTitle = ref<string>('')
 
-      state.isLoading = true
-      let newPollSummaries: PollSummary[]
-      try {
+    const limit = 10
+    let searchState = {
+      offset: 0,
+      isEnd: false
+    }
+    const isLoading = ref(false)
+    const pollSummaries = ref<PollSummary[] | null>(null)
+
+    const getPolls = async (searchTitle: string, isLogined: boolean) => {
+      if (searchState.isEnd || isLoading.value) return
+      isLoading.value = true
+
+      const publicPollPromise = apis.getPolls(
+        limit,
+        searchState.offset,
+        searchTitle || undefined,
+        true
+      )
+
+      const originalPollSummaries = pollSummaries.value
+      let newPollSummaries: PollSummary[] = []
+      if (isLogined) {
+        const privatePollPromise = apis.getPolls(
+          limit,
+          searchState.offset,
+          searchTitle || undefined,
+          false
+        )
         newPollSummaries = (
-          await apis.getPolls(
-            limit,
-            offset,
-            state.searchTitle || undefined,
-            !isLogined.value
-          )
+          await Promise.race([publicPollPromise, privatePollPromise])
         ).data
-      } catch {
-        newPollSummaries = []
-      }
-
-      if (newPollSummaries.length < limit) {
-        isEnd = true
-      }
-      offset += newPollSummaries.length
-
-      state.PollSummaries_origin = [
-        ...state.PollSummaries_origin,
-        ...newPollSummaries
-      ]
-      if (state.searchTag !== '') {
-        state.pollSummaries = [
-          ...state.pollSummaries,
-          ...newPollSummaries.filter(v => {
-            return typeof v.tags !== 'undefined'
-              ? v.tags.some(e => e.name === state.searchTag)
-              : false
-          })
-        ]
+        privatePollPromise.then(res => {
+          pollSummaries.value =
+            originalPollSummaries?.concat(res.data) ?? res.data
+        })
       } else {
-        state.pollSummaries = [...state.pollSummaries, ...newPollSummaries]
+        newPollSummaries = (await publicPollPromise).data
       }
-      state.isLoading = false
-    }
-    const getTags = async () => {
-      try {
-        state.tags = (await apis.getTags()).data
-      } catch {
-        state.tags = []
-      }
-    }
-    getPolls()
-    getTags()
 
-    const calculateFilter = async () => {
-      if (state.searchTag.length === 0) {
-        state.autocompletes = []
-      } else {
-        state.autocompletes = state.tags
-          .filter((v: PollTag) => {
-            return v.name.indexOf(state.searchTag) === 0
-          })
-          .slice(0, 5)
+      searchState = {
+        offset: searchState.offset + newPollSummaries.length,
+        isEnd: newPollSummaries.length < limit
       }
-      state.pollSummaries = state.PollSummaries_origin
+      pollSummaries.value =
+        originalPollSummaries?.concat(newPollSummaries) ?? newPollSummaries
+      isLoading.value = false
     }
-    const onAutocomplete = async (str: string) => {
-      state.autocompletes = []
-      if (str.length === 0) return
-      state.searchTag = str
-      state.pollSummaries = []
-      state.PollSummaries_origin = []
-      offset = 0
-      isEnd = false
-      while (!isEnd && state.pollSummaries.length < limit) {
-        await getPolls()
+    getPolls('', isLogined.value)
+
+    watch([isLogined, searchTitle], async () => {
+      pollSummaries.value = null
+      searchState = {
+        offset: 0,
+        isEnd: false
       }
-    }
-    const onKeyword = async () => {
-      state.pollSummaries = []
-      state.PollSummaries_origin = []
-      offset = 0
-      isEnd = false
-      await getPolls()
-    }
+      await getPolls(searchTitle.value, isLogined.value)
+    })
 
     const scrollHandler = async () => {
       const hasReached =
         window.innerHeight + Math.ceil(window.scrollY) >=
         document.body.offsetHeight
       if (hasReached) {
-        await getPolls()
+        await getPolls(searchTitle.value, isLogined.value)
       }
     }
-
-    watch(isLogined, async () => {
-      state.pollSummaries = []
-      state.PollSummaries_origin = []
-      offset = 0
-      isEnd = false
-      await getPolls()
-    })
 
     onMounted(() => {
       window.addEventListener('wheel', scrollHandler)
@@ -206,11 +163,41 @@ export default {
       window.removeEventListener('scroll', scrollHandler)
     })
 
+    const inputTag = ref<string>('')
+    const searchTag = ref<string>('')
+
+    const tagFilterdPollSummaries = ref<PollSummary[] | null>(null)
+    watchEffect(() => {
+      tagFilterdPollSummaries.value =
+        pollSummaries.value?.filter(v =>
+          v.tags?.some(e => !searchTag.value || e.name === searchTag.value)
+        ) ?? []
+    })
+
+    const autocompletes = ref<PollTag[]>([])
+    watchEffect(() => {
+      if (inputTag.value === searchTag.value) return
+
+      searchTag.value = ''
+
+      if (!inputTag.value) {
+        autocompletes.value = []
+        return
+      }
+
+      autocompletes.value =
+        tags.value
+          ?.filter(v => v.name.startsWith(inputTag.value))
+          .slice(0, 5) ?? []
+    })
+
     return {
-      state,
-      calculateFilter,
-      onAutocomplete,
-      onKeyword
+      searchTitle,
+      pollSummaries: tagFilterdPollSummaries,
+      isLoading,
+      inputTag,
+      searchTag,
+      autocompletes
     }
   }
 }
