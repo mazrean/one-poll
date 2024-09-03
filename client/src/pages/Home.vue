@@ -49,7 +49,9 @@
         <p>表示可能な質問がありません。</p>
       </div>
       <div v-else class="d-flex flex-wrap justify-content-center">
-        <div v-for="pollSummary in pollSummaries" :key="pollSummary.pollId">
+        <div
+          v-for="pollSummary in pollSummaries"
+          :key="`${pollSummary.pollId}:${pollSummary.userStatus.accessMode}:${pollSummary.userStatus.isOwner}`">
           <PollCardComponent :poll="pollSummary" />
         </div>
       </div>
