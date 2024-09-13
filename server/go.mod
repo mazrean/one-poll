@@ -11,7 +11,7 @@ require (
 	github.com/oapi-codegen/runtime v1.1.1
 	github.com/ugorji/go/codec v1.2.12
 	gorm.io/driver/mysql v1.5.7
-	gorm.io/gorm v1.25.11
+	gorm.io/gorm v1.25.12
 )
 
 require (
