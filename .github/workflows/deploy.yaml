@@ -17,7 +17,7 @@ jobs:
     steps:
       - name: Set IMAGE_TAG env
         run: echo "IMAGE_TAG=$(echo ${GITHUB_REF:11})" >> $GITHUB_ENV
-      - uses: actions/checkout@v4.1.7
+      - uses: actions/checkout@v4.2.0
       - name: Authenticate to Google Cloud
         id: auth
         uses: google-github-actions/auth@v2
