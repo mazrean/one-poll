@@ -11,7 +11,7 @@ jobs:
     name: Spectral
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.1.7
+      - uses: actions/checkout@v4.2.1
       - name: Spectral checks
         uses: stoplightio/spectral-action@v0.8.11
         with:
