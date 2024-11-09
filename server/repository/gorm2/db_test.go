@@ -9,7 +9,7 @@ var testDB *DB
 
 func TestMain(m *testing.M) {
 	var err error
-	testDB, err = NewDB(true)
+	testDB, err = NewDB(false)
 	if err != nil {
 		panic(err)
 	}
