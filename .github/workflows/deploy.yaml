@@ -1,4 +1,4 @@
-name: Server Deploy
+name: Deploy
 
 on:
   push:
@@ -7,8 +7,11 @@ on:
     branches-ignore:
       - "**"
 
+env:
+  NODE_VERSION: 22
+
 jobs:
-  build_and_deploy:
+  server_build_and_deploy:
     name: Build Server Image
     runs-on: ubuntu-latest
     permissions:
@@ -51,3 +54,50 @@ jobs:
           region: ${{ vars.REGION }}
           service: ${{ vars.SERVER_CLOUDRUN_SERVICE }}
           image: ${{ vars.SERVER_IMAGE }}
+  client_build:
+    name: Build Client
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: ./client/package-lock.json
+      - run: npm ci
+        working-directory: ./client
+      - run: npm run build
+        working-directory: ./client
+        env:
+          NODE_ENV: production
+      - uses: actions/upload-artifact@v4
+        with:
+          name: client_dist
+          path: ./client/dist
+  client_release:
+    name: Release Client
+    runs-on: ubuntu-latest
+    permissions:
+      contents: "read"
+      id-token: "write"
+    needs: [client_build]
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: client_dist
+          path: ./dist
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          token_format: access_token
+          workload_identity_provider: ${{ vars.GOOGLE_IAM_WORKLOAD_IDENTITY_POOL_PROVIDER }}
+          service_account: ${{ vars.GOOGLE_IAM_SERVICE_ACCOUNT }}
+      - id: "upload-folder"
+        uses: "google-github-actions/upload-cloud-storage@v2"
+        with:
+          path: ./dist
+          destination: ${{ vars.BUCKET }}
+          parent: false
+          headers: |-
+            cache-control: "public, max-age=31536000"
