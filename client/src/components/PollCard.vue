@@ -1,6 +1,8 @@
 <template>
-  <div class="card m-3 p-2" style="border-radius: 1em">
-    <div class="card-header text-start bg-white">
+  <div class="card m-0 p-2" style="border-radius: 1em">
+    <div
+      class="card-header text-start bg-white px-1 py-2 mw-100"
+      style="width: 340px">
       <h4 class="card-title">{{ poll.title }}</h4>
       <div class="card-tags bi bi-tags-fill text-muted d-flex flex-wrap">
         <span
@@ -11,7 +13,7 @@
         </span>
       </div>
     </div>
-    <div class="card-body">
+    <div class="card-body px-1 py-2">
       <div v-if="state.onlyBrowsable">
         <button
           v-for="q in poll.question"
@@ -55,7 +57,7 @@
         v-if="state.canAccessDetails"
         class="link link-detail"
         :to="{ name: 'details', params: { pollId: poll.pollId } }">
-        詳細を見る
+        詳細
       </router-link>
       <div>@{{ poll.owner.name }}</div>
     </div>
@@ -195,11 +197,7 @@ export default defineComponent({
 </script>
 
 <style>
-.card {
-  width: 490px;
-}
 .vote-button {
-  width: 420px;
   height: 30px;
 }
 </style>

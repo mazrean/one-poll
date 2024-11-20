@@ -55,6 +55,5 @@ export default defineComponent({
 
 <style>
 .card {
-  width: 490px;
 }
 </style>

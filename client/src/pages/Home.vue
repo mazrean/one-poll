@@ -1,57 +1,55 @@
 <template>
   <div class="container">
     <h1><em class="bi bi-house-fill" /> ホーム</h1>
-    <div class="m-auto">
-      <div class="d-flex flex-wrap justify-content-center m-auto">
-        <svg
-          v-show="false"
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          fill="currentColor"
-          class="bi bi-search mx-3 my-auto"
-          viewBox="0 0 16 16">
-          <path
-            d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
-        </svg>
-        <input
-          type="searchTitle"
-          class="form-control d-flex mx-3 my-1"
-          name="searchTitle"
-          placeholder="キーワードで検索 (Enterで更新)"
-          @keydown.enter="
-            searchTitle =
-              ($event.target as HTMLInputElement | null)?.value ?? ''
-          " />
-        <input
-          v-model="inputTag"
-          type="searchTag"
-          class="form-control d-flex mx-3 my-1"
-          name="searchTag"
-          placeholder="タグで検索 (タグ候補選択で更新)" />
-        <ul v-for="v in autocompletes" :key="v.id" class="list-group">
-          <button
-            class="list-group-item list-group-item-action p-1"
-            type="button"
-            @click="
-              () => {
-                searchTag = v.name
-                inputTag = v.name
-              }
-            ">
-            <em class="bi bi-tags-fill" /> {{ v.name }}
-          </button>
-        </ul>
-      </div>
+    <div class="d-flex flex-wrap justify-content-center m-auto gap-1">
+      <svg
+        v-show="false"
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        fill="currentColor"
+        class="bi bi-search mx-1 my-auto"
+        viewBox="0 0 16 16">
+        <path
+          d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+      </svg>
+      <input
+        type="searchTitle"
+        class="form-control d-flex m-0"
+        name="searchTitle"
+        placeholder="キーワードで検索"
+        @keydown.enter="
+          searchTitle = ($event.target as HTMLInputElement | null)?.value ?? ''
+        " />
+      <input
+        v-model="inputTag"
+        type="searchTag"
+        class="form-control d-flex m-0"
+        name="searchTag"
+        placeholder="タグで検索" />
+      <ul v-for="v in autocompletes" :key="v.id" class="list-group">
+        <button
+          class="list-group-item list-group-item-action p-1"
+          type="button"
+          @click="
+            () => {
+              searchTag = v.name
+              inputTag = v.name
+            }
+          ">
+          <em class="bi bi-tags-fill" /> {{ v.name }}
+        </button>
+      </ul>
       <div
         v-if="pollSummaries != null && pollSummaries.length === 0"
         class="m-3">
         <p>表示可能な質問がありません。</p>
       </div>
-      <div v-else class="d-flex flex-wrap justify-content-center">
+      <div v-else class="d-flex flex-wrap justify-content-center gap-1 w-100">
         <div
           v-for="pollSummary in pollSummaries"
-          :key="`${pollSummary.pollId}:${pollSummary.userStatus.accessMode}:${pollSummary.userStatus.isOwner}`">
+          :key="`${pollSummary.pollId}:${pollSummary.userStatus.accessMode}:${pollSummary.userStatus.isOwner}`"
+          class="mw-100">
           <PollCardComponent :poll="pollSummary" />
         </div>
       </div>

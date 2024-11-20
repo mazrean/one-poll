@@ -237,8 +237,4 @@ export default defineComponent({
 })
 </script>
 
-<style>
-.card {
-  width: 490px;
-}
-</style>
+<style></style>

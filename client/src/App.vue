@@ -1,8 +1,8 @@
 <template>
   <div class="d-flex min-vh-100">
-    <SideMenu v-if="width >= 1000" />
-    <SideMenuNarrow v-else />
-    <main class="p-3 min-vh-100">
+    <SideMenu v-if="width >= 768" class="z-1" />
+    <SideMenuNarrow v-else class="z-1" />
+    <main class="py-2 min-vh-100 w-80">
       <router-view />
     </main>
   </div>
