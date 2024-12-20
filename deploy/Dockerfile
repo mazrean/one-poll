@@ -33,7 +33,7 @@ COPY --from=client /app/client/dist/ ./handler/v1/static/
 RUN --mount=type=cache,target=/root/.cache/go-build \
   go build -o one-poll -ldflags "-s -w"
 
-FROM alpine:3.20
+FROM alpine:3.21
 
 WORKDIR /go/src/github.com/mazrean/one-poll
 
