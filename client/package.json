@@ -32,7 +32,7 @@
     "rollup-plugin-brotli": "^3.1.0",
     "sass": "^1.83.1",
     "ts-morph": "^24.0.0",
-    "typescript": "^5.7.2",
+    "typescript": "^5.7.3",
     "vite": "^2.9.14",
     "vue-eslint-parser": "^9.2.0"
   },
