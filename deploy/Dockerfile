@@ -18,7 +18,7 @@ RUN npm run gen-api
 COPY ./client/ ./
 RUN npm run build
 
-FROM golang:1.23.4-alpine AS server
+FROM golang:1.23.6-alpine AS server
 
 RUN apk add --update --no-cache git alpine-sdk
 
