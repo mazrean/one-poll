@@ -13,7 +13,7 @@
         </span>
       </div>
     </div>
-    <div class="card-body px-1 py-2">
+    <div class="card-body px-1 py-2" style="width: 360px">
       <div v-if="state.onlyBrowsable">
         <button
           v-for="q in poll.question"
