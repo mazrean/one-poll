@@ -19,7 +19,7 @@
           v-for="q in poll.question"
           :key="q.id"
           type="button"
-          class="vote-button btn btn-outline-secondary mb-1"
+          class="vote-button btn btn-outline-secondary mb-1 w-100"
           disabled>
           {{ q.choice }}
         </button>
@@ -29,7 +29,7 @@
           v-for="(q, i) in poll.question"
           :key="q.id"
           type="button"
-          class="vote-button btn btn-outline-secondary mb-1"
+          class="vote-button btn btn-outline-secondary mb-1 w-100"
           @click="submitPollID(i)">
           {{ q.choice }}
         </button>
